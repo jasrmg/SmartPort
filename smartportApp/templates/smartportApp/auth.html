@@ -222,15 +222,9 @@
 
           <!-- Step 3: Completion -->
           <form class="form-page" id="signup-step3">
-            <div class="form-group">
-              <label for="phone-number">Phone Number</label>
-              <input
-                type="tel"
-                id="phone-number"
-                class="form-control"
-                placeholder="Enter phone number"
-                required
-              />
+            <div class="form-error" id="signup-step3-error">
+              <i class="fas fa-exclamation-triangle error-icon"></i>
+              <span class="error-message">Error message goes here</span>
             </div>
 
             <div id="verification-method">
@@ -247,13 +241,21 @@
                   <p>Code texted to phone</p>
                 </div>
               </div>
-              <input type="hidden" id="verification-type" required />
+              <input type="hidden" id="verification-type" />
             </div>
 
+            <div class="form-group" id="phone-number-group">
+              <label for="phone-number">Phone Number</label>
+              <input
+                type="tel"
+                id="phone-number"
+                class="form-control"
+                placeholder="Enter phone number"
+              />
+            </div>
             <div class="form-group">
               <label>
-                <input type="checkbox" id="terms-agree" required /> I agree to
-                the
+                <input type="checkbox" id="terms-agree" /> I agree to the
                 <a href="" class="link" id="eula">Terms and Privacy Policy</a>
               </label>
             </div>
