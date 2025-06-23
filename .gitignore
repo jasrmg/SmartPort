@@ -1,2 +1,18 @@
-.vscode
+# PYTHON
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.log
+# VSCODE
+.vscode/
+# VENV
 venv/
+# FIREBASE
+firebase_service_account.json
+# DJANGO
+/media/
+/staticfiles/
+/static/
+/local_settings.py

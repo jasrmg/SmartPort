@@ -2,6 +2,10 @@ import firebase_admin
 from firebase_admin import auth
 from django.http import JsonResponse
 from .models import UserProfile
+from . import firebase  # ⚠️ This initializes the app
+from firebase_admin import auth
+
+
 
 class FirebaseAuthMiddleware:
   def __init__(self, get_response):

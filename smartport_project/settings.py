@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'accounts',
+    'smartportApp',
 ]
 
 MIDDLEWARE = [
@@ -79,7 +82,7 @@ DATABASES = {
       'ENGINE': 'django.db.backends.mysql',
       'NAME': 'smartport_db',
       'USER': 'root',
-      'PASSWORD': '',
+      'PASSWORD': 'root123',
       'HOST': 'localhost',
       'PORT': '3306',
       'OPTIONS': {
