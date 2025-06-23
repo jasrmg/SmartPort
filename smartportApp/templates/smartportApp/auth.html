@@ -1,0 +1,290 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Smart Port</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'smartportApp/css/auth.css' %}" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Branding Section - Now at Top -->
+      <div class="branding">
+        <div class="logo">
+          <i class="fas fa-anchor logo-icon"></i>
+          <span class="logo-text">SMART PORT</span>
+        </div>
+        <div class="branding-content">
+          <h2>Global Shipping Solutions</h2>
+          <p>
+            Connecting ports worldwide with reliable, efficient, and secure
+            shipping services.
+          </p>
+          <i class="fas fa-ship ship-icon"></i>
+        </div>
+      </div>
+
+      <!-- Forms Section -->
+      <div class="forms">
+        <!-- Login Form (Simplified Version) -->
+        <div class="form-container" id="login-form">
+          <div class="form-header">
+            <h2>Welcome Back</h2>
+            <p>Sign in to access your shipping dashboard</p>
+          </div>
+          <form id="login">
+            <div class="form-group">
+              <label for="login-email">Email Address</label>
+              <input
+                type="email"
+                id="login-email"
+                class="form-control"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="login-password"
+                  class="form-control"
+                  placeholder="Enter your password"
+                  required
+                />
+                <i class="fas fa-eye-slash password-toggle"></i>
+              </div>
+            </div>
+            <button type="submit" class="btn">Login</button>
+            <div class="text-center mt-3">
+              <p>
+                Don't have an account?
+                <a href="#" class="link" id="show-signup">Sign up</a>
+              </p>
+            </div>
+          </form>
+        </div>
+
+        <!-- Signup Form (Enhanced Version with User Types) -->
+        <div class="form-container" id="signup-form" style="display: none">
+          <div class="form-header">
+            <h2>Create Account</h2>
+            <p>Join our port management system</p>
+          </div>
+
+          <!-- Progress Steps - Compact for Mobile -->
+          <div class="progress-steps">
+            <div class="progress-line">
+              <div
+                class="progress-line-fill"
+                id="progress-fill"
+                style="width: 33%"
+              ></div>
+            </div>
+
+            <div class="step active" data-step="1">
+              <div class="step-number">1</div>
+              <i class="fas fa-user-tie step-icon"></i>
+              <div class="step-title">Role</div>
+            </div>
+
+            <div class="step" data-step="2">
+              <div class="step-number">2</div>
+              <i class="fas fa-info-circle step-icon"></i>
+              <div class="step-title">Details</div>
+            </div>
+
+            <div class="step" data-step="3">
+              <div class="step-number">3</div>
+              <i class="fas fa-ship step-icon"></i>
+              <div class="step-title">Finish</div>
+            </div>
+          </div>
+
+          <!-- Step 1: Account Type Selection - Stacked for Mobile -->
+          <form class="form-page active" id="signup-step1">
+            <div class="form-group">
+              <label>Select Your Role</label>
+              <div class="user-types">
+                <div class="user-type" data-role="admin">
+                  <i class="fas fa-user-shield"></i>
+                  <h4>Administrator</h4>
+                  <p>Port management and system control</p>
+                </div>
+                <div class="user-type" data-role="shipper">
+                  <i class="fas fa-boxes"></i>
+                  <h4>Shipper</h4>
+                  <p>Cargo owners and logistics companies</p>
+                </div>
+                <div class="user-type" data-role="customs">
+                  <i class="fas fa-passport"></i>
+                  <h4>Customs</h4>
+                  <p>Customs and border control officials</p>
+                </div>
+                <div class="user-type" data-role="employee">
+                  <i class="fas fa-hard-hat"></i>
+                  <h4>Employee</h4>
+                  <p>Port operations and staff</p>
+                </div>
+              </div>
+              <input type="hidden" id="user-role" required />
+            </div>
+            <div class="form-navigation">
+              <button type="button" class="btn btn-outline" id="back-to-login">
+                Back to Login
+              </button>
+              <button type="button" class="btn btn-secondary" id="next-step1">
+                Next
+              </button>
+            </div>
+          </form>
+
+          <!-- Step 2: User Details -->
+          <form class="form-page" id="signup-step2">
+            <div id="admin-fields" style="display: none">
+              <!-- Administration code field removed as requested -->
+            </div>
+
+            <div id="shipper-fields" style="display: none">
+              <!-- Company name and shipping license fields removed as requested -->
+            </div>
+
+            <div id="customs-fields" style="display: none">
+              <!-- Agency name and badge number fields removed as requested -->
+            </div>
+
+            <div id="employee-fields" style="display: none">
+              <!-- Employee ID and department fields removed as requested -->
+            </div>
+
+            <div class="form-group">
+              <label for="signup-firstname">First Name</label>
+              <input
+                type="text"
+                id="signup-firstname"
+                class="form-control"
+                placeholder="Enter first name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="signup-lastname">Last Name</label>
+              <input
+                type="text"
+                id="signup-lastname"
+                class="form-control"
+                placeholder="Enter last name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="signup-email">Email</label>
+              <input
+                type="email"
+                id="signup-email"
+                class="form-control"
+                placeholder="Enter email"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="signup-password">Password</label>
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="signup-password"
+                  class="form-control"
+                  placeholder="Create password (min 8 chars)"
+                  required
+                />
+                <i class="fas fa-eye-slash password-toggle"></i>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="signup-confirm">Confirm Password</label>
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="signup-confirm"
+                  class="form-control"
+                  placeholder="Confirm password"
+                  required
+                />
+                <i class="fas fa-eye-slash password-toggle"></i>
+              </div>
+            </div>
+            <div class="form-navigation">
+              <button type="button" class="btn btn-outline" id="prev-step2">
+                Previous
+              </button>
+              <button type="button" class="btn btn-secondary" id="next-step2">
+                Next
+              </button>
+            </div>
+          </form>
+
+          <!-- Step 3: Completion -->
+          <form class="form-page" id="signup-step3">
+            <div class="form-group">
+              <label for="phone-number">Phone Number</label>
+              <input
+                type="tel"
+                id="phone-number"
+                class="form-control"
+                placeholder="Enter phone number"
+                required
+              />
+            </div>
+
+            <div id="verification-method">
+              <label>Verification Method</label>
+              <div class="user-types">
+                <div class="user-type" data-verification="email">
+                  <i class="fas fa-envelope"></i>
+                  <h4>Email</h4>
+                  <p>Code sent to email</p>
+                </div>
+                <div class="user-type" data-verification="sms">
+                  <i class="fas fa-mobile-alt"></i>
+                  <h4>SMS</h4>
+                  <p>Code texted to phone</p>
+                </div>
+              </div>
+              <input type="hidden" id="verification-type" required />
+            </div>
+
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="terms-agree" required /> I agree to
+                the <a href="#" class="link">Terms</a> and
+                <a href="#" class="link">Privacy Policy</a>
+              </label>
+            </div>
+            <div class="form-navigation">
+              <button type="button" class="btn btn-outline" id="prev-step3">
+                Previous
+              </button>
+              <button type="submit" class="btn btn-secondary">
+                Complete Registration
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="{% static 'smartportApp/js/auth.js' %}"></script>
+  </body>
+</html>

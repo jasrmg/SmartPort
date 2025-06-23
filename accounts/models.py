@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-class UserProfiles(models.Model):
+class UserProfile(models.Model):
   class Role(models.TextChoices):
     ADMIN = "admin", "Admin"
     SHIPPER = "shipper", "Shipper"
