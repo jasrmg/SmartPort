@@ -11,6 +11,7 @@ __pycache__/
 venv/
 # FIREBASE
 firebase_service_account.json
+firebase_config.js
 # DJANGO
 /media/
 /staticfiles/

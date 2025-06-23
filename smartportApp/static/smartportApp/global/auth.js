@@ -212,15 +212,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ------------- FINAL VERIFICATION ------------- */
   document
-    .getElementById("signup-step3")
-    .addEventListener("submit", function (e) {
+    .getElementById("signup-form")
+    .addEventListener("submit", async function (e) {
       e.preventDefault(); // prevent actual form submission
 
       let isValid = true;
 
       const verificationInput = document.getElementById("verification-type");
       const termsCheckbox = document.getElementById("terms-agree");
-
       const errorBox = document.getElementById("signup-step3-error");
       const errorMessage = errorBox.querySelector(".error-message");
 
@@ -231,8 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!verificationInput.value) {
         errorMessage.textContent = "Please select a verification method.";
         errorBox.style.display = "flex";
-        isValid = false;
-        return; // Stop further checks
+        return;
       }
 
       // Check if terms are agreed to
@@ -240,15 +238,59 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMessage.textContent =
           "You must agree to the Terms and Privacy Policy.";
         errorBox.style.display = "flex";
-        isValid = false;
         return;
       }
 
-      // If everything is valid
-      if (isValid) {
-        errorBox.style.display = "none";
-        console.log("Form is valid. Proceeding to submit...");
-        // this.submit(); // Or trigger AJAX here
+      // Proceed if valid
+      try {
+        const email = document.getElementById("signup-email").value.trim();
+        const password = document
+          .getElementById("signup-password")
+          .value.trim();
+        const confirmPassword = document
+          .getElementById("signup-confirm")
+          .value.trim();
+        const firstName = document
+          .getElementById("signup-firstname")
+          .value.trim();
+        const lastName = document
+          .getElementById("signup-lastname")
+          .value.trim();
+        const role = document.getElementById("user-role").value;
+
+        localStorage.setItem(
+          "first",
+          document.getElementById("signup-firstname").value
+        );
+        localStorage.setItem(
+          "ln",
+          document.getElementById("signup-lastname").value
+        );
+        localStorage.setItem(
+          "role",
+          document.getElementById("user-role").value
+        );
+        console.log("firsname: ", firstName);
+        console.log("ln: ", lastName);
+        console.log("role: ", role);
+
+        const userCredential = await firebase
+          .auth()
+          .createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        await user.sendEmailVerification();
+
+        alert(
+          `Hi ${firstName}! Verification email was sent to ${email}. Please check your inbox.`
+        );
+
+        // ✅ Clean redirect
+        window.location.href = "/verify/";
+      } catch (error) {
+        console.error(error.message);
+        errorMessage.textContent = error.message;
+        errorBox.style.display = "flex";
       }
     });
 
@@ -325,6 +367,4 @@ document.addEventListener("DOMContentLoaded", () => {
       this.style.display = "none";
     }
   });
-
-  // Form submissions
 });

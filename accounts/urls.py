@@ -1,6 +1,7 @@
 from django.urls import path
-from .views import get_current_user
+from . import views
 
 urlpatterns = [
-  path('me/', get_current_user)
+  path('me/', views.get_current_user),
+  path("firebase-register/", views.firebase_register_view, name="firebase_register_view"),
 ]
