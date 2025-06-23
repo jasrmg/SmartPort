@@ -72,16 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
       "progress-fill"
     ).style.width = `${progressPercent}%`;
 
-    // Show/hide role-specific fields when going to step 2
-    if (step === 2) {
-      const role = document.getElementById("user-role").value;
-      document.getElementById("customs-fields").style.display = "none";
-
-      if (role) {
-        document.getElementById(`${role}-fields`).style.display = "block";
-      }
-    }
-
     currentStep = step;
 
     // Scroll to top of form on step change
@@ -220,6 +210,78 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  /* ------------- FINAL VERIFICATION ------------- */
+  document
+    .getElementById("signup-step3")
+    .addEventListener("submit", function (e) {
+      e.preventDefault(); // prevent actual form submission
+
+      let isValid = true;
+
+      const verificationInput = document.getElementById("verification-type");
+      const termsCheckbox = document.getElementById("terms-agree");
+
+      const errorBox = document.getElementById("signup-step3-error");
+      const errorMessage = errorBox.querySelector(".error-message");
+
+      // Reset error visibility
+      errorBox.style.display = "none";
+
+      // Check verification method
+      if (!verificationInput.value) {
+        errorMessage.textContent = "Please select a verification method.";
+        errorBox.style.display = "flex";
+        isValid = false;
+        return; // Stop further checks
+      }
+
+      // Check if terms are agreed to
+      if (!termsCheckbox.checked) {
+        errorMessage.textContent =
+          "You must agree to the Terms and Privacy Policy.";
+        errorBox.style.display = "flex";
+        isValid = false;
+        return;
+      }
+
+      // If everything is valid
+      if (isValid) {
+        errorBox.style.display = "none";
+        console.log("Form is valid. Proceeding to submit...");
+        // this.submit(); // Or trigger AJAX here
+      }
+    });
+
+  // /* ------------- VERIFICATION ------------- */
+  const verificationOptions = document.querySelectorAll(
+    "#verification-method .user-type"
+  );
+  const verificationInput = document.getElementById("verification-type");
+  const phoneGroup = document.getElementById("phone-number-group");
+
+  // Hide the phone field by default
+  phoneGroup.style.display = "none";
+
+  // Add click event to each option
+  verificationOptions.forEach((option) => {
+    option.addEventListener("click", () => {
+      // Update hidden input
+      const method = option.getAttribute("data-verification");
+      verificationInput.value = method;
+
+      // Toggle active styling (optional but common UX)
+      verificationOptions.forEach((opt) => opt.classList.remove("active"));
+      option.classList.add("active");
+
+      // Show/hide phone number input
+      if (method === "sms") {
+        phoneGroup.style.display = "block";
+      } else {
+        phoneGroup.style.display = "none";
+      }
+    });
+  });
+
   /* ------------- EULA MODAL ------------- */
   // Open modal
   document.getElementById("eula").addEventListener("click", function (e) {
@@ -245,61 +307,24 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("eula-modal").style.display = "none";
   });
 
-  /* AMBOT NI GHENDEL */
-  // Form submissions
-  document.getElementById("login").addEventListener("submit", function (e) {
-    e.preventDefault();
-    const email = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
-
-    // Check if input fields are filled
-    if (email && password) {
-      // Authenticate based on credentials
-      if (email === "admin@gmail.com" && password === "admin123456") {
-        // Redirect to admin dashboard
-        window.location.href = "admin side/admin-dashboard.html";
-      } else if (
-        email === "shipper@gmail.com" &&
-        password === "shipper123456"
-      ) {
-        // Redirect to shipper dashboard
-        window.location.href = "shipper side/view-vessels.html";
-      } else if (email === "custom@gmail.com" && password === "custom123456") {
-        // Redirect to custom dashboard
-        window.location.href = "custom side/custom-dashboard.html";
-      } else if (
-        email === "employee@gmail.com" &&
-        password === "employee123456"
-      ) {
-        // Redirect to employee dashboard
-        window.location.href = "employee side/employee-dashboard.html";
-      } else {
-        alert("Invalid email or password");
-      }
-    } else {
-      alert("Please fill in all required fields");
+  window.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      document.getElementById("eula-modal").style.display = "none";
     }
   });
 
-  document
-    .getElementById("signup-step3")
-    .addEventListener("submit", function (e) {
-      e.preventDefault();
-      const terms = document.getElementById("terms-agree").checked;
-      const verification = document.getElementById("verification-type").value;
+  document.getElementById("eula-modal").addEventListener("click", function (e) {
+    const modalContent = document.querySelector(".modal-content");
+    if (!modalContent.contains(e.target)) {
+      this.style.display = "none";
+    }
+  });
 
-      if (!terms) {
-        alert("You must agree to the terms and conditions");
-        return;
-      }
+  document.getElementById("eula-modal").addEventListener("click", function (e) {
+    if (e.target === this) {
+      this.style.display = "none";
+    }
+  });
 
-      if (!verification) {
-        alert("Please select a verification method");
-        return;
-      }
-
-      const role = document.getElementById("user-role").value;
-      // Redirect to admin dashboard after successful signup
-      window.location.href = "admin-dashboard.html";
-    });
+  // Form submissions
 });

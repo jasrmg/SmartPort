@@ -233,6 +233,11 @@ h6 {
   font-size: 0.95rem;
 }
 
+/* CSS FOR HIDING THE PHONE NUMBER INPUT BY DEFAULT */
+#phone-number-group {
+  display: none;
+}
+
 .form-group {
   margin-bottom: 1.2rem;
 }
