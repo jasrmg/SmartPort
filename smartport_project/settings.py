@@ -10,23 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=gm(=zd9mm0cl%#ompq%rb$dmr&n62w&s3k9=_y$u#724ma@0$'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG") == "True"
+
+FIREBASE_ADMIN_KEY = BASE_DIR / os.getenv("FIREBASE_ADMIN_KEY", "smartport/firebase_service_account.json")
 
 ALLOWED_HOSTS = []
 
+print("✅ Loaded SECRET_KEY:", SECRET_KEY)
+print("✅ Loaded DEBUG:", DEBUG)
+print("✅ Loaded FIREBASE_ADMIN_KEY:", FIREBASE_ADMIN_KEY)
 
 # Application definition
 
@@ -116,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Manila'
 
 USE_I18N = True
 

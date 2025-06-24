@@ -25,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
       userTypes.forEach((t) => t.classList.remove("selected"));
       this.classList.add("selected");
       document.getElementById("user-role").value = this.dataset.role;
+
+      const selectedRole = this.dataset.role;
+      // sessionStorage.setItem("role", selectedRole);
     });
   });
 
@@ -111,16 +114,23 @@ document.addEventListener("DOMContentLoaded", () => {
     goToStep(2);
   });
 
+  const getUserInfo = () => {
+    return {
+      firstName: document.getElementById("signup-firstname").value,
+      lastName: document.getElementById("signup-lastname").value,
+      email: document.getElementById("signup-email").value,
+      password: document.getElementById("signup-password").value,
+      confirm: document.getElementById("signup-confirm").value,
+      role: document.getElementById("user-role").value,
+    };
+  };
+
   // Form validation for each step
   function validateStep(step) {
     let isValid = true;
 
     if (step === 2) {
-      const firstName = document.getElementById("signup-firstname").value;
-      const lastName = document.getElementById("signup-lastname").value;
-      const email = document.getElementById("signup-email").value;
-      const password = document.getElementById("signup-password").value;
-      const confirm = document.getElementById("signup-confirm").value;
+      const { firstName, lastName, email, password, confirm } = getUserInfo();
 
       const errorBox = document.getElementById("signup-error");
       const errorMessage = errorBox.querySelector(".error-message");
@@ -197,6 +207,18 @@ document.addEventListener("DOMContentLoaded", () => {
     return isValid;
   }
 
+  //test
+  document.getElementById("testBtn").addEventListener("click", () => {
+    const { firstName, lastName, email, password, confirm, role } =
+      getUserInfo();
+    console.log("test fn: ", firstName);
+    console.log("test ln: ", lastName);
+    console.log("test e: ", email);
+    console.log("test p: ", password);
+    console.log("test cp: ", confirm);
+    console.log("test r: ", role);
+  });
+
   // Password toggle functionality
   document.querySelectorAll(".password-toggle").forEach((toggle) => {
     toggle.addEventListener("click", function () {
@@ -243,50 +265,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Proceed if valid
       try {
-        const email = document.getElementById("signup-email").value.trim();
-        const password = document
-          .getElementById("signup-password")
-          .value.trim();
-        const confirmPassword = document
-          .getElementById("signup-confirm")
-          .value.trim();
-        const firstName = document
-          .getElementById("signup-firstname")
-          .value.trim();
-        const lastName = document
-          .getElementById("signup-lastname")
-          .value.trim();
-        const role = document.getElementById("user-role").value;
-
-        localStorage.setItem(
-          "first",
-          document.getElementById("signup-firstname").value
-        );
-        localStorage.setItem(
-          "ln",
-          document.getElementById("signup-lastname").value
-        );
-        localStorage.setItem(
-          "role",
-          document.getElementById("user-role").value
-        );
-        console.log("firsname: ", firstName);
-        console.log("ln: ", lastName);
-        console.log("role: ", role);
+        // RETRIEVE USER DATA:
+        const { firstName, email, password } = getUserInfo();
 
         const userCredential = await firebase
           .auth()
           .createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
 
-        await user.sendEmailVerification();
+        console.log("USER YAWA: ", user);
 
         alert(
           `Hi ${firstName}! Verification email was sent to ${email}. Please check your inbox.`
         );
+        await user.sendEmailVerification().then(() => {
+          showVerifyModal();
+        });
 
         // ✅ Clean redirect
-        window.location.href = "/verify/";
+        // window.location.href = "/verify/";
       } catch (error) {
         console.error(error.message);
         errorMessage.textContent = error.message;
@@ -294,7 +291,84 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-  // /* ------------- VERIFICATION ------------- */
+  const showVerifyModal = () => {
+    const verificationModal = document.getElementById("email-verify-modal");
+    verificationModal.style.display = "flex";
+    const verifyOKBtn = document.getElementById("verify-btn");
+    verifyOKBtn.addEventListener(
+      "click",
+      async function () {
+        const user = firebase.auth().currentUser;
+        if (!user) {
+          alert("No authenticated user found!");
+          return;
+        }
+
+        // avoid spamming the ok button:
+        verifyOKBtn.disabled = true;
+        verifyOKBtn.textContent = "Processing...";
+        await user.reload();
+
+        if (user.emailVerified) {
+          //update modal
+          const verifyModalTitle =
+            document.getElementById("verify-modal-title");
+          const verifyModalBody = document.getElementById(
+            "verify-modal-message"
+          );
+          verifyModalTitle.textContent = "Success!";
+          verifyModalBody.textContent = "Email verified logging you in...";
+
+          const token = await user.getIdToken(true);
+          console.log("TOKEN: ", token);
+
+          const userInfo = getUserInfo();
+          // const { firstName, lastName, role } = getUserInfo();
+
+          // INITIALIZE FIRESTORE:
+          const db = firebase.firestore();
+          // ADD FIRESTORE DETAILS:
+          await db.collection("users").doc(user.uid).set({
+            first_name: userInfo.firstName,
+            last_name: userInfo.lastName,
+            email: user.email,
+            role: userInfo.role,
+            avatar: "https://example.com/avatar.png",
+          });
+          console.log(userInfo.firstName);
+          console.log(userInfo.lastName);
+          console.log(userInfo.role);
+          //register to the backend MYSQL:
+          await fetch("/api/account/firebase-register/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              first_name: userInfo.firstName || "John",
+              last_name: userInfo.lastName || "Doe",
+              email: userInfo.email,
+              role: userInfo.role || "admin",
+              avatar: "https://example.com/avatar.png",
+            }),
+          });
+
+          // redirect after a short delay:
+          setTimeout(() => {
+            window.location.href = "/admin_dashboard/";
+          }, 1500);
+        } else {
+          alert("still not verified, please check your email inbox.");
+          verifyOKBtn.disabled = false;
+          verifyOKBtn.textContent = "Verify";
+        }
+      },
+      { once: true }
+    );
+  };
+
+  /* ------------- VERIFICATION ------------- */
   const verificationOptions = document.querySelectorAll(
     "#verification-method .user-type"
   );
