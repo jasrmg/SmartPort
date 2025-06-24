@@ -139,11 +139,15 @@ h6 {
   z-index: 999;
 }
 
+.modal-error {
+  color: var(--danger);
+}
+
 .modal-content {
   background: var(--light);
   color: var(--primary);
   width: 80%;
-  max-width: 700px;
+  max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
   border-radius: 10px;

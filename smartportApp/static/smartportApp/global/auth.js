@@ -208,16 +208,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   //test
-  document.getElementById("testBtn").addEventListener("click", () => {
-    const { firstName, lastName, email, password, confirm, role } =
-      getUserInfo();
-    console.log("test fn: ", firstName);
-    console.log("test ln: ", lastName);
-    console.log("test e: ", email);
-    console.log("test p: ", password);
-    console.log("test cp: ", confirm);
-    console.log("test r: ", role);
-  });
+  // document.getElementById("testBtn").addEventListener("click", () => {
+  //   const { firstName, lastName, email, password, confirm, role } =
+  //     getUserInfo();
+  //   console.log("test fn: ", firstName);
+  //   console.log("test ln: ", lastName);
+  //   console.log("test e: ", email);
+  //   console.log("test p: ", password);
+  //   console.log("test cp: ", confirm);
+  //   console.log("test r: ", role);
+  // });
 
   // Password toggle functionality
   document.querySelectorAll(".password-toggle").forEach((toggle) => {
@@ -275,9 +275,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         console.log("USER YAWA: ", user);
 
-        alert(
-          `Hi ${firstName}! Verification email was sent to ${email}. Please check your inbox.`
-        );
+        // alert(
+        //   `Hi ${firstName}! Verification email was sent to ${email}. Please check your inbox.`
+        // );
         await user.sendEmailVerification().then(() => {
           showVerifyModal();
         });
@@ -295,77 +295,73 @@ document.addEventListener("DOMContentLoaded", () => {
     const verificationModal = document.getElementById("email-verify-modal");
     verificationModal.style.display = "flex";
     const verifyOKBtn = document.getElementById("verify-btn");
-    verifyOKBtn.addEventListener(
-      "click",
-      async function () {
-        const user = firebase.auth().currentUser;
-        if (!user) {
-          alert("No authenticated user found!");
-          return;
-        }
+    verifyOKBtn.addEventListener("click", async function () {
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        console.error("No authenticated user found!");
+        return;
+      }
 
-        // avoid spamming the ok button:
-        verifyOKBtn.disabled = true;
-        verifyOKBtn.textContent = "Processing...";
-        await user.reload();
+      // avoid spamming the ok button:
+      verifyOKBtn.disabled = true;
+      verifyOKBtn.textContent = "Processing...";
+      await user.reload();
 
-        if (user.emailVerified) {
-          //update modal
-          const verifyModalTitle =
-            document.getElementById("verify-modal-title");
-          const verifyModalBody = document.getElementById(
-            "verify-modal-message"
-          );
-          verifyModalTitle.textContent = "Success!";
-          verifyModalBody.textContent = "Email verified logging you in...";
+      const verifyModalTitle = document.getElementById("verify-modal-title");
+      const verifyModalBody = document.getElementById("verify-modal-message");
+      if (user.emailVerified) {
+        //update modal
+        verifyModalTitle.classList.remove("modal-error");
+        verifyModalTitle.textContent = "Success!";
+        verifyModalBody.textContent = "Email verified logging you in...";
 
-          const token = await user.getIdToken(true);
-          console.log("TOKEN: ", token);
+        const token = await user.getIdToken(true);
+        console.log("TOKEN: ", token);
 
-          const userInfo = getUserInfo();
-          // const { firstName, lastName, role } = getUserInfo();
+        const userInfo = getUserInfo();
 
-          // INITIALIZE FIRESTORE:
-          const db = firebase.firestore();
-          // ADD FIRESTORE DETAILS:
-          await db.collection("users").doc(user.uid).set({
-            first_name: userInfo.firstName,
-            last_name: userInfo.lastName,
-            email: user.email,
-            role: userInfo.role,
+        // INITIALIZE FIRESTORE:
+        const db = firebase.firestore();
+        // ADD FIRESTORE DETAILS:
+        await db.collection("users").doc(user.uid).set({
+          first_name: userInfo.firstName,
+          last_name: userInfo.lastName,
+          email: user.email,
+          role: userInfo.role,
+          avatar: "https://example.com/avatar.png",
+        });
+        console.log(userInfo.firstName);
+        console.log(userInfo.lastName);
+        console.log(userInfo.role);
+        //register to the backend MYSQL:
+        await fetch("/api/account/firebase-register/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            first_name: userInfo.firstName || "John",
+            last_name: userInfo.lastName || "Doe",
+            email: userInfo.email,
+            role: userInfo.role || "admin",
             avatar: "https://example.com/avatar.png",
-          });
-          console.log(userInfo.firstName);
-          console.log(userInfo.lastName);
-          console.log(userInfo.role);
-          //register to the backend MYSQL:
-          await fetch("/api/account/firebase-register/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              first_name: userInfo.firstName || "John",
-              last_name: userInfo.lastName || "Doe",
-              email: userInfo.email,
-              role: userInfo.role || "admin",
-              avatar: "https://example.com/avatar.png",
-            }),
-          });
+          }),
+        });
 
-          // redirect after a short delay:
-          setTimeout(() => {
-            window.location.href = "/admin_dashboard/";
-          }, 1500);
-        } else {
-          alert("still not verified, please check your email inbox.");
-          verifyOKBtn.disabled = false;
-          verifyOKBtn.textContent = "Verify";
-        }
-      },
-      { once: true }
-    );
+        // redirect after a short delay:
+        setTimeout(() => {
+          window.location.href = "/admin_dashboard/";
+        }, 1500);
+      } else {
+        verifyModalTitle.classList.add("modal-error");
+        verifyModalTitle.textContent = "Error!";
+        verifyModalBody.textContent =
+          "Still not verified, please check your email inbox!";
+        verifyOKBtn.disabled = false;
+        verifyOKBtn.textContent = "Verify";
+      }
+    });
   };
 
   /* ------------- VERIFICATION ------------- */

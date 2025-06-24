@@ -28,9 +28,9 @@ FIREBASE_ADMIN_KEY = BASE_DIR / os.getenv("FIREBASE_ADMIN_KEY", "smartport/fireb
 
 ALLOWED_HOSTS = []
 
-print("✅ Loaded SECRET_KEY:", SECRET_KEY)
-print("✅ Loaded DEBUG:", DEBUG)
-print("✅ Loaded FIREBASE_ADMIN_KEY:", FIREBASE_ADMIN_KEY)
+# print("✅ Loaded SECRET_KEY:", SECRET_KEY)
+# print("✅ Loaded DEBUG:", DEBUG)
+# print("✅ Loaded FIREBASE_ADMIN_KEY:", FIREBASE_ADMIN_KEY)
 
 # Application definition
 
