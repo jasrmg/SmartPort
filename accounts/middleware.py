@@ -12,12 +12,12 @@ class FirebaseAuthMiddleware:
   def __call__(self, request):
     authorization = request.headers.get('Authorization')
 
-    print("AUTH HEADER: ", authorization)
+    # print("AUTH HEADER: ", authorization)
 
     if authorization and authorization.startswith('Bearer '):
       id_token = authorization.split(' ')[1]
 
-      print("TOKEN: ", id_token)
+      # print("TOKEN: ", id_token)
 
       try:
         decoded_token = auth.verify_id_token(id_token)
