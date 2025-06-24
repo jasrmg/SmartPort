@@ -12,12 +12,12 @@ class FirebaseAuthMiddleware:
   def __call__(self, request):
     authorization = request.headers.get('Authorization')
 
-    # print("AUTH HEADER: ", authorization)
+    print("AUTH HEADER: ", authorization)
 
     if authorization and authorization.startswith('Bearer '):
       id_token = authorization.split(' ')[1]
 
-      # print("TOKEN: ", id_token)
+      print("TOKEN: ", id_token)
 
       try:
         decoded_token = auth.verify_id_token(id_token)
@@ -31,7 +31,7 @@ class FirebaseAuthMiddleware:
           request.user_profile = None  # User is authenticated but not yet registered in DB
 
       except Exception as e:
-        # print("🔥 Firebase verification error:")
+        print("🔥 Firebase verification error:")
         traceback.print_exc()  # ✅ Show detailed traceback
         return JsonResponse({'error': 'Invalid Firebase token', 'details': str(e)}, status=401)
     else:
