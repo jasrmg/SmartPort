@@ -24,7 +24,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") == "True"
 
-FIREBASE_ADMIN_KEY = BASE_DIR / os.getenv("FIREBASE_ADMIN_KEY", "smartport/firebase_service_account.json")
+FIREBASE_ADMIN_KEY = BASE_DIR / os.getenv("FIREBASE_ADMIN_KEY", "firebase_service_account.json")
 
 ALLOWED_HOSTS = []
 
