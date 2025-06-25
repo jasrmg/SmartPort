@@ -12,4 +12,8 @@ urlpatterns = [
   path("email-verified/",   views.email_verified_page, name="email_verified"),
   path("email-expired/", views.email_expired_page, name="email_expired"),
   path("email-invalid/", views.email_invalid_page, name="email_invalid"),
+
+  # LOGIN LOGOUT:
+  path("firebase-login/", views.firebase_login_view, name="firebase-login"),
+  path("firebase-logout/", views.firebase_logout_view, name="firebase-logout"),
 ]

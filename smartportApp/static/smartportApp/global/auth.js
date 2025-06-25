@@ -232,7 +232,59 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /* ------------- FINAL VERIFICATION ------------- */
+  /* ------------- LOG IN ------------- */
+  document
+    .getElementById("login")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+
+      const loginBtn = this.querySelector("button[type='submit']");
+      const originalText = this.querySelector("span.btn-text");
+      const loginSpinner = this.querySelector("span.spinner");
+      loginBtn.disabled = true;
+      originalText.textContent = "Logging in";
+      loginSpinner.style.display = "inline-block";
+
+      try {
+        const userCredential = await firebase
+          .auth()
+          .signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        // i remove
+        if (!user.emailVerified) {
+          alert("Please verify your email before logging in.");
+        }
+
+        const token = await user.getIdToken(true);
+
+        const response = await fetch("/api/account/firebase-login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Backend failed to authorize login.");
+        }
+
+        window.location.href = "/admin-dashboard/";
+      } catch (error) {
+        console.error("Login error: ", error);
+        alert("Login failed. please check your credentials or try again");
+      } finally {
+        loginBtn.disabled = false;
+        originalText.textContent = "Login";
+        loginSpinner.style.display = "none";
+      }
+    });
+
+  /* ------------- FINAL VERIFICATION SIGN UP ------------- */
   document
     .getElementById("signup-form")
     .addEventListener("submit", async function (e) {
