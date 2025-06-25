@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Email Verified</title>
+    <title>Link Expired</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -11,9 +12,8 @@
     <style>
       :root {
         --primary: #0a1f44;
-        --accent: #2d9c5a;
+        --warning: #f59e0b;
         --light: #f5f5f5;
-        --gray: #e5e7eb;
       }
       body {
         margin: 0;
@@ -35,7 +35,7 @@
       }
       .icon {
         font-size: 3rem;
-        color: var(--accent);
+        color: var(--warning);
         margin-bottom: 1rem;
       }
       h1 {
@@ -45,18 +45,31 @@
       p {
         color: #333;
       }
+      button {
+        margin-top: 1.2rem;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.3s;
+      }
+      button:hover {
+        background-color: #142d5c;
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="icon"><i class="fas fa-check-circle"></i></div>
-      <h1>Email Verified!</h1>
-      <p>Your email has been successfully verified.</p>
+      <div class="icon"><i class="fas fa-clock"></i></div>
+      <h1>Link Expired</h1>
+      <p>Your verification link has expired.</p>
       <p>
-        Please return to the previous page and click the
-        <strong>“Verify”</strong> button to continue.
+        To receive a new one, please return to the sign-up page and click
+        <strong>"Resend"</strong>.
       </p>
-      <p>You may now close this window.</p>
     </div>
   </body>
 </html>

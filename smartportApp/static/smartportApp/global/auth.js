@@ -236,7 +236,20 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("signup-form")
     .addEventListener("submit", async function (e) {
-      e.preventDefault(); // prevent actual form submission
+      e.preventDefault();
+      const submitBtn = document.querySelector(
+        "#signup-form button[type='submit']"
+      );
+      // submitBtn.disabled = true;
+      // submitBtn.textContent = "Processing. . .";
+
+      // const submitBtn = document.querySelector("#signup-submit-btn");
+      const btnText = submitBtn.querySelector(".btn-text");
+      const spinner = submitBtn.querySelector(".spinner");
+
+      submitBtn.disabled = true;
+      btnText.textContent = "Processing";
+      spinner.style.display = "inline-block";
 
       let isValid = true;
 
@@ -266,40 +279,46 @@ document.addEventListener("DOMContentLoaded", () => {
       // Proceed if valid
       try {
         // RETRIEVE USER DATA:
-        const { firstName, email, password } = getUserInfo();
+        const { firstName, lastName, email, password } = getUserInfo();
 
         const userCredential = await firebase
           .auth()
           .createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
 
-        console.log("USER YAWA: ", user);
-        // await user.sendEmailVerification().then(() => {
-        //   showVerifyModal();
-        // });
-
-        // ILISAN UG CUSTOM EMAIL VERIFICATION
         const token = await user.getIdToken(true);
+        // GI ILISAN UG CUSTOM EMAIL VERIFICATION
         await fetch("/api/account/send-custom-verification-email/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        })
-          .then(() => {
-            showVerifyModal();
-          })
-          .catch((error) => {
-            console.error("Failed to send custom email: ", error);
-            errorMessage.textContent =
-              "Failed to send verification email. Try again.";
-            errorBox.style.display = "flex";
-          });
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+          }),
+        });
+        // .then(() => {
+
+        // })
+        // .catch((error) => {
+        //   console.error("Failed to send custom email: ", error);
+        //   errorMessage.textContent =
+        //     "Failed to send verification email. Try again.";
+        //   errorBox.style.display = "flex";
+        // });
+
+        showVerifyModal();
       } catch (error) {
         console.error(error.message);
         errorMessage.textContent = error.message;
         errorBox.style.display = "flex";
+      } finally {
+        // keep the button disabled until modal is shown
+        submitBtn.textContent = "Complete Registration";
+        submitBtn.disabled = false;
+        spinner.style.display = "none";
       }
     });
 
@@ -308,73 +327,160 @@ document.addEventListener("DOMContentLoaded", () => {
     verificationModal.style.display = "flex";
     const verifyOKBtn = document.getElementById("verify-btn");
     verifyOKBtn.addEventListener("click", async function () {
-      const user = firebase.auth().currentUser;
-      if (!user) {
-        console.error("No authenticated user found!");
-        return;
+      try {
+        const btnText = verifyOKBtn.querySelector(".btn-text");
+        const btnSpinner = verifyOKBtn.querySelector(".spinner");
+
+        verifyOKBtn.disabled = true;
+        btnText.textContent = "Processing";
+        btnSpinner.style.display = "inline-block";
+        const user = firebase.auth().currentUser;
+        if (!user) {
+          console.error("No authenticated user found!");
+          return;
+        }
+
+        await user.reload();
+
+        const verifyModalTitle = document.getElementById("verify-modal-title");
+        const verifyModalBody = document.getElementById("verify-modal-message");
+        if (user.emailVerified) {
+          //update modal
+          verifyModalTitle.classList.remove("modal-error");
+          verifyModalTitle.textContent = "Success!";
+          verifyModalBody.textContent = "Email verified logging you in...";
+
+          const token = await user.getIdToken(true);
+          console.log("TOKEN: ", token);
+
+          const userInfo = getUserInfo();
+
+          // INITIALIZE FIRESTORE:
+          const db = firebase.firestore();
+          // ADD FIRESTORE DETAILS:
+          await db.collection("users").doc(user.uid).set({
+            first_name: userInfo.firstName,
+            last_name: userInfo.lastName,
+            email: user.email,
+            role: userInfo.role,
+            avatar: "https://example.com/avatar.png",
+          });
+          // console.log(userInfo.firstName);
+          // console.log(userInfo.lastName);
+          // console.log(userInfo.role);
+
+          //register to the backend MYSQL:
+          await fetch("/api/account/firebase-register/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              first_name: userInfo.firstName,
+              last_name: userInfo.lastName,
+              email: userInfo.email,
+              role: userInfo.role,
+              avatar: "https://example.com/avatar.png",
+            }),
+          });
+
+          // redirect after a short delay:
+          setTimeout(() => {
+            window.location.href = "/admin_dashboard/";
+          }, 1500);
+        } else {
+          verifyModalTitle.classList.add("modal-error");
+          verifyModalTitle.textContent = "Error!";
+          verifyModalBody.textContent =
+            "Still not verified, please check your email inbox!";
+          verifyOKBtn.disabled = false;
+          verifyOKBtn.textContent = "Verify";
+        }
+      } catch (error) {
+        console.error("verify btn error: ", error);
+      } finally {
+        verifyOKBtn.disabled = false;
+        btnText.textContent = "Verify";
+        btnSpinner.style.display = "none";
       }
-
-      // avoid spamming the ok button:
-      verifyOKBtn.disabled = true;
-      verifyOKBtn.textContent = "Processing...";
-      await user.reload();
-
-      const verifyModalTitle = document.getElementById("verify-modal-title");
-      const verifyModalBody = document.getElementById("verify-modal-message");
-      if (user.emailVerified) {
-        //update modal
-        verifyModalTitle.classList.remove("modal-error");
-        verifyModalTitle.textContent = "Success!";
-        verifyModalBody.textContent = "Email verified logging you in...";
-
+    });
+    /* ------------ RESEND BUTTON -------------- */
+    const resendBtn = document.getElementById("resend-btn");
+    resendBtn.addEventListener("click", async () => {
+      try {
+        const btnText = resendBtn.querySelector(".btn-text");
+        const btnSpinner = resendBtn.querySelector(".spinner");
+        resendBtn.disabled = true;
+        btnText.textContent = "Processing";
+        btnSpinner.style.display = "inline-block";
+        const user = firebase.auth().currentUser;
+        if (!user) {
+          console.error("No authenticated user found!");
+          return;
+        }
         const token = await user.getIdToken(true);
-        console.log("TOKEN: ", token);
-
         const userInfo = getUserInfo();
 
-        // INITIALIZE FIRESTORE:
-        const db = firebase.firestore();
-        // ADD FIRESTORE DETAILS:
-        await db.collection("users").doc(user.uid).set({
-          first_name: userInfo.firstName,
-          last_name: userInfo.lastName,
-          email: user.email,
-          role: userInfo.role,
-          avatar: "https://example.com/avatar.png",
-        });
-        console.log(userInfo.firstName);
-        console.log(userInfo.lastName);
-        console.log(userInfo.role);
-        //register to the backend MYSQL:
-        await fetch("/api/account/firebase-register/", {
+        await fetch("/api/account/resend-verification/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            first_name: userInfo.firstName || "John",
-            last_name: userInfo.lastName || "Doe",
-            email: userInfo.email,
-            role: userInfo.role || "admin",
-            avatar: "https://example.com/avatar.png",
+            first_name: userInfo.firstName,
+            last_name: userInfo.lastName,
           }),
         });
-
-        // redirect after a short delay:
-        setTimeout(() => {
-          window.location.href = "/admin_dashboard/";
-        }, 1500);
-      } else {
-        verifyModalTitle.classList.add("modal-error");
-        verifyModalTitle.textContent = "Error!";
+        const verifyModalTitle = document.getElementById("verify-modal-title");
+        const verifyModalBody = document.getElementById("verify-modal-message");
+        verifyModalTitle.textContent = "Verification Resent";
         verifyModalBody.textContent =
-          "Still not verified, please check your email inbox!";
-        verifyOKBtn.disabled = false;
-        verifyOKBtn.textContent = "Verify";
+          "Verification email resent. Please check your inbox.";
+      } catch (error) {
+        console.error("resend btn error: ", error);
+      } finally {
+        resendBtn.disabled = false;
+        btnText.textContent = "Resend";
+        btnSpinner.style.display = "none";
       }
     });
   };
+  /* ------------- REGISTER IN FIRESTORE AND MYSQL ------------- */
+  // const registerUserInFirestoreAndMYySQL = async (user, userInfo, token) => {
+  //   try {
+  //     // initialize firestore
+  //     const db = firebase.firestore();
+  //     // store user info in firestore
+  //     await db.collection("users").doc(user.uid).set({
+  //       first_name: userInfo.firstName,
+  //       last_name: userInfo.lastName,
+  //       email: user.email,
+  //       role: userInfo.role,
+  //       avatar: "https://example.com/avatar.png",
+  //     });
+
+  //     // register in django backend
+  //     await fetch("/api/account/firebase-register/", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({
+  //         first_name: userInfo.firstName,
+  //         lastName: userInfo.lastName,
+  //         email: userInfo.email,
+  //         role: userInfo.role,
+  //         avatar: "https://example.com/avatar.png",
+  //       }),
+  //     });
+  //     console.log;
+  //   } catch (error) {
+  //     console.error("Registration error: ", error);
+  //   }
+  // };
 
   /* ------------- VERIFICATION ------------- */
   const verificationOptions = document.querySelectorAll(
