@@ -240,16 +240,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const submitBtn = document.querySelector(
         "#signup-form button[type='submit']"
       );
-      // submitBtn.disabled = true;
-      // submitBtn.textContent = "Processing. . .";
-
-      // const submitBtn = document.querySelector("#signup-submit-btn");
-      const btnText = submitBtn.querySelector(".btn-text");
-      const spinner = submitBtn.querySelector(".spinner");
-
-      submitBtn.disabled = true;
-      btnText.textContent = "Processing";
-      spinner.style.display = "inline-block";
 
       let isValid = true;
 
@@ -276,6 +266,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      const btnText = submitBtn.querySelector(".btn-text");
+      const spinner = submitBtn.querySelector(".spinner");
+
+      submitBtn.disabled = true;
+      btnText.textContent = "Processing";
+      spinner.style.display = "inline-block";
       // Proceed if valid
       try {
         // RETRIEVE USER DATA:
@@ -299,15 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
             last_name: lastName,
           }),
         });
-        // .then(() => {
-
-        // })
-        // .catch((error) => {
-        //   console.error("Failed to send custom email: ", error);
-        //   errorMessage.textContent =
-        //     "Failed to send verification email. Try again.";
-        //   errorBox.style.display = "flex";
-        // });
 
         showVerifyModal();
       } catch (error) {
@@ -322,15 +309,44 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+  /* ------------ COOLDOWN FOR RESET -------------- */
+  const startCooldown = (button, duration) => {
+    const btnText = button.querySelector(".btn-text");
+    const btnSpinner = button.querySelector(".spinner");
+
+    let seconds = duration;
+    const originalText = button.id === "resend-btn" ? "Resend" : "Verify";
+    console.log("BUTTON TEXT: ", originalText);
+    btnSpinner.style.display = "none";
+    btnText.textContent = `${originalText} (${seconds})`;
+
+    // Disable both buttons
+    const verifyBtn = document.getElementById("verify-btn");
+    const resendBtn = document.getElementById("resend-btn");
+    verifyBtn.disabled = true;
+    resendBtn.disabled = true;
+
+    const countdown = setInterval(() => {
+      console.log("SECONDS: ", seconds);
+      seconds--;
+      btnText.textContent = `${originalText} (${seconds})`;
+      if (seconds <= 0) {
+        clearInterval(countdown);
+        verifyBtn.disabled = false;
+        resendBtn.disabled = false;
+        btnText.textContent = originalText;
+      }
+    }, 1000);
+  };
   const showVerifyModal = () => {
     const verificationModal = document.getElementById("email-verify-modal");
     verificationModal.style.display = "flex";
     const verifyOKBtn = document.getElementById("verify-btn");
+    const btnText = verifyOKBtn.querySelector(".btn-text");
+    const btnSpinner = verifyOKBtn.querySelector(".spinner");
+
     verifyOKBtn.addEventListener("click", async function () {
       try {
-        const btnText = verifyOKBtn.querySelector(".btn-text");
-        const btnSpinner = verifyOKBtn.querySelector(".spinner");
-
         verifyOKBtn.disabled = true;
         btnText.textContent = "Processing";
         btnSpinner.style.display = "inline-block";
@@ -365,9 +381,6 @@ document.addEventListener("DOMContentLoaded", () => {
             role: userInfo.role,
             avatar: "https://example.com/avatar.png",
           });
-          // console.log(userInfo.firstName);
-          // console.log(userInfo.lastName);
-          // console.log(userInfo.role);
 
           //register to the backend MYSQL:
           await fetch("/api/account/firebase-register/", {
@@ -395,22 +408,22 @@ document.addEventListener("DOMContentLoaded", () => {
           verifyModalBody.textContent =
             "Still not verified, please check your email inbox!";
           verifyOKBtn.disabled = false;
-          verifyOKBtn.textContent = "Verify";
+          btnText.textContent = "Verify";
         }
       } catch (error) {
         console.error("verify btn error: ", error);
       } finally {
-        verifyOKBtn.disabled = false;
-        btnText.textContent = "Verify";
-        btnSpinner.style.display = "none";
+        console.log("FINALLY VERIFY");
+        startCooldown(verifyOKBtn, 30);
       }
     });
+
     /* ------------ RESEND BUTTON -------------- */
     const resendBtn = document.getElementById("resend-btn");
     resendBtn.addEventListener("click", async () => {
+      const btnText = resendBtn.querySelector(".btn-text");
+      const btnSpinner = resendBtn.querySelector(".spinner");
       try {
-        const btnText = resendBtn.querySelector(".btn-text");
-        const btnSpinner = resendBtn.querySelector(".spinner");
         resendBtn.disabled = true;
         btnText.textContent = "Processing";
         btnSpinner.style.display = "inline-block";
@@ -441,9 +454,8 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (error) {
         console.error("resend btn error: ", error);
       } finally {
-        resendBtn.disabled = false;
-        btnText.textContent = "Resend";
-        btnSpinner.style.display = "none";
+        console.log("finally");
+        startCooldown(resendBtn, 30);
       }
     });
   };

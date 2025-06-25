@@ -191,13 +191,12 @@ h6 {
   padding: 0.75rem 2rem;
   border-radius: 6px;
   font-weight: 600;
-  background-color: var(--accent);
+  background-color: var(--secondary);
   color: white;
   border: none;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
-
 .modal-footer .btn:hover {
   background-color: var(--primary);
 }
@@ -308,15 +307,6 @@ h6 {
 }
 
 .btn-resend {
-  background-color: var(--accent);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -328,9 +318,7 @@ h6 {
   box-shadow: 0 4px 12px rgba(45, 156, 90, 0.3);
 }
 
-.btn-resend:disabled {
-  background-color: var(--gray);
-  color: var(--dark-gray);
+.btn:disabled {
   cursor: not-allowed;
   box-shadow: none;
 }
