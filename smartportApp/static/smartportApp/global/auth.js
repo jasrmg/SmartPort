@@ -45,10 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // i remove
         if (!user.emailVerified) {
           alert("Please verify your email before logging in.");
+          return;
         }
 
         const token = await user.getIdToken(true);
-
+        localStorage.setItem("firebaseToken", token);
         const response = await fetch("/api/account/firebase-login/", {
           method: "POST",
           headers: {
@@ -57,9 +58,14 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         });
 
+        const result = await response.json();
+        console.log("BACKEND LOGIN RESPONSE: ", result);
+
         if (!response.ok) {
           throw new Error("Backend failed to authorize login.");
         }
+
+        console.log("✅ Redirecting to admin-dashboard...");
         // REDIRECT TO ADMIN DASHBOARD:
         window.location.href = "/admin-dashboard/";
       } catch (error) {
@@ -483,7 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // redirect after a short delay:
           setTimeout(() => {
-            window.location.href = "/admin_dashboard/";
+            window.location.href = "/admin-dashboard/";
           }, 1500);
         } else {
           verifyModalTitle.classList.add("modal-error");

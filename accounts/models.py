@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class UserProfile(models.Model):
@@ -8,7 +9,8 @@ class UserProfile(models.Model):
     CUSTOM = "custom", "Custom"
     EMPLOYEE = "employee", "Employee"
 
-  user_id = models.AutoField(primary_key=True)
+  user = models.OneToOneField(User, on_delete=models.CASCADE)
+  # user_id = models.AutoField(primary_key=True)
   firebase_uid = models.CharField(max_length=128, unique=True)
   first_name = models.CharField(max_length=50)
   last_name = models.CharField(max_length=50)

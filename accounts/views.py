@@ -30,6 +30,8 @@ def email_expired_page(request):
 def email_invalid_page(request):
   return render(request, "smartportApp/email_invalid.html")
 
+
+from django.contrib.auth.models import User
 @csrf_exempt
 def firebase_register_view(request):
   if request.method == 'POST':
@@ -38,7 +40,7 @@ def firebase_register_view(request):
       decoded = auth.verify_id_token(id_token, clock_skew_seconds=10)
       if not decoded.get("email_verified", False):
         return JsonResponse({"error": "Email not verified"}, status=403)
-      # print("AUTH TOKEN: ", decoded)
+      
       data = json.loads(request.body)
       email = decoded["email"]
       uid = decoded["uid"]
@@ -47,28 +49,30 @@ def firebase_register_view(request):
       if UserProfile.objects.filter(email=email).exists() or UserProfile.objects.filter(firebase_uid=uid).exists():
         # print("USER ALREADY REGISTERED")
         return JsonResponse({"message": "Already registered"}, status=409)
-      else: 
-        # print("About to create user:")
-        # print("  Email:", email)
-        # print("  UID:", uid)
-        # print("  First name:", data.get("first_name"))
-        # print("  Last name:", data.get("last_name"))
-        # print("  Role:", data.get("role"))
-        # print(" Avatar: ", data.get("avatar"))
-        
-        UserProfile.objects.create(
-          firebase_uid=uid,
-          email=email,
-          first_name=data.get("first_name", ""),
-          last_name=data.get("last_name", ""),
-          role=data.get("role", ""),
-          avatar=data.get("avatar", ""),
-        )
+      
+      # CREATE DJANGO USER
+      django_user, created = User.objects.get_or_create(
+        username=email,
+        defaults={"email": email, "first_name": data["first_name"], "last_name": data["last_name"]},
+      )
 
-        user = UserProfile.objects.get(firebase_uid=uid)
-        # print("Stored in DB:", user.first_name, user.last_name, user.role)
+      # CREATE USER PROFILE
+      UserProfile.objects.update_or_create(
+        firebase_uid=uid,
+        defaults={
+          "user": django_user,
+          "first_name": data["first_name"],
+          "last_name": data["last_name"],
+          "email": email,
+          "role": data["role"],
+          "avatar": data["avatar"]
+        }
+      )
 
-        return JsonResponse({"message": "User registered successfully"})
+      user = UserProfile.objects.get(firebase_uid=uid)
+      # print("Stored in DB:", user.first_name, user.last_name, user.role)
+
+      return JsonResponse({"message": "User registered successfully"})
 
     except Exception as e:
       import traceback
@@ -78,7 +82,6 @@ def firebase_register_view(request):
 
 
 
-# VERIFY EMAIL
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from django.shortcuts import redirect
 
@@ -253,25 +256,25 @@ def resend_verification_email_view(request):
 
 
 # LOGIN:
+from django.contrib.auth import login, logout
 @csrf_exempt
 def firebase_login_view(request):
-  if request.method != 'POST':
-    return JsonResponse({"error": "Invalid Method"}, status=405)
-  
-  try:
-    id_token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    decoded_token = auth.verify_id_token(id_token)
-    uid = decoded_token["uid"]
-    email = decoded_token.get("email")
+  user_profile = getattr(request, "user_profile", None)
+  print("USER PROFILE: ", user_profile)
 
-    return JsonResponse({"message": "Login successful", "uid": uid, "email": email})
+  if not user_profile or not hasattr(user_profile, 'user'):
+    return JsonResponse({"error": "Unauthorized"}, status=401)
   
-  except Exception as e:
-    print("LOGIN ERROR: ", str(e))
-    return JsonResponse({"error": "Invalid or expired token"}, status=401)
+  # log the user in using django's session system:
+  login(request, user_profile.user)
+  return JsonResponse({"message": "Login acknowledge"})
 
 # LOGOUT (DUMMY ENDPOINT):
 @csrf_exempt
 def firebase_logout_view(request):
-  print("FIREBASE LOGOUT ACKNOWLEDGE")
+  if request.method == "POST":
+    logout(request)
+    print("FIREBASE LOGOUT ACKNOWLEDGE")
+    return JsonResponse({"message": "Successfully logged out."}, status=200)
+  
   return JsonResponse({"message": "logout acknowledge"})
