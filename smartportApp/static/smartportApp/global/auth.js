@@ -274,16 +274,28 @@ document.addEventListener("DOMContentLoaded", () => {
         const user = userCredential.user;
 
         console.log("USER YAWA: ", user);
+        // await user.sendEmailVerification().then(() => {
+        //   showVerifyModal();
+        // });
 
-        // alert(
-        //   `Hi ${firstName}! Verification email was sent to ${email}. Please check your inbox.`
-        // );
-        await user.sendEmailVerification().then(() => {
-          showVerifyModal();
-        });
-
-        // ✅ Clean redirect
-        // window.location.href = "/verify/";
+        // ILISAN UG CUSTOM EMAIL VERIFICATION
+        const token = await user.getIdToken(true);
+        await fetch("/api/account/send-custom-verification-email/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then(() => {
+            showVerifyModal();
+          })
+          .catch((error) => {
+            console.error("Failed to send custom email: ", error);
+            errorMessage.textContent =
+              "Failed to send verification email. Try again.";
+            errorBox.style.display = "flex";
+          });
       } catch (error) {
         console.error(error.message);
         errorMessage.textContent = error.message;

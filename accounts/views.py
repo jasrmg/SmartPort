@@ -66,3 +66,69 @@ def firebase_register_view(request):
       return JsonResponse({"error": str(e)}, status=400)
 
 
+# ENDPOINT FOR THE CUSTOM VERIFICATION USING DJANGO + FIREBASE SDK IN SENDING EMAIL
+from django.core.mail import EmailMessage
+from django.urls import reverse
+from django.conf import settings
+@csrf_exempt
+def send_custom_verification_email(request):
+  if request.method == "POST":
+    try:
+      id_token = request.headers.get("Authorization", "").replace("Bearer ", "")
+      decoded = auth.verify_id_token(id_token)
+
+      email = decoded["email"]
+      uid = decoded["uid"]
+
+      #generate verification token signed with timestamp:
+      from itsdangerous import URLSafeTimedSerializer
+      serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
+      token = serializer.dumps(uid, salt="email-verify")
+
+      verification_url = request.build_absolute_uri(
+        reverse("verify_email") + f"?token={token}"
+      )
+
+      email_subject = "Verify your SmartPort account"
+      email_body = f"""
+        <h2>Hi {email},<h2>
+        <p>Please verify your email by clicking the link below:</p>
+        <a href="{verification_url}" target="_blank">Verify My Email</a>
+        <p>This link will expire in 30 minutes</p>
+      """
+
+      email_message = EmailMessage(email_subject, email_body, to=[email])
+      email_message.content_subtype = "html"
+      email_message.send()
+
+      return JsonResponse({"message": "Verification Email sent!"})
+
+    except Exception as e:
+      import traceback
+      traceback.print_exc()
+      return JsonResponse({"error": str(e)},status=400)
+
+
+# VERIFY EMAIL
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from django.shortcuts import redirect
+def verify_email_view(request):
+  token = request.GET.get("token")
+  serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
+
+  try:
+    uid = serializer.loads(token, salt="email-verify", max_age=1800) #30 mins
+    user = auth.get_user(uid)
+    auth.udpate_user(uid, email_verified=True)
+    return redirect("email_verified") # url for the success template
+  
+  except SignatureExpired:
+    return JsonResponse({"error": "Verification link expired."}, status=400)
+  except BadSignature:
+    return JsonResponse({"error": "Invalid token."}, status=400)
+
+
+# EMAIL LINK REDIRECT VIEW:
+from django.shortcuts import render
+def email_verified_page(request):
+  return render(request, "smartportApp/templates/email_verified.html")
