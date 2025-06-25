@@ -4,8 +4,113 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WELCOME</title>
+    <style>
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        text-align: center;
+        width: 90%;
+        max-width: 400px;
+      }
+      .modal-actions {
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: space-evenly;
+      }
+      .btn-danger {
+        background-color: var(--danger);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-secondary {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+    </style>
   </head>
   <body>
     <h1>DUMMY DASHBOARD WELCOME</h1>
+    <button id="logout-btn">Logout</button>
+
+    <!-- LOGOUT CONFIRMATION MODAL -->
+    <div id="logout-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to log out?</p>
+        <div class="modal-actions">
+          <button id="confirm-logout" class="btn btn-danger">
+            Yes, Logout
+          </button>
+          <button id="cancel-logout" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
   </body>
+  <script>
+    const logoutBtn = document.getElementById("logout-btn");
+    const logoutModal = document.getElementById("logout-modal");
+    const confirmLogout = document.getElementById("confirm-logout");
+    const cancelLogout = document.getElementById("cancel-logout");
+
+    // Show modal on logout button click
+    logoutBtn.addEventListener("click", () => {
+      logoutModal.style.display = "flex";
+    });
+
+    // Cancel logout
+    cancelLogout.addEventListener("click", async () => {
+      try {
+        const user = firebase.auth().currentUser;
+        if (user) {
+          const token = await user.getIdToken(true);
+
+          // NOTIFY DJANGO:
+          await fetch("/api/account/firebase-logout/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        }
+        // FIREBASE CLIENT SIDE LOGOUT:
+        await firebase.auth().signOut();
+
+        // REDIRECT TO AUTH PAGE:
+        window.location.href = "/";
+      } catch (error) {
+        console.error("Logout failed: ", erorr);
+      }
+    });
+
+    // Confirm logout
+    confirmLogout.addEventListener("click", async () => {
+      try {
+        await firebase.auth().signOut();
+        window.location.href = "/"; // Redirect to auth page (adjust if needed)
+      } catch (error) {
+        console.error("Logout failed: ", error);
+      }
+    });
+  </script>
 </html>

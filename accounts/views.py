@@ -273,4 +273,5 @@ def firebase_login_view(request):
 # LOGOUT (DUMMY ENDPOINT):
 @csrf_exempt
 def firebase_logout_view(request):
-  return JsonResponse({"message": "logou acknowledge"})
+  print("FIREBASE LOGOUT ACKNOWLEDGE")
+  return JsonResponse({"message": "logout acknowledge"})

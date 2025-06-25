@@ -1,4 +1,88 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // ------------------ LOGIN LOGIC ------------------
+  const loginErrorDiv = document.getElementById("login-error");
+  const loginErrorMsg = document.getElementById("login-error-msg");
+  const loginEmail = document.getElementById("login-email");
+  const loginPassword = document.getElementById("login-password");
+
+  const showLoginError = (message) => {
+    loginErrorMsg.textContent = message;
+    loginErrorDiv.style.display = "flex";
+  };
+
+  const clearLoginError = () => {
+    loginErrorDiv.style.display = "none";
+    loginEmail.classList.remove("field-error");
+    loginPassword.classList.remove("field-error");
+  };
+
+  document
+    .getElementById("login")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+      const loginBtn = this.querySelector("button[type='submit']");
+      const originalText = this.querySelector("span.btn-text");
+      const loginSpinner = this.querySelector("span.spinner");
+
+      loginBtn.disabled = true;
+      originalText.textContent = "Logging in";
+      loginSpinner.style.display = "inline-block";
+
+      console.log("EMAIL: ", email);
+      console.log("PASSWORD: ", password);
+      clearLoginError();
+
+      try {
+        const userCredential = await firebase
+          .auth()
+          .signInWithEmailAndPassword(email, password);
+
+        const user = userCredential.user;
+
+        // i remove
+        if (!user.emailVerified) {
+          alert("Please verify your email before logging in.");
+        }
+
+        const token = await user.getIdToken(true);
+
+        const response = await fetch("/api/account/firebase-login/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Backend failed to authorize login.");
+        }
+        // REDIRECT TO ADMIN DASHBOARD:
+        window.location.href = "/admin-dashboard/";
+      } catch (error) {
+        console.error("Login error: ", error);
+
+        // FIREBASE ERROR CODES:
+        if (error.code === "auth/user-not-found") {
+          showLoginError("No user found with that email");
+        } else if (error.code === "auth/wrong-password") {
+          showLoginError("Incorrect password. Please try again.");
+        } else if (error.code === "auth/too-many-requests") {
+          showLoginError("Too many failed attempts. Try again later.");
+        } else {
+          showLoginError("Login failed. Please check your credentials.");
+        }
+      } finally {
+        loginBtn.disabled = false;
+        originalText.textContent = "Login";
+        loginSpinner.style.display = "none";
+      }
+    });
+
+  // ------------------ END OF LOGIN LOGIC ------------------
   // Toggle between login and signup forms
   document
     .getElementById("show-signup")
@@ -27,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("user-role").value = this.dataset.role;
 
       const selectedRole = this.dataset.role;
-      // sessionStorage.setItem("role", selectedRole);
     });
   });
 
@@ -231,58 +314,6 @@ document.addEventListener("DOMContentLoaded", () => {
       this.style.color = isPassword ? "var(--accent)" : "var(--secondary)";
     });
   });
-
-  /* ------------- LOG IN ------------- */
-  document
-    .getElementById("login")
-    .addEventListener("submit", async function (e) {
-      e.preventDefault();
-
-      const email = document.getElementById("login-email").value;
-      const password = document.getElementById("login-password").value;
-
-      const loginBtn = this.querySelector("button[type='submit']");
-      const originalText = this.querySelector("span.btn-text");
-      const loginSpinner = this.querySelector("span.spinner");
-      loginBtn.disabled = true;
-      originalText.textContent = "Logging in";
-      loginSpinner.style.display = "inline-block";
-
-      try {
-        const userCredential = await firebase
-          .auth()
-          .signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        // i remove
-        if (!user.emailVerified) {
-          alert("Please verify your email before logging in.");
-        }
-
-        const token = await user.getIdToken(true);
-
-        const response = await fetch("/api/account/firebase-login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Backend failed to authorize login.");
-        }
-
-        window.location.href = "/admin-dashboard/";
-      } catch (error) {
-        console.error("Login error: ", error);
-        alert("Login failed. please check your credentials or try again");
-      } finally {
-        loginBtn.disabled = false;
-        originalText.textContent = "Login";
-        loginSpinner.style.display = "none";
-      }
-    });
 
   /* ------------- FINAL VERIFICATION SIGN UP ------------- */
   document

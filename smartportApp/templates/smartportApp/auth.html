@@ -37,13 +37,20 @@
       </div>
 
       <!-- Forms Section -->
-      <fr class="forms">
+      <div class="forms">
         <!-- Login Form (Simplified Version) -->
         <div class="form-container" id="login-form">
           <div class="form-header">
             <h2>Welcome Back</h2>
             <p>Sign in to access your shipping dashboard</p>
           </div>
+
+          <!-- 🔴 Error Message Block -->
+          <div id="login-error" class="form-error">
+            <i class="fas fa-exclamation-circle error-icon"></i>
+            <span id="login-error-msg">Invalid email or password.</span>
+          </div>
+
           <form id="login">
             <div class="form-group">
               <label for="login-email">Email Address</label>
@@ -276,7 +283,7 @@
             </div>
           </form>
         </div>
-      </fr>
+      </div>
     </div>
 
     <!-- EULA Modal -->

@@ -26,6 +26,8 @@ DEBUG = os.getenv("DEBUG") == "True"
 
 FIREBASE_ADMIN_KEY = BASE_DIR / os.getenv("FIREBASE_ADMIN_KEY", "firebase_service_account.json")
 
+LOGIN_URL = "/" # KAY ANG URL.PY SA AUTH MAO NAY PATH
+
 ALLOWED_HOSTS = []
 
 # print("✅ Loaded SECRET_KEY:", SECRET_KEY)
