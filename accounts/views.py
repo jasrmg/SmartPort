@@ -255,6 +255,51 @@ def resend_verification_email_view(request):
       return JsonResponse({"error": str(e)}, status=400)
 
 
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+# PASSWORD RESET EMAIL:
+@csrf_exempt
+def send_reset_password_link(request):
+    if request.method != "POST":
+      return JsonResponse({"error": "Invalid method"}, status=405)
+    
+    try:
+      data = json.loads(request.body)
+      email = data.get("email", "").strip()
+      user = UserProfile.objects.get(email=email)
+
+      uid = urlsafe_base64_encode(force_bytes(user.firebase_uid))
+      reset_url = request.build_absolute_uri(
+        reverse("reset-password") + f"?uid={uid}"
+      )
+      email_subject = "Forgot Password"
+      email_body = f"""
+        <!DOCTYPE html>
+        <html lang="en">
+          <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Montserrat', sans-serif;">
+            <table align="center" cellpadding="0" cellspacing="0" width="100%" style="max-width=600px; background-color: #fff; margin: 2rem auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+            <tr>
+              <td style="padding: 2rem;">
+                <h2 style="color: #0a1f44; margin-top: 0;">Password Reset Link</h2>
+                <p style="font-size: 1rem; color: #333;>Click the link below to reset your password:</p>
+                <a href="{reset_url}>{reset_url}</a>
+              </td>
+            </tr>
+            </table>
+          </body>
+        </html>
+      """
+
+      email_message = EmailMessage(email_subject, email_body, to=[email])
+      email_message.content_subtype = "html"
+      email_message.send()
+
+      return JsonResponse({"message": "Reset email sent"})
+    except UserProfile.DoesNotExist:
+      return JsonResponse({"error": "Email not found"}, status=404)
+    except Exception as e:
+      return JsonResponse({"error": str(e)}, status=500)
+    
 # LOGIN:
 from django.contrib.auth import login, logout
 @csrf_exempt

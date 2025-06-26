@@ -419,7 +419,7 @@
           </p>
         </div>
         <div class="modal-footer">
-          <button id="resend-btn" class="btn btn-resend">
+          <button id="resend-btn" class="btn btn-resend btn-outline">
             <span class="btn-text">Resend</span>
             <span class="spinner" style="display: none"></span>
           </button>
@@ -433,30 +433,33 @@
 
     <!-- Forgot Password Modal -->
     <div id="forgotPasswordModal" class="modal-overlay">
-      <div class="modal">
+      <div class="modal-content">
         <div class="modal-header">
           <h2 class="modal-title">Reset Your Password</h2>
-          <button class="modal-close">&times;</button>
+          <button class="modal-close" id="close-forgot-password">
+            &times;
+          </button>
         </div>
         <div class="modal-body">
           <form id="forgot-password-form">
             <label for="reset-email">Enter your email address:</label>
             <input
-              type="email"
+              type="text"
               id="reset-email"
               class="form-control"
               required
               placeholder="you@example.com"
-              style="
-                width: 100%;
-                padding: 0.6rem;
-                margin-top: 0.5rem;
-                border: 1px solid var(--gray);
-                border-radius: 6px;
-              "
             />
-            <div class="modal-actions" style="margin-top: 1.2rem">
-              <button type="submit" class="btn btn-primary">
+            <p id="reset-status" class="message"></p>
+            <div class="modal-footer">
+              <button id="cancel-forgot-password" class="btn btn-outline">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="btn btn-secondary"
+                id="send-reset-email"
+              >
                 Send Reset Link
               </button>
             </div>
@@ -485,5 +488,6 @@
 
     <script src="{% static 'global/firebase_config.js' %}"></script>
     <script src="{% static 'global/auth.js' %}"></script>
+    <script src="{% static 'global/forgot-password.js' %}"></script>
   </body>
 </html>
