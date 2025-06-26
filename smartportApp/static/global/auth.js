@@ -445,6 +445,7 @@ document.addEventListener("DOMContentLoaded", () => {
         verifyOKBtn.disabled = true;
         btnText.textContent = "Processing";
         btnSpinner.style.display = "inline-block";
+
         const user = firebase.auth().currentUser;
         if (!user) {
           console.error("No authenticated user found!");
@@ -462,9 +463,9 @@ document.addEventListener("DOMContentLoaded", () => {
           verifyModalBody.textContent = "Email verified logging you in...";
 
           const token = await user.getIdToken(true);
-          console.log("TOKEN: ", token);
-
           const userInfo = getUserInfo();
+
+          const avatar = "https://example.com/avatar.png";
 
           // INITIALIZE FIRESTORE:
           const db = firebase.firestore();
@@ -474,7 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
             last_name: userInfo.lastName,
             email: user.email,
             role: userInfo.role,
-            avatar: "https://example.com/avatar.png",
+            avatar: avatar,
           });
 
           //register to the backend MYSQL:
@@ -489,14 +490,25 @@ document.addEventListener("DOMContentLoaded", () => {
               last_name: userInfo.lastName,
               email: userInfo.email,
               role: userInfo.role,
-              avatar: "https://example.com/avatar.png",
+              avatar: avatar,
             }),
           });
 
-          // redirect after a short delay:
-          setTimeout(() => {
-            window.location.href = "/admin-dashboard/";
-          }, 1500);
+          // LOGIN TO BACKEND SESSION:
+          const loginResponse = await fetch("/api/account/firebase-login/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!loginResponse.ok) {
+            throw new Error("Failed to log in user on the backend");
+          }
+
+          // REDIRECT THE USER:
+          window.location.href = "/admin-dashboard/";
         } else {
           verifyModalTitle.classList.add("modal-error");
           verifyModalTitle.textContent = "Error!";
@@ -504,12 +516,14 @@ document.addEventListener("DOMContentLoaded", () => {
             "Still not verified, please check your email inbox!";
           verifyOKBtn.disabled = false;
           btnText.textContent = "Verify";
+          startCooldown(verifyOKBtn, 30);
         }
       } catch (error) {
         console.error("verify btn error: ", error);
       } finally {
         console.log("FINALLY VERIFY");
-        startCooldown(verifyOKBtn, 30);
+        btnText.textContent = "Verify";
+        btnSpinner.style.display = "none";
       }
     });
 

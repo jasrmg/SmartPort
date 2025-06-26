@@ -291,6 +291,17 @@ h6 {
   box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.2);
 }
 
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+#forgot-password-btn {
+  color: var(--primary);
+}
+#forgot-password-btn:hover {
+  cursor: pointer;
+}
+
 .btn {
   display: inline-block;
   padding: 0.9rem 1.5rem;

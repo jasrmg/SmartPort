@@ -9,7 +9,7 @@ urlpatterns = [
   path("resend-verification/", views.resend_verification_email_view, name="resend-verification"),
 
   # EMAIL VERIFICATION STATUS
-  path("email-verified/",   views.email_verified_page, name="email_verified"),
+  path("email-verified/", views.email_verified_page, name="email_verified"),
   path("email-expired/", views.email_expired_page, name="email_expired"),
   path("email-invalid/", views.email_invalid_page, name="email_invalid"),
 

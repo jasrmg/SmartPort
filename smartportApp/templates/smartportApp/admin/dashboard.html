@@ -13,9 +13,13 @@
 <!--CHARTS-->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="{% static 'admin/css/admin-dashboard.css' %}" />
-{% endblock %} {% block content %}
+{% endblock %}
+<!--BODY-->
 <div class="container">
-  <!-- Sidebar Navigation -->
+  <!--MAIN CONTENT-->
+
+  <!--START OF SIDEBAR-->
+  {% block sidebar %}
   <div class="sidebar">
     <div class="sidebar-header">
       <div class="logo">
@@ -164,82 +168,21 @@
       </li>
 
       <li class="nav-item">
-        <a href="/index.html" class="nav-link">
+        <a id="SBlogout-btn" class="nav-link">
           <i class="fas fa-sign-out-alt"></i>
           <span>Logout</span>
         </a>
       </li>
     </ul>
   </div>
+  {% endblock %}
+  <!--END OF SIDEBAR-->
+  <!--TOPBAR-->
 
-  <!-- Main Content Area -->
+  <!--END OF TOPBAR-->
+  {% block content %}
+  <!--START OF MAIN CONTENT -->
   <div class="main-content">
-    <!-- Top Bar -->
-    <div class="topbar">
-      <div class="search-bar">
-        <i class="fas fa-search"></i>
-        <input type="text" placeholder="Search..." />
-      </div>
-      <div class="user-menu">
-        <!--NOTIFICATION-->
-        <div class="notification-container">
-          <button class="notification-btn" id="notificationToggle">
-            <i class="fas fa-bell"></i>
-            <span class="notification-badge">3</span>
-          </button>
-          <!-- NOTIFICATION DROPDOWN -->
-          <div id="notificationDropdown" class="notification-dropdown hidden">
-            <div class="dropdown-header">Notifications</div>
-            <ul class="notification-list">
-              <li class="notification-item unread">
-                <!--IF LETTER-->
-                <!-- <div class="notif-icon">N</div> -->
-                <!--IF IMAGE-->
-                <div class="notif-image">
-                  <img
-                    src="/static/images/user-avatar.png"
-                    alt="Notification Icon"
-                    class="notif-icon"
-                  />
-                </div>
-
-                <div class="notif-content">
-                  <p class="notif-text">
-                    New shipment has been added to your dashboard.
-                  </p>
-                  <span class="notif-time">20h ago</span>
-                </div>
-              </li>
-              <li class="notification-item">
-                <div class="notif-icon">S</div>
-                <div class="notif-content">
-                  <p class="notif-text">
-                    System approved your recent manifest update.
-                  </p>
-                  <span class="notif-time">5h ago</span>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <!--USER PROFILE-->
-        <div class="user-profile">
-          <div class="user-avatar">AD</div>
-          <span class="user-name">Admin User</span>
-          <i class="fas fa-chevron-down"></i>
-
-          <!--DROPDOWN MENU-->
-          <div id="profileDropdown" class="dropdown-menu hidden">
-            <ul>
-              <li id="editProfileBtn">Edit Profile</li>
-              <li id="changePasswordBtn">Change Password</li>
-              <li><a href="#logout" class="dropdown-link">Logout</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Dashboard Content -->
     <div class="dashboard-content">
       <div class="page-header">
@@ -477,8 +420,11 @@
       </div>
     </div>
   </div>
+  <!--END OF MAIN CONTENT-->
 </div>
-{% endblock %} {% block script %}
+{% endblock %}
+<!--SCRIPTS-->
+{% block script %}
 <!--LEAFLET JS-->
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <!--CUSTOM JS-->
