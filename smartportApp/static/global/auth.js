@@ -44,40 +44,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // i remove
         if (!user.emailVerified) {
-          alert("Please verify your email before logging in.");
+          showLoginError("Please verify your email before logging in");
           return;
         }
 
         const token = await user.getIdToken(true);
-        localStorage.setItem("firebaseToken", token);
-        const response = await fetch("/api/account/firebase-login/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        localStorage.setItem("firebaseToken", token); //ambot nagamit ba hahaha
+        try {
+          const response = await fetch("/api/account/firebase-login/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
-        const result = await response.json();
-        console.log("BACKEND LOGIN RESPONSE: ", result);
+          const result = await response.json();
+          console.log("BACKEND LOGIN RESPONSE: ", result);
 
-        if (!response.ok) {
-          throw new Error("Backend failed to authorize login.");
+          if (!response.ok)
+            throw new Error("Backend failed to authorize login.");
+
+          console.log("✅ Redirecting to admin-dashboard...");
+          // REDIRECT TO ADMIN DASHBOARD:
+          window.location.href = "/admin-dashboard/";
+        } catch (backendError) {
+          console.error("Backend login error: ", backendError);
+          showLoginError("Login failed. Please try again later.");
         }
-
-        console.log("✅ Redirecting to admin-dashboard...");
-        // REDIRECT TO ADMIN DASHBOARD:
-        window.location.href = "/admin-dashboard/";
-      } catch (error) {
-        console.error("Login error: ", error);
-
+      } catch (firebaseError) {
+        console.error("Login error: ", firebaseError);
+        console.log("Error code: ", firebaseError.code);
         // FIREBASE ERROR CODES:
-        if (error.code === "auth/user-not-found") {
+        if (firebaseError.code === "auth/user-not-found") {
           showLoginError("No user found with that email");
-        } else if (error.code === "auth/wrong-password") {
+        } else if (firebaseError.code === "auth/wrong-password") {
           showLoginError("Incorrect password. Please try again.");
-        } else if (error.code === "auth/too-many-requests") {
+        } else if (firebaseError.code === "auth/too-many-requests") {
           showLoginError("Too many failed attempts. Try again later.");
+        } else if (firebaseError.code === "auth/invalid-email") {
+          showLoginError("Wrong email format");
         } else {
           showLoginError("Login failed. Please check your credentials.");
         }

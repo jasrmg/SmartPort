@@ -16,7 +16,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="{% static 'smartportApp/global/auth.css' %}" />
+    <link rel="stylesheet" href="{% static 'global/auth.css' %}" />
   </head>
   <body>
     <div class="container">
@@ -55,11 +55,10 @@
             <div class="form-group">
               <label for="login-email">Email Address</label>
               <input
-                type="email"
+                type="text"
                 id="login-email"
                 class="form-control"
                 placeholder="Enter your email"
-                required
               />
             </div>
             <div class="form-group">
@@ -436,7 +435,7 @@
     <!-- Firebase Firestore (compat version) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-    <script src="{% static 'smartportApp/global/firebase_config.js' %}"></script>
-    <script src="{% static 'smartportApp/global/auth.js' %}"></script>
+    <script src="{% static 'global/firebase_config.js' %}"></script>
+    <script src="{% static 'global/auth.js' %}"></script>
   </body>
 </html>

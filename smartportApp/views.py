@@ -20,7 +20,7 @@ def auth_view(request):
 def admin_view(request):
   if not request.user.is_authenticated:
     return redirect("/")
-  return render(request, "smartportApp/dummy.html")
+  return render(request, "smartportApp/admin/dashboard.html")
 
 
 

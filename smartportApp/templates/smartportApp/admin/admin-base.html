@@ -1,0 +1,231 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>{% block title %} Admin Dashboard {% endblock %} | Smart Port</title>
+    <!--FONT STYLE-->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <!--FONT AWESOME(ICONS)-->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    {% block head %} {% endblock %}
+
+    <!--CUSTOM CSS-->
+    <link rel="stylesheet" href="{% static 'admin/css/admin-base.css' %}" />
+  </head>
+  <body class="loading">
+    <!--LOADER-->
+    <div class="loader-container" id="loader">
+      <div class="helm-container">
+        <div class="helm">
+          <div class="helm-ring">
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-handle"></div>
+            <div class="helm-handle"></div>
+            <div class="helm-handle"></div>
+            <div class="helm-handle"></div>
+          </div>
+          <div class="helm-center"></div>
+        </div>
+      </div>
+
+      <div class="loading-text">Loading, please wait</div>
+    </div>
+    <!--END OF LOADER-->
+    {% block content %} {% endblock %}
+    <!--GLOBAL MODAL-->
+    <!--EDIT PROFILE MODAL-->
+    <div id="editProfileModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">Edit Profile</span>
+          <button class="modal-close" id="editProfileCloseBtn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <form id="editProfileForm" enctype="multipart/form-data">
+            <!-- Avatar Upload -->
+            <div
+              class="avatar-section"
+              style="text-align: center; margin-bottom: 1.2rem"
+            >
+              <label for="avatarUpload">
+                <img
+                  src="/static/images/default-avatar.png"
+                  alt="Avatar"
+                  id="avatarPreview"
+                  class="avatar"
+                />
+              </label>
+              <input
+                type="file"
+                id="avatarUpload"
+                name="avatar"
+                accept="image/*"
+                hidden
+              />
+            </div>
+
+            <!-- Name Fields -->
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                name="first_name"
+                value="John"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input
+                type="text"
+                id="lastName"
+                name="last_name"
+                value="Doe"
+                readonly
+              />
+            </div>
+
+            <!-- Action Buttons -->
+            <div
+              class="modal-actions"
+              style="margin-top: 1.5rem; text-align: right"
+            >
+              <button
+                type="button"
+                id="editProfileCancelBtn"
+                class="btn btn-cancel"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-update">Update</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--CHANGE PASSWORD MODAL-->
+    <div id="changePasswordModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">Change Password</span>
+          <button class="modal-close" id="changePasswordCloseBtn">
+            &times;
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form id="changePasswordForm">
+            <!-- Error Message -->
+            <div id="changePasswordError" class="error-message">
+              <!-- Dynamic error goes here -->
+              <i class="fas fa-exclamation-circle error-icon"></i>
+              <span class="error-text">Passwords do not match!</span>
+            </div>
+
+            <!-- Old Password -->
+            <div class="form-group password-group">
+              <label for="oldPassword">Old Password</label>
+              <div class="password-wrapper">
+                <input type="password" id="oldPassword" name="old_password" />
+                <i
+                  class="fas fa-eye toggle-password"
+                  data-target="oldPassword"
+                ></i>
+              </div>
+            </div>
+
+            <!-- New Password -->
+            <div class="form-group password-group">
+              <label for="newPassword">New Password</label>
+              <div class="password-wrapper">
+                <input type="password" id="newPassword" name="new_password" />
+                <i
+                  class="fas fa-eye toggle-password"
+                  data-target="newPassword"
+                ></i>
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group password-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirm_password"
+                />
+                <i
+                  class="fas fa-eye toggle-password"
+                  data-target="confirmPassword"
+                ></i>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div
+              class="modal-actions"
+              style="margin-top: 1.5rem; text-align: right"
+            >
+              <button
+                type="button"
+                id="changePasswordCancelBtn"
+                class="btn-cancel"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn-update">Update</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--MODAL BLOCK-->
+    {% block modal %} {% endblock %}
+    <!--SCRIPT BLOCK-->
+    {% block script %} {% endblock %}
+    <!--LOADER JS -->
+    <script>
+      const hideLoader = () => {
+        const loader = document.getElementById("loader");
+
+        loader.classList.add("hidden");
+        document.body.classList.remove("loading");
+
+        setTimeout(() => {
+          loader.style.display = "none";
+        }, 600);
+      };
+
+      // if page is fully loaded, show it briefly:
+      if (document.readyState === "complete") {
+        setTimeout(hideLoader, 1500);
+      } else {
+        window.addEventListener("load", () => {
+          setTimeout(hideLoader, 1500);
+        });
+      }
+    </script>
+  </body>
+</html>
