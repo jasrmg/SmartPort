@@ -23,4 +23,6 @@ urlpatterns = [
 
   # FORGOT PASSWORD SUCCESS EMAIL:
   path("send-password-confirmation/", views.send_password_change_confirmation, name="send-password-confirmation"),
+  # CHANGE PASSWORD EMAIL:
+  path("notify-password-change/", views.notify_change_password, name="notify-password-change"),
 ]

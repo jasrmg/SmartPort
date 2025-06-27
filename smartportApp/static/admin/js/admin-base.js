@@ -110,7 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "changePasswordCancelBtn"
   );
   const passwordForm = document.getElementById("changePasswordForm");
-  const errorDiv = document.getElementById("changePasswordError");
 
   // OPEN CHANGE PASSWORD MODAL:
   sidebarChangePassword.addEventListener("click", () => {
@@ -136,12 +135,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const input = document.getElementById(targetId);
       const isVisible = input.type === "text";
       input.type = isVisible ? "password" : "text";
-      icon.classList.toggle("fa-eye", isVisible);
-      icon.classList.toggle("fa-eye-slash", !isVisible);
+      icon.classList.toggle("fa-eye-slash", isVisible);
+      icon.classList.toggle("fa-eye", !isVisible);
     });
   });
 
   //HANDLE FORM SUBMISSION
+  /*
   passwordForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -164,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // TODO ACTUAL REQUEST WITH THE BACKEND AJAX
     // FORM SUBMISSION
   });
+  */
   /* ------------------------------- END OF CHANGE PASSWORD MODAL -------------------------------*/
 
   /* ------------------------------- START OF LOGOUT CONFIRMATION MODAL -------------------------------*/

@@ -659,6 +659,34 @@ h6 {
   gap: 10px;
 }
 
+/* CHANGE PASSWORD MODAL SPECIFIC STYLES */
+.form-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin: 0.8rem 0;
+  border: 1px solid;
+}
+
+.form-status.success {
+  background-color: #e6f9f2;
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.form-status.error {
+  background-color: #ffe4e4;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.form-status .fas {
+  font-size: 1rem;
+}
+
 /* --------------- EDIT PROFILE MODAL SPECIFIC STYLES --------------- */
 .avatar {
   width: 100px;
@@ -774,6 +802,7 @@ h6 {
   border-radius: 6px;
   border: 1px solid var(--gray);
   background-color: #f8f8f8;
+  font-family: Montserrat, sans-serif;
 }
 
 .password-wrapper .toggle-password {
@@ -797,11 +826,10 @@ h6 {
   align-items: center;
   gap: 0.6rem;
   background-color: #ffe5e5; /* light red */
-  color: #000; /* black text */
+  color: var(--danger);
   padding: 0.75rem 1rem;
   border-radius: 6px;
   font-size: 0.95rem;
-  font-weight: 500;
   border: 1px solid #ffaaaa;
   margin-bottom: 14px;
 }

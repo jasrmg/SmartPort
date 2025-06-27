@@ -1,3 +1,4 @@
+import traceback
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -254,7 +255,7 @@ def resend_verification_email_view(request):
 
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
-# PASSWORD RESET EMAIL:
+# FORGOT PASSWORD RESET EMAIL:
 @csrf_exempt
 def send_reset_password_link(request):
     if request.method != "POST":
@@ -315,7 +316,7 @@ def send_reset_password_link(request):
     except Exception as e:
       return JsonResponse({"error": str(e)}, status=500)
     
-# PERFORM PASSWORD RESET:
+# PERFORM FORGOT PASSWORD RESET:
 @csrf_exempt
 def perform_password_reset(request):
   if request.method != "POST":
@@ -338,6 +339,32 @@ def perform_password_reset(request):
     return JsonResponse({"message": "Password reset successful"})
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
+
+
+from firebase_admin import auth, credentials, initialize_app, _apps
+# CHANGE PASSWORD:
+@csrf_exempt
+def notify_change_password(request):
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+  
+  try:
+    id_token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    decoded = auth.verify_id_token(id_token, clock_skew_seconds=10)
+
+    uid = decoded.get("uid")
+
+
+    user = UserProfile.objects.get(firebase_uid=uid)
+    send_password_change_confirmation(user)
+
+
+    return JsonResponse({"message": "Password change successfully!"})
+  except Exception as e:
+    print("❌ Exception occurred:")
+    traceback.print_exc()
+    return JsonResponse({"error": str(e)}, status=500)
+
 
 # HELPER METHOD FOR PERFORM PASSWORD RESET;
 # THIS WOULD SEND AN EMAIL TO INFORM THE USER FOR THE SUCCESSFUL PASSWORD CHANGE
@@ -368,6 +395,9 @@ def send_password_change_confirmation(user):
   email_message = EmailMessage(subject, body, to=[user.email])
   email_message.content_subtype = "html"
   email_message.send()
+
+
+
 # LOGIN:
 from django.contrib.auth import login, logout
 @csrf_exempt
