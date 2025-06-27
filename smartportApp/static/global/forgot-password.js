@@ -21,12 +21,14 @@ document.addEventListener("DOMContentLoaded", () => {
   forgotPasswordCloseBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       forgotPasswordModal.style.display = "none";
+      clearResetStatus();
     });
   });
   // CLOSE WHEN CLICKING OUTSIDE
   window.addEventListener("click", (e) => {
     if (e.target === forgotPasswordModal) {
       forgotPasswordModal.style.display = "none";
+      clearResetStatus();
     }
   });
 
@@ -36,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("forgot-password-form")
     .addEventListener("submit", async function (e) {
       e.preventDefault();
+
       const email = document.getElementById("reset-email").value.trim();
       const btnText = forgotPasswordModal.querySelector(".btn-text");
       const btnSpinner = forgotPasswordModal.querySelector(".spinner");
@@ -114,11 +117,13 @@ const showResetStatus = (message, type = "error") => {
   resetStatus.classList.remove("success", "error");
   resetStatus.classList.add(type);
 
-  if (type === "success") {
-    resetStatusIcon.className = "fas fa-check-circle";
-  } else {
-    resetStatusIcon.className = "fas fa-exclamation-circle";
-  }
+  resetStatusIcon.className =
+    type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
 
   resetStatusMessage.textContent = message;
+};
+
+const clearResetStatus = () => {
+  document.getElementById("reset-status").style.display = "none";
+  document.getElementById("reset-email").value = "";
 };
