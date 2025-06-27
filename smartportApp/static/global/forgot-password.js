@@ -37,30 +37,53 @@ document.addEventListener("DOMContentLoaded", () => {
     .addEventListener("submit", async function (e) {
       e.preventDefault();
       const email = document.getElementById("reset-email").value.trim();
-      const statusMsg = document.getElementById("reset-status");
+      const btnText = forgotPasswordModal.querySelector(".btn-text");
+      const btnSpinner = forgotPasswordModal.querySelector(".spinner");
+      console.log(btnSpinner);
+
       const sendBtn = document.getElementById("send-reset-email");
+      const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (email === "") {
+        showResetStatus("Please enter your email!", "error");
+        // statusMsg.textContent = "Please enter your email!";
+        return;
+      }
+      if (!isValidEmail) {
+        showResetStatus("Invalid Email! Please try again.", "error");
+        // statusMsg.textContent = "Invalid Email! Please try again.";
+        return;
+      }
 
       sendBtn.disabled = true;
-      statusMsg.style.display = "block";
-      statusMsg.textContent = "Sending reset email...";
+      //
+      // statusMsg.style.display = "block";
+      // statusMsg.textContent = "Sending reset email...";
 
       try {
-        const response = await fetch("/api/account/send-reset-link", {
+        btnSpinner.style.display = "inline-block";
+        btnText.textContent = "Sending";
+        sendBtn.disabled = true;
+
+        const response = await fetch("/api/account/send-reset-link/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ email }),
         });
+
         const result = await response.json();
+
         if (!response.ok)
           throw new Error(result.error || "Failed to send reset link");
 
-        statusMsg.textContent = "Reset link sent! Please check your email.";
-        statusMsg.style.color = "green";
+        btnSpinner.style.display = "none";
+        btnText.textContent = "Send Reset Link";
+        showResetStatus("Reset link sent! Please check your email", "success");
       } catch (error) {
-        statusMsg.textContent = error.message || "Error sending reset link";
-        statusMsg.style.color = "red";
+        btnSpinner.display = "none";
+        btnText.textContent = "Send Reset Link";
+        showResetStatus(error.message || "Error sending reset link", "error");
       } finally {
         sendBtn.disabled = false;
       }
@@ -81,3 +104,21 @@ document.addEventListener("DOMContentLoaded", () => {
       //   });
     });
 });
+
+const showResetStatus = (message, type = "error") => {
+  const resetStatus = document.getElementById("reset-status");
+  const resetStatusIcon = document.getElementById("reset-status-icon");
+  const resetStatusMessage = document.getElementById("reset-status-msg");
+
+  resetStatus.style.display = "flex";
+  resetStatus.classList.remove("success", "error");
+  resetStatus.classList.add(type);
+
+  if (type === "success") {
+    resetStatusIcon.className = "fas fa-check-circle";
+  } else {
+    resetStatusIcon.className = "fas fa-exclamation-circle";
+  }
+
+  resetStatusMessage.textContent = message;
+};

@@ -16,4 +16,11 @@ urlpatterns = [
   # LOGIN LOGOUT:
   path("firebase-login/", views.firebase_login_view, name="firebase-login"),
   path("firebase-logout/", views.firebase_logout_view, name="firebase-logout"),
+
+  # FORGOT PASSWORD:
+  path("send-reset-link/", views.send_reset_password_link, name="send-reset-link"),
+  path("perform-password-reset/", views.perform_password_reset, name="perform-password-reset"),
+
+  # FORGOT PASSWORD SUCCESS EMAIL:
+  path("send-password-confirmation/", views.send_password_change_confirmation, name="send-password-confirmation"),
 ]

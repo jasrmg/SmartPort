@@ -195,9 +195,6 @@ def resend_verification_email_view(request):
       decoded = auth.verify_id_token(id_token, clock_skew_seconds=10)
       uid = decoded["uid"]
       email = decoded["email"]
-      # print("ID TOKEN: ", id_token)
-      # print("EMAIL: ", email)
-      # print("UID: ", uid)
       
       # Generate a new token
       serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
@@ -255,7 +252,7 @@ def resend_verification_email_view(request):
       return JsonResponse({"error": str(e)}, status=400)
 
 
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 # PASSWORD RESET EMAIL:
 @csrf_exempt
@@ -272,23 +269,41 @@ def send_reset_password_link(request):
       reset_url = request.build_absolute_uri(
         reverse("reset-password") + f"?uid={uid}"
       )
-      email_subject = "Forgot Password"
+      email_subject = "Reset Your SmartPort Password"
       email_body = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-          <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Montserrat', sans-serif;">
-            <table align="center" cellpadding="0" cellspacing="0" width="100%" style="max-width=600px; background-color: #fff; margin: 2rem auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <title>Password Reset</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Montserrat', sans-serif;">
+          <table align="center" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px; background-color: #ffffff; margin: 40px auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <tr>
               <td style="padding: 2rem;">
-                <h2 style="color: #0a1f44; margin-top: 0;">Password Reset Link</h2>
-                <p style="font-size: 1rem; color: #333;>Click the link below to reset your password:</p>
-                <a href="{reset_url}>{reset_url}</a>
+                <h2 style="color: #0a1f44; margin-top: 0; font-size: 24px;">Reset Your SmartPort Password</h2>
+                <p style="font-size: 16px; color: #333;">
+                  We received a request to reset the password for your SmartPort account.
+                  If you made this request, please click the button below to set a new password.
+                </p>
+                <div style="margin: 30px 0; text-align: center;">
+                  <a href="{reset_url}" target="_blank" 
+                    style="display: inline-block; padding: 12px 24px; background-color: #1e3a8a; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                    Reset Password
+                  </a>
+                </div>
+                <p style="font-size: 14px; color: #666;">
+                  If you didn't request a password reset, you can safely ignore this email.
+                  This link will expire in 30 minutes.
+                </p>
+                <p style="font-size: 14px; color: #666; margin-top: 40px;">– The SmartPort Team</p>
               </td>
             </tr>
-            </table>
-          </body>
-        </html>
+          </table>
+        </body>
+      </html>
       """
+
 
       email_message = EmailMessage(email_subject, email_body, to=[email])
       email_message.content_subtype = "html"
@@ -300,6 +315,59 @@ def send_reset_password_link(request):
     except Exception as e:
       return JsonResponse({"error": str(e)}, status=500)
     
+# PERFORM PASSWORD RESET:
+@csrf_exempt
+def perform_password_reset(request):
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid request"}, status=405)
+  
+  try:
+    data = json.loads(request.body)
+    uid = data.get("uid")
+    new_password = data.get("password")
+
+    decoded_uid = urlsafe_base64_decode(uid).decode()
+    user = UserProfile.objects.get(firebase_uid=decoded_uid)
+
+    # using firebase sdk to update password:
+    auth.update_user(decoded_uid, password=new_password)
+
+    # call the helper function for sending the email:
+    send_password_change_confirmation(user)
+
+    return JsonResponse({"message": "Password reset successful"})
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
+
+# HELPER METHOD FOR PERFORM PASSWORD RESET;
+# THIS WOULD SEND AN EMAIL TO INFORM THE USER FOR THE SUCCESSFUL PASSWORD CHANGE
+# @csrf_exempt
+def send_password_change_confirmation(user):
+  subject = "🔒 Password Changed Successfully"
+  body = f"""
+  <!DOCTYPE html>
+  <html lang="en">
+  <body style="font-family: 'Montserrat', sans-serif; background-color: #f5f5f5; padding: 2rem;">
+    <div style="max-width: 600px; margin: auto; background-color: #ffffff; padding: 2rem; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+      <h2 style="color: #0a1f44;">Your Password Was Successfully Changed</h2>
+      <p>Ahoy, <strong>{user.first_name}</strong>!
+      <p style="font-size: 1rem; color: #333;">
+        This is a confirmation that your password has been successfully updated. If you made this change, no further action is needed.
+      </p>
+      <div style="margin-top: 2rem; font-size: 0.9rem; color: #666;">
+        <p style="color: #6b7280;">
+          Fair winds and following seas,<br/>
+          <strong>The SmartPort Team<strong>
+        </p>
+      </div>
+    </div>
+  </body>
+  </html>
+  """
+
+  email_message = EmailMessage(subject, body, to=[user.email])
+  email_message.content_subtype = "html"
+  email_message.send()
 # LOGIN:
 from django.contrib.auth import login, logout
 @csrf_exempt

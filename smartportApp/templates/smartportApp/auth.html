@@ -7,7 +7,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Smart Port</title>
+    <title>SmartPort</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
       rel="stylesheet"
@@ -76,8 +76,7 @@
             </div>
             <div class="actions">
               <button type="submit" class="btn btn-outline" id="show-signup">
-                <span class="btn-text">Sign Up</span>
-                <span class="spinner" style="display: none"></span>
+                Sign Up
               </button>
               <button type="submit" class="btn btn-secondary">
                 <span class="btn-text">Login</span>
@@ -441,13 +440,17 @@
           </button>
         </div>
         <div class="modal-body">
+          <div id="reset-status" class="form-status" style="display: none">
+            <i id="reset-status-icon" class="fas"></i>
+            <span id="reset-status-msg"></span>
+          </div>
+
           <form id="forgot-password-form">
             <label for="reset-email">Enter your email address:</label>
             <input
               type="text"
               id="reset-email"
               class="form-control"
-              required
               placeholder="you@example.com"
             />
             <p id="reset-status" class="message"></p>
@@ -460,18 +463,10 @@
                 class="btn btn-secondary"
                 id="send-reset-email"
               >
-                Send Reset Link
+                <span class="btn-text">Send Reset Link</span>
+                <span class="spinner" style="display: none"></span>
               </button>
             </div>
-            <p
-              id="reset-status"
-              style="
-                margin-top: 1rem;
-                font-size: 0.9rem;
-                color: var(--dark-gray);
-                display: none;
-              "
-            ></p>
           </form>
         </div>
       </div>

@@ -197,15 +197,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const buttonLoadingEffect = (button, action, isLoading) => {
     const btnText = button.querySelector(".btn-text");
     const btnSpinner = button.querySelector(".spinner");
-    console.log("BUTTON: ", button);
-    console.log("SPINNEEEERRRRR: ", btnSpinner);
-    console.timeLog("TEXT: ", btnText.textContent);
     if (isLoading) {
       btnSpinner.style.display = "inline-block";
       if (action.toLowerCase() === "update") {
-        btnText.textContent = "Updating...";
-      } else {
-        btnText.textContent = "Logging Out...";
+        btnText.textContent = "Updating";
       }
     } else {
       btnSpinner.style.display = "none";
