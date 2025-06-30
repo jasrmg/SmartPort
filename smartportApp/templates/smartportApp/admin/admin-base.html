@@ -102,7 +102,13 @@
         </div>
         <!--USER PROFILE-->
         <div class="user-profile">
-          <div class="user-avatar">AD</div>
+          <div class="user-avatar">
+            <img
+              id="userAvatarImg"
+              src="/static/images/default-avatar.png"
+              alt="Avatar"
+            />
+          </div>
           <span class="user-name">Admin User</span>
           <i class="fas fa-chevron-down"></i>
 
@@ -337,9 +343,9 @@
     <script src="{% static 'global/firebase_config.js' %}"></script>
 
     <!--CUSTOM JS-->
-    <script src="{% static 'admin/js/admin-base.js' %}"></script>
+    <script type="module" src="{% static 'admin/js/admin-base.js' %}"></script>
     <script src="{% static 'admin/js/admin-change-password.js' %}"></script>
-    <script src="{% static 'global/update-profile.js' %}"></script>
+    <!-- <script src="{% static 'global/update-profile.js' %}"></script> -->
     <!--SCRIPT BLOCK-->
     {% block script %} {% endblock %}
     <!--LOADER JS -->

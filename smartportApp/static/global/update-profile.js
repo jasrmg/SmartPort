@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ------------------------------- UPDATE PROFILE GLOBAL LOGIC -------------------------------*/
   const form = document.getElementById("editProfileForm");
   const avatarInput = document.getElementById("avatarUpload");
-  // const avatarPreview = document.getElementById("avatarPreview");
   const firstNameInput = document.getElementById("firstName");
   const lastNameInput = document.getElementById("lastName");
   const spinner = form.querySelector(".spinner");
@@ -24,30 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // const user = firebase.auth().currentUser;
-      // if (!user) {
-      //   showProfileUpdateStatus("No authenticated user", "error");
-      //   spinner.style.display = "none";
-      //   btnText.textContent = "Update";
-      //   return;
-      // }
-      // const idToken = await user.getIdToken(true);
-      // const response = await fetch("/api/account/update-profile/", {
-      //   method: "POST",
-      //   headers: {
-      //     Authorization: `Bearer ${idToken}`,
-      //   },
-      //   body: formData,
-      // });
-      // const result = await response.json();
-      // if (!response.ok) showProfileUpdateStatus(result.error, "error");
-      // else {
-      //   showProfileUpdateStatus("Profile updated successfully!", "success");
-      //   document.getElementById("editProfileModal").style.display = "none";
-      //   /* UPDATE THE DOM AFTER */
-      // }
-      // spinner.style.display = "none";
-      // btnText.textContent = "Update";
       firebase.auth().onAuthStateChanged(async (user) => {
         if (!user) {
           showProfileUpdateStatus("No authenticated user", "error");

@@ -45,10 +45,15 @@ document.addEventListener("DOMContentLoaded", () => {
     "editProfileCloseBtn"
   );
   const cancelEditProfileBtn = document.getElementById("editProfileCancelBtn");
-  const editProfileForm = document.getElementById("editProfileForm");
 
+  const editProfileForm = document.getElementById("editProfileForm");
+  const firstNameInput = document.getElementById("firstName");
+  const lastNameInput = document.getElementById("lastName");
   const avatarInput = document.getElementById("avatarUpload");
   const avatarPreview = document.getElementById("avatarPreview");
+
+  const spinner = editProfileForm.querySelector(".spinner");
+  const btnText = editProfileForm.querySelector(".btn-text");
 
   const editableFields = ["firstName", "lastName"];
   // OPEN MODAL:
@@ -89,6 +94,46 @@ document.addEventListener("DOMContentLoaded", () => {
   editProfileForm.addEventListener("submit", function (e) {
     e.preventDefault();
     // TODO ADD AJAX HERE
+    e.preventDefault();
+    spinner.style.display = "inline-block";
+    btnText.textContent = "Updating";
+
+    const formData = new FormData();
+    formData.append("first_name", firstNameInput.value.trim());
+    formData.append("last_name", lastNameInput.value.trim());
+
+    if (avatarInput.files[0]) {
+      formData.append("avatar", avatarInput.files[0]);
+    }
+
+    try {
+      firebase.auth().onAuthStateChanged(async (user) => {
+        if (!user) {
+          showProfileUpdateStatus("No authenticated user", "error");
+          spinner.style.display = "none";
+          btnText.textContent = "Update";
+          return;
+        }
+        const idToken = await user.getIdToken(true);
+        const response = await fetch("/api/account/update-profile/", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+          body: formData,
+        });
+        const result = await response.json();
+        if (!response.ok) showProfileUpdateStatus(result.error, "error");
+        else {
+          showProfileUpdateStatus("Profile updated successfully!", "success");
+          /* UPDATE THE DOM AFTER */
+        }
+        spinner.style.display = "none";
+        btnText.textContent = "Update";
+      });
+    } catch (error) {
+      showProfileUpdateStatus(error.message, "error");
+    }
   });
   /* ------------------------------- END OF EDIT PROFILE OPEN MODAL -------------------------------*/
   // CLOSE MODAL WHEN CLICKING OUTSIDE:
@@ -248,4 +293,20 @@ document.addEventListener("DOMContentLoaded", () => {
 const clearStatus = () => {
   const errorDiv = document.getElementById("changepassword-status");
   errorDiv.style.display = "none";
+};
+
+// STATUS FOR EDIT PROFILE
+const showProfileUpdateStatus = (message, type = "error") => {
+  const resetStatus = document.getElementById("edit-profile-status");
+  const resetStatusIcon = document.getElementById("edit-profile-status-icon");
+  const resetStatusMessage = document.getElementById("edit-profile-status-msg");
+
+  resetStatus.style.display = "flex";
+  resetStatus.classList.remove("success", "error");
+  resetStatus.classList.add(type);
+
+  resetStatusIcon.className =
+    type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
+
+  resetStatusMessage.textContent = message;
 };
