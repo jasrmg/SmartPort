@@ -1,5 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   /* ------------------------------- START OF DROPDOWN FOR USER PROFILE -------------------------------*/
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      fetchUserDataFromFirestore((userData) => {
+        // console.log("USER DATA: ", userData);
+        prefillTopBar(userData);
+      });
+    }
+  });
   const profileToggle = document.querySelector(".user-profile i.fas");
   const profileDropdown = document.getElementById("profileDropdown");
 
@@ -57,11 +65,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const editableFields = ["firstName", "lastName"];
   // OPEN MODAL:
-  sidebarEditProfileBtn.addEventListener("click", () => {
-    editProfileModal.style.display = "flex";
-  });
-  openEditProfileBtn.addEventListener("click", () => {
-    editProfileModal.style.display = "flex";
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      sidebarEditProfileBtn.addEventListener("click", () => {
+        editProfileModal.style.display = "flex";
+        prefillEditProfileModal();
+      });
+      openEditProfileBtn.addEventListener("click", () => {
+        editProfileModal.style.display = "flex";
+        prefillEditProfileModal();
+      });
+    } else {
+      console.warn("No user logged in.");
+    }
   });
   // CLOSE MODAL:
   closeEditProfileModalBtn.addEventListener("click", () => {
@@ -90,11 +106,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  const avatarFile = avatarInput.files[0];
+
+  // const isFirstNameChanged = firstNameInput
   // FORM SUBMIT:
   editProfileForm.addEventListener("submit", function (e) {
     e.preventDefault();
-    // TODO ADD AJAX HERE
-    e.preventDefault();
+    if (firstNameInput === "" && lastNameInput === "" && !avatarFile) {
+      return showProfileUpdateStatus(
+        "Please update your profile before submitting.",
+        "error"
+      );
+    }
+    // get the current input values
+    const currentFirst = firstNameInput.getAttribute("data-original");
+    const currentLast = lastNameInput.getAttribute("data-original");
+    // check if there is an edit in the text fields:
+    const isFirstChanged = firstNameInput === currentFirst;
+    const isLastChanged = lastNameInput === currentLast;
+    if (!isFirstChanged && !isLastChanged) {
+      return showProfileUpdateStatus("Please change your info", "error");
+    }
+    // AJAX FOR SUBMISSION LOGIC:
     spinner.style.display = "inline-block";
     btnText.textContent = "Updating";
 
@@ -127,6 +160,11 @@ document.addEventListener("DOMContentLoaded", () => {
         else {
           showProfileUpdateStatus("Profile updated successfully!", "success");
           /* UPDATE THE DOM AFTER */
+          fetchUserDataFromFirestore((userData) => {
+            document.querySelector(
+              ".user-name"
+            ).textContent = `${userData.first_name}`;
+          });
         }
         spinner.style.display = "none";
         btnText.textContent = "Update";
@@ -309,4 +347,71 @@ const showProfileUpdateStatus = (message, type = "error") => {
     type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
 
   resetStatusMessage.textContent = message;
+};
+
+// USER DATA FROM FIRESTORE:
+const fetchUserDataFromFirestore = (callback) => {
+  const user = firebase.auth().currentUser;
+
+  if (!user) {
+    console.warn("No user is signed in.");
+    return;
+  }
+
+  firebase
+    .firestore()
+    .collection("users")
+    .doc(user.uid)
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        const userData = doc.data();
+        callback(userData); // call the provided function with the data
+      } else {
+        console.warn("User document not found in firestore.");
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching user data from firestore: ", error);
+    });
+};
+
+const prefillEditProfileModal = () => {
+  fetchUserDataFromFirestore((userData) => {
+    document.getElementById("firstName").value = userData.first_name || "";
+    document.getElementById("lastName").value = userData.last_name || "";
+
+    // put data attribute to compare it later:
+    document
+      .getElementById("firstName")
+      .setAttribute("data-original", userData.first_name || "");
+    document
+      .getElementById("lastName")
+      .setAttribute("data-original", userData.last_name || "");
+
+    const avatarImg = document.getElementById("avatarPreview");
+    if (avatarImg && userData.avatar) {
+      avatarImg.src = userData.avatar;
+    }
+  });
+};
+
+const prefillTopBar = () => {
+  fetchUserDataFromFirestore((userData) => {
+    document.getElementById("displayName").textContent = `${toTitleCase(
+      userData.role
+    )}`;
+    document.getElementById("userAvatarImg").src = `${userData.avatar}`;
+  });
+};
+
+const toTitleCase = (str) => {
+  if (!str) return "";
+
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => {
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    });
 };
