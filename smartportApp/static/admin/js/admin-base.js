@@ -103,8 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebarChangePassword = document.getElementById(
     "sidebarChangePassword"
   );
-  const changePassModal = document.getElementById("changePasswordModal");
   const openPasswordModal = document.getElementById("changePasswordBtn");
+  const changePassModal = document.getElementById("changePasswordModal");
   const closePasswordModal = document.getElementById("changePasswordCloseBtn");
   const cancelPasswordModal = document.getElementById(
     "changePasswordCancelBtn"
@@ -119,11 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
     changePassModal.style.display = "flex";
   });
 
-  // CLOSE CHANGE PASSWORD MODAL:
   [closePasswordModal, cancelPasswordModal].forEach((btn) =>
     btn.addEventListener("click", () => {
       changePassModal.style.display = "none";
-      errorDiv.style.display = "none";
+      clearStatus();
       passwordForm.reset();
     })
   );
@@ -140,31 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  //HANDLE FORM SUBMISSION
-  /*
-  passwordForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const oldPassword = form.old_password.value.trim();
-    const newPassword = form.new_password.value.trim();
-    const confirmPassword = form.confirm_password.value.trim();
-
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      errorDiv.textContent = "All fields required.";
-      errorDiv.style.display = "block";
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      errorDiv.textContent = "New passwords does not match!";
-      errorDiv.style.display = "block";
-      return;
-    }
-
-    // TODO ACTUAL REQUEST WITH THE BACKEND AJAX
-    // FORM SUBMISSION
-  });
-  */
   /* ------------------------------- END OF CHANGE PASSWORD MODAL -------------------------------*/
 
   /* ------------------------------- START OF LOGOUT CONFIRMATION MODAL -------------------------------*/
@@ -241,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (e.target === changePassModal) {
       changePassModal.style.display = "none";
+      clearStatus();
     }
     if (e.target === logoutModal) {
       logoutModal.style.display = "none";
@@ -266,3 +241,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ------------------------------- END OF NOTIFICATION -------------------------------*/
 });
+
+/* ------------------------------- END OF DOMCONTENTLOADED -------------------------------*/
+
+// CLOSE CHANGE PASSWORD MODAL:
+const clearStatus = () => {
+  const errorDiv = document.getElementById("changepassword-status");
+  errorDiv.style.display = "none";
+};

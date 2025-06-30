@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  /* NAA SA ADMIN BASE ANG PAG HANDLE SA MODALS */
   document
     .getElementById("changepassword-btn")
     .addEventListener("click", async function (e) {
@@ -13,9 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const errorText = errorBox.querySelector(".changepassword-status-msg");
       const spinner = this.querySelector(".spinner");
       const btnText = this.querySelector(".btn-text");
-
-      // reset ui:
-      errorBox.style.display = "none";
 
       // validation:
       if (newPassword !== confirmPassword) {

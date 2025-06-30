@@ -131,6 +131,14 @@
         </div>
 
         <div class="modal-body">
+          <div
+            id="edit-profile-status"
+            class="form-status"
+            style="display: none"
+          >
+            <i id="edit-profile-status-icon" class="fas"></i>
+            <span id="edit-profile-status-msg"></span>
+          </div>
           <form id="editProfileForm" enctype="multipart/form-data">
             <!-- Avatar Upload -->
             <div
@@ -331,6 +339,7 @@
     <!--CUSTOM JS-->
     <script src="{% static 'admin/js/admin-base.js' %}"></script>
     <script src="{% static 'admin/js/admin-change-password.js' %}"></script>
+    <script src="{% static 'global/update-profile.js' %}"></script>
     <!--SCRIPT BLOCK-->
     {% block script %} {% endblock %}
     <!--LOADER JS -->

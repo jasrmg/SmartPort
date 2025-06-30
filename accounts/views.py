@@ -1,9 +1,10 @@
+import os
 import traceback
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 
-from firebase_admin import auth
+from firebase_admin import auth, firestore
 from accounts.models import UserProfile
 
 def get_current_user(request):
@@ -396,8 +397,6 @@ def send_password_change_confirmation(user):
   email_message.content_subtype = "html"
   email_message.send()
 
-
-
 # LOGIN:
 from django.contrib.auth import login, logout
 @csrf_exempt
@@ -421,3 +420,66 @@ def firebase_logout_view(request):
     return JsonResponse({"message": "Successfully logged out."}, status=200)
   
   return JsonResponse({"message": "logout acknowledge"})
+
+
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from urllib.parse import urljoin
+
+# EDIT PROFILE:
+@csrf_exempt
+def update_profile(request):
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid method request"}, status=405)
+  
+  try:
+    # extract and clean the id token
+    id_token = request.headers.get("Authorization").replace("Bearer ", "").strip()
+    if not id_token:
+      return JsonResponse({"error": "Authorization header missing"}, status=401)
+    
+    # decode the token with 10 sec clock skew
+    decoded = auth.verify_id_token(id_token, clock_skew_seconds=10)
+
+    # extract uid and email
+    uid = decoded.get("uid")
+    email = decoded.get("email")
+
+    if not uid or not email:
+      return JsonResponse({"error": "Invalid token payload"}, status=400)
+    
+    # get the user profile from mysql db
+    try: 
+      user = UserProfile.objects.get(firebase_uid=uid)
+    except UserProfile.DoesNotExist:
+      return JsonResponse({"error": "User not found"}, status=400)
+    
+    # get form values
+    first_name = request.POST.get("first_name", "").title()
+    last_name = request.POST.get("last_name", "").title()
+    avatar_file = request.FILES.get("avatar")
+
+    avatar_url = user.avatar
+    if avatar_file:
+      filename = f"{uid}_{avatar_file.name}"
+      avatar_path = os.path.join("avatars", filename)
+      saved_path = default_storage.save(avatar_path, ContentFile(avatar_file.read()))
+      avatar_url = urljoin(settings.MEDIA_URL, saved_path)
+      # user.avatar = saved_path
+
+    # update user in mysql
+    user.first_name = first_name
+    user.last_name = last_name
+    user.avatar = avatar_url
+    user.save()
+
+    # update user in firestore
+    firestore.client().collection("users").document(uid).update({
+      "first_name": first_name,
+      "last_name": last_name,
+      "avatar": avatar_url
+    })
+
+    return JsonResponse({"message": "Profile updated"})
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
