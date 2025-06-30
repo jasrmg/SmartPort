@@ -460,11 +460,17 @@ def update_profile(request):
     avatar_file = request.FILES.get("avatar")
 
     avatar_url = user.avatar
+
     if avatar_file:
-      filename = f"{uid}_{avatar_file.name}"
-      avatar_path = os.path.join("avatars", filename)
-      saved_path = default_storage.save(avatar_path, ContentFile(avatar_file.read()))
-      avatar_url = urljoin(settings.MEDIA_URL, saved_path)
+      # generate filename: role_firstname_lastname.ext
+      extension = avatar_file.name.split(".")[-1]
+      filename = f"{user.role.lower()}_{first_name.lower()}_{last_name.lower()}.{extension}"
+      saved_path = f"avatars/{filename}"
+
+      # save to media dir 
+      full_path = default_storage.save(saved_path, ContentFile(avatar_file.read()))
+      avatar_url = request.build_absolute_uri(settings.MEDIA_URL + full_path)
+      user.avatar = avatar_url
       # user.avatar = saved_path
 
     # update user in mysql
@@ -474,11 +480,13 @@ def update_profile(request):
     user.save()
 
     # update user in firestore
-    firestore.client().collection("users").document(uid).update({
+    db = firestore.client()
+    user_ref = db.collection("users").document(uid)
+    user_ref.set({
       "first_name": first_name,
       "last_name": last_name,
-      "avatar": avatar_url
-    })
+      "avatar": user.avatar or "",
+    }, merge=True)
 
     return JsonResponse({"message": "Profile updated"})
   except Exception as e:
