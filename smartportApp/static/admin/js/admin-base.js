@@ -82,10 +82,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // CLOSE MODAL:
   closeEditProfileModalBtn.addEventListener("click", () => {
     editProfileModal.style.display = "none";
+    clearEditProfileModal();
   });
   // CANCEL MODAL:
   cancelEditProfileBtn.addEventListener("click", () => {
     editProfileModal.style.display = "none";
+    clearEditProfileModal();
   });
   // MAKE INPUT FIELDS EDITABLE:
   editableFields.forEach((id) => {
@@ -112,20 +114,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // FORM SUBMIT:
   editProfileForm.addEventListener("submit", function (e) {
     e.preventDefault();
-    if (firstNameInput === "" && lastNameInput === "" && !avatarFile) {
-      return showProfileUpdateStatus(
-        "Please update your profile before submitting.",
-        "error"
-      );
-    }
     // get the current input values
-    const currentFirst = firstNameInput.getAttribute("data-original");
-    const currentLast = lastNameInput.getAttribute("data-original");
-    // check if there is an edit in the text fields:
-    const isFirstChanged = firstNameInput === currentFirst;
-    const isLastChanged = lastNameInput === currentLast;
-    if (!isFirstChanged && !isLastChanged) {
-      return showProfileUpdateStatus("Please change your info", "error");
+    const originalFirst = firstNameInput.getAttribute("data-original") || "";
+    const originalLast = lastNameInput.getAttribute("data-original") || "";
+
+    const currentFirst = firstNameInput.value.trim();
+    const currentLast = lastNameInput.value.trim();
+
+    // Check if values have changed
+    const isFirstChanged = currentFirst !== originalFirst;
+    const isLastChanged = currentLast !== originalLast;
+    const isAvatarUploaded = avatarInput.files.length > 0;
+
+    if (!isFirstChanged && !isLastChanged && !isAvatarUploaded) {
+      showProfileUpdateStatus("Please change your info", "error");
+      return;
     }
     // AJAX FOR SUBMISSION LOGIC:
     spinner.style.display = "inline-block";
@@ -161,9 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showProfileUpdateStatus("Profile updated successfully!", "success");
           /* UPDATE THE DOM AFTER */
           fetchUserDataFromFirestore((userData) => {
-            document.querySelector(
-              ".user-name"
-            ).textContent = `${userData.first_name}`;
+            prefillTopBar(userData);
           });
         }
         spinner.style.display = "none";
@@ -174,14 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   /* ------------------------------- END OF EDIT PROFILE OPEN MODAL -------------------------------*/
-  // CLOSE MODAL WHEN CLICKING OUTSIDE:
-  // window.addEventListener("click", function (e) {
-  //   if (e.target === modal) {
-  //     modal.style.display = "none";
-  //   }
-  // });
 
-  // CHANGE PASSWORD MODAL:
   /* ------------------------------- START OF CHANGE PASSWORD MODAL -------------------------------*/
   const sidebarChangePassword = document.getElementById(
     "sidebarChangePassword"
@@ -295,6 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("click", function (e) {
     if (e.target === editProfileModal) {
       editProfileModal.style.display = "none";
+      clearEditProfileModal();
     }
     if (e.target === changePassModal) {
       changePassModal.style.display = "none";
@@ -414,4 +409,34 @@ const toTitleCase = (str) => {
     .map((word) => {
       return word.charAt(0).toUpperCase() + word.slice(1);
     });
+};
+
+const clearEditProfileModal = () => {
+  // Reset first and last name fields
+  const firstNameInput = document.getElementById("firstName");
+  const lastNameInput = document.getElementById("lastName");
+
+  firstNameInput.value = "";
+  lastNameInput.value = "";
+
+  firstNameInput.removeAttribute("data-original");
+  lastNameInput.removeAttribute("data-original");
+
+  // Reset avatar preview
+  const avatarImg = document.getElementById("avatarPreview");
+  avatarImg.src = "";
+
+  // Clear avatar file input
+  const avatarInput = document.getElementById("avatarUpload");
+  avatarInput.value = "";
+
+  // Hide the status message
+  const statusBox = document.getElementById("edit-profile-status");
+  const statusIcon = document.getElementById("edit-profile-status-icon");
+  const statusMsg = document.getElementById("edit-profile-status-msg");
+
+  statusBox.style.display = "none";
+  statusBox.classList.remove("success", "error", "warning");
+  statusIcon.className = "fas";
+  statusMsg.textContent = "";
 };
