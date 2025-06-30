@@ -1,13 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
-  /* ------------------------------- START OF DROPDOWN FOR USER PROFILE -------------------------------*/
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
       fetchUserDataFromFirestore((userData) => {
-        // console.log("USER DATA: ", userData);
         prefillTopBar(userData);
+
+        // OPEN EDIT PROFILE MODAL:
+        sidebarEditProfileBtn.addEventListener("click", () => {
+          editProfileModal.style.display = "flex";
+          prefillEditProfileModal();
+        });
+        openEditProfileBtn.addEventListener("click", () => {
+          editProfileModal.style.display = "flex";
+          prefillEditProfileModal();
+        });
       });
     }
   });
+
+  /* ------------------------------- START OF DROPDOWN FOR USER PROFILE -------------------------------*/
   const profileToggle = document.querySelector(".user-profile i.fas");
   const profileDropdown = document.getElementById("profileDropdown");
 
@@ -41,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   /* ------------------------------- END OF DROPDOWN FOR USER PROFILE -------------------------------*/
+
   /* ------------------------------- START OF EDIT PROFILE OPEN MODAL -------------------------------*/
 
   // SIDEBAR:
@@ -64,21 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnText = editProfileForm.querySelector(".btn-text");
 
   const editableFields = ["firstName", "lastName"];
-  // OPEN MODAL:
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      sidebarEditProfileBtn.addEventListener("click", () => {
-        editProfileModal.style.display = "flex";
-        prefillEditProfileModal();
-      });
-      openEditProfileBtn.addEventListener("click", () => {
-        editProfileModal.style.display = "flex";
-        prefillEditProfileModal();
-      });
-    } else {
-      console.warn("No user logged in.");
-    }
-  });
   // CLOSE MODAL:
   closeEditProfileModalBtn.addEventListener("click", () => {
     editProfileModal.style.display = "none";
@@ -110,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const avatarFile = avatarInput.files[0];
 
-  // const isFirstNameChanged = firstNameInput
   // FORM SUBMIT:
   editProfileForm.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -233,7 +228,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // OPEN LOGOUT MODAL
   openLogoutModalBtn.forEach((btn) => {
     btn.addEventListener("click", () => {
-      console.log("clicked: ", btn);
       logoutModal.style.display = "flex";
     });
   });

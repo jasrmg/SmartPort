@@ -4,6 +4,9 @@ from . import views
 urlpatterns = [
   path("", views.auth_view, name="auth_view"),
 
+  # ROLE REDIRECT
+  # path("role-redirect/", views.role_redirect_view, name="role-redirect"),
+
   # ADMIN
   path("admin-dashboard/", views.admin_dashboard, name="admin-dashboard"),
 

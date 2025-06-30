@@ -42,7 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const user = userCredential.user;
 
-        // i remove
         if (!user.emailVerified) {
           showLoginError("Please verify your email before logging in");
           return;
@@ -65,9 +64,17 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!response.ok)
             throw new Error("Backend failed to authorize login.");
 
-          console.log("✅ Redirecting to admin-dashboard...");
-          // REDIRECT TO ADMIN DASHBOARD:
-          window.location.href = "/admin-dashboard/";
+          // REDIRECT THE USER:
+          const userRole = result.role;
+          if (userRole === "admin") {
+            window.location.href = "/admin-dashboard/";
+          } else if (userRole === "custom") {
+            window.location.href = "/custom-dashboard/";
+          } else if (userRole === "shipper") {
+            window.location.href = "/shipper-dashboard/";
+          } else {
+            window.location.href = "/employee-dashboard/";
+          }
         } catch (backendError) {
           console.error("Backend login error: ", backendError);
           showLoginError("Login failed. Please try again later.");
@@ -378,7 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const user = userCredential.user;
 
         const token = await user.getIdToken(true);
-        // GI ILISAN UG CUSTOM EMAIL VERIFICATION
+        // EMAIL VERIFICATION
         await fetch("/api/account/send-custom-verification-email/", {
           method: "POST",
           headers: {
@@ -508,7 +515,15 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           // REDIRECT THE USER:
-          window.location.href = "/admin-dashboard/";
+          if (userInfo.role === "admin") {
+            window.location.href = "/admin-dashboard/";
+          } else if (userInfo.role === "custom") {
+            window.location.href = "/custom-dashboard/";
+          } else if (userInfo.role === "shipper") {
+            window.location.href = "/shipper-dashboard/";
+          } else {
+            window.location.href = "/employee-dashboard/";
+          }
         } else {
           verifyModalTitle.classList.add("modal-error");
           verifyModalTitle.textContent = "Error!";

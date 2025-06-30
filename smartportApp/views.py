@@ -42,6 +42,8 @@ def auth_view(request):
 def admin_dashboard(request):
   if not request.user.is_authenticated:
     return redirect("/")
+  
+
   return render(request, "smartportApp/admin/dashboard.html")
 
 
@@ -50,7 +52,7 @@ def admin_dashboard(request):
 # --------------------------------- SHIPPER ---------------------------------
 @login_required
 def customs_dashboard(request):
-  return render(request, "smartportApp/customs/dashboard.html")
+  return render(request, "smartportApp/custom/dashboard.html")
 
 
 

@@ -409,7 +409,10 @@ def firebase_login_view(request):
   
   # log the user in using django's session system:
   login(request, user_profile.user)
-  return JsonResponse({"message": "Login acknowledge"})
+  return JsonResponse({
+    "message": "Login acknowledge", 
+    "role": user_profile.role
+  })
 
 # LOGOUT (DUMMY ENDPOINT):
 @csrf_exempt
