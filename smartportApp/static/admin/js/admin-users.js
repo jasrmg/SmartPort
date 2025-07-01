@@ -51,6 +51,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
           // RENDER USER CARDS
           data.users.forEach((user) => {
+            const statusClass = user.is_online
+              ? "status-active"
+              : "status-inactive";
+            const statusText = user.is_online ? "Active" : "Inactive";
+
             const card = document.createElement("div");
             card.classList.add("user-card", "userCard");
 
@@ -72,10 +77,8 @@ document.addEventListener("DOMContentLoaded", function () {
               <div class="user-info">
                 <h3>${user.first_name} ${user.last_name}</h3>
                 <p>${capitalize(user.role)}</p>
-                <span class="user-status ${
-                  user.is_online ? "status-active" : "status-inactive"
-                }">
-                  ${user.is_online ? "Active" : "Inactive"}
+                <span class="user-status ${statusClass}">
+                  ${statusText}
                 </span>
               </div>
             </div>
@@ -95,19 +98,17 @@ document.addEventListener("DOMContentLoaded", function () {
               ).textContent = `${capitalize(user.role)} ${user.first_name} ${
                 user.last_name
               }`;
+              const statusIndicator =
+                document.querySelector(".status-indicator");
+
+              statusIndicator.classList.remove("active", "inactive");
+
+              statusIndicator.classList.add(
+                user.is_online ? "active" : "inactive"
+              );
+
               document.getElementById("userProfileModal").style.display =
                 "flex";
-
-              document.querySelectorAll(".editable").forEach((input) => {
-                input.addEventListener(
-                  "click",
-                  function () {
-                    this.removeAttribute("readonly");
-                    this.focus();
-                  },
-                  { once: true }
-                );
-              });
 
               profilePic.addEventListener("click", () => {
                 if (document.querySelector(".fullscreen-image")) return;

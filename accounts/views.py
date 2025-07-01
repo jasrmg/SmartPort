@@ -48,17 +48,6 @@ def firebase_register_view(request):
       uid = decoded["uid"]
       
       role = data["role"]
-      # avatar = ""
-      # if role == "admin":
-      #   avatar = "/media/avatars/default_admin.jfif"
-      # elif role == "custom":
-      #   avatar = "/media/avatars/default_custom.jfif"
-      # elif role == "employee":
-      #   avatar = "/media/avatars/default_employee.jfif"
-      # elif role == "shipper":
-      #   avatar = "/media/avatars/default_shipper.jfif"
-      # else:
-      #   avatar = "/media/avatars/default.png"
 
       # ✅ Now safe to query DB
       if UserProfile.objects.filter(email=email).exists() or UserProfile.objects.filter(firebase_uid=uid).exists():
@@ -94,6 +83,123 @@ def firebase_register_view(request):
       print("Firebase Register Error:")
       traceback.print_exc()
       return JsonResponse({"error": str(e)}, status=400)
+
+# ADMIN CREATION OF OTHER ADMIN OR EMPLOYEE ACCOUNT:
+import secrets
+import string
+
+@csrf_exempt
+def create_user_account(request):
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+  
+  try:
+    #  Verify the admin's token (middleware does this already)
+    if not hasattr(request, "user_profile") or not request.user_profile:
+      return JsonResponse({"error": "Unauthorized"}, status=403)
+    
+    if request.user_profile.role != "superadmin" and request.user_profile.role != "admin":
+      return JsonResponse({"error": "Permission denied"}, status=403)
+    
+    data = json.loads(request.body)
+    email = data.get("email", "").strip().lower()
+    first_name = data.get("first_name", "").strip().title()
+    last_name = data.get("last_name", "").strip().title()
+    role = data.get("role", "admin").strip().lower()
+    avatar = data.get("avatar")
+
+    if not email or not first_name or not last_name:
+      return JsonResponse({"error": "All fields are required."}, status=400)
+    
+    #  Check if already exists
+    if UserProfile.objects.filter(email=email).exists():
+      return JsonResponse({"error": "Email already exists."}, status=409)
+    
+    # Generate a secure password
+    password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(8))
+
+    # Create Firebase user
+    user_record = auth.create_user(
+      email=email,
+      password=password,
+    )
+
+    # Send email verification link
+    verification_url = auth.generate_email_verification_link(email)
+
+    # Create Django User + UserProfile
+    django_user = User.objects.create_user(
+      username=email,
+      email=email,
+      password=password,
+      first_name=first_name,
+      last_name=last_name
+    )
+
+    UserProfile.objects.create(
+      firebase_uid=user_record.uid,
+      user=django_user,
+      first_name=first_name,
+      last_name=last_name,
+      email=email,
+      role=role,
+      avatar=avatar
+    )
+
+    # SEND EMAIL VERIFICATION WITH THE PASSWORD
+    email_body = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+      <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Montserrat', sans-serif;">
+        <table align="center" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px; background-color: #fff; margin: 2rem auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+          <tr>
+            <td style="padding: 2rem;">
+              <h2 style="color: #0a1f44; margin-top: 0;">Hi {first_name} {last_name},</h2>
+
+              <p style="font-size: 1rem; color: #333;">
+                Your admin account has been successfully created for <strong>SmartPort</strong>.
+                Below are your login credentials:
+              </p>
+
+              <ul style="font-size: 1rem; color: #333; line-height: 1.6;">
+                <li><strong>Email:</strong> {email}</li>
+                <li><strong>Temporary Password:</strong> {password}</li>
+              </ul>
+
+              <p style="font-size: 1rem; color: #333;">
+                To activate your account and log in, please verify your email address by clicking the button below:
+              </p>
+
+              <p style="font-size: 14px; color: #d14343; margin-top: 1.5rem;">
+                ⚠️ This verification link will expire in <strong>30 minutes</strong>.
+              </p>
+
+              <p style="text-align: center; margin: 2rem 0;">
+                <a href="{verification_url}" target="_blank" style="background-color: #2d9c5a; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                  Verify My Email
+                </a>
+              </p>
+
+              <p style="font-size: 15px; color: #333;">Thanks,</p>
+              <p style="font-size: 15px; color: #333;">The <strong>SmartPort</strong> Team</p>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    """
+
+    message = EmailMessage(
+      subject=f"SmartPort {role} Account",
+      body=email_body,
+      to=[email]
+    )
+    message.send()
+
+    return JsonResponse({"message": f"{role} account created and email verification sent!"})
+  except Exception as e:
+    traceback.print_exc()
+    return JsonResponse({"error": str(e)}, status=500)
 
 
 

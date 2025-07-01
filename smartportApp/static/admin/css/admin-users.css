@@ -377,7 +377,10 @@
 
 input.editable[readonly] {
   background-color: #f0f0f0;
-  cursor: pointer;
+  cursor: not-allowed;
+}
+input.editable:focus {
+  outline: none;
 }
 input.not-editable[readonly] {
   cursor: not-allowed;
