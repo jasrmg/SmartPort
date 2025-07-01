@@ -17,6 +17,191 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Toggle sidebar collapse
+  document.addEventListener("DOMContentLoaded", function () {
+    const charts = initCharts();
+    const sidebar = document.querySelector(".sidebar");
+    const mainContent = document.querySelector(".main-content");
+
+    document
+      .querySelector(".collapse-btn")
+      .addEventListener("click", function (e) {
+        e.preventDefault();
+
+        // Apply transitions
+        sidebar.classList.toggle("sidebar-collapsed");
+        mainContent.classList.toggle("sidebar-collapsed-content");
+
+        // Force a reflow for smooth transitions
+        void sidebar.offsetWidth;
+
+        // Check for and fix expanded items when sidebar collapses
+        if (sidebar.classList.contains("sidebar-collapsed")) {
+          // Reset expanded nav items when sidebar collapses
+          document.querySelectorAll(".nav-item.expanded").forEach((item) => {
+            if (window.getComputedStyle(sidebar).width === "80px") {
+              // Keep the expanded class for hover effect but collapse the height
+              item.querySelector(".nav-sub-menu").style.height = "0";
+            }
+          });
+        }
+
+        // Resize charts after sidebar toggle animation completes
+        setTimeout(() => {
+          window.dispatchEvent(new Event("resize"));
+          charts.forEach((chart) => {
+            chart.resize();
+            chart.render();
+          });
+        }, 350);
+      });
+
+    // Submenu toggle functionality
+    const navItems = document.querySelectorAll(".nav-item");
+    navItems.forEach((item) => {
+      const link = item.querySelector(".nav-link");
+      const hasSubmenu = item.querySelector(".nav-sub-menu");
+
+      if (hasSubmenu) {
+        link.addEventListener("click", function (e) {
+          // If the link has a real URL (not just #), navigate to it
+          if (this.getAttribute("href") && this.getAttribute("href") !== "#") {
+            window.location.href = this.getAttribute("href");
+            return;
+          }
+
+          e.preventDefault();
+
+          // Reset userHasClickedSubNav flag when clicking main Dashboard nav
+          // This ensures sub-links won't be active until explicitly clicked
+          userHasClickedSubNav = false;
+
+          // Remove active class from all sub-links when main nav is clicked
+          document.querySelectorAll(".nav-sub-link").forEach((subLink) => {
+            subLink.classList.remove("active");
+          });
+
+          // Don't toggle if sidebar is collapsed - use hover instead
+          if (!sidebar.classList.contains("sidebar-collapsed")) {
+            item.classList.toggle("expanded");
+
+            // Close other expanded items
+            navItems.forEach((otherItem) => {
+              if (
+                otherItem !== item &&
+                otherItem.classList.contains("expanded")
+              ) {
+                otherItem.classList.remove("expanded");
+              }
+            });
+          }
+        });
+      } else if (link) {
+        // Handle direct navigation for links without submenus
+        link.addEventListener("click", function (e) {
+          if (this.getAttribute("href") && this.getAttribute("href") !== "#") {
+            // No need to prevent default - let browser navigate normally
+          } else {
+            e.preventDefault();
+          }
+        });
+      }
+    });
+
+    // Track if user has manually clicked a sub-nav link
+    let userHasClickedSubNav = false;
+
+    // Navigation handling for sub-links
+    document.querySelectorAll(".nav-sub-link").forEach((link) => {
+      link.addEventListener("click", function (e) {
+        // Check if this is a real URL or a page anchor
+        const href = this.getAttribute("href");
+
+        if (href && !href.startsWith("#")) {
+          // It's a real URL, let navigation happen normally
+          return;
+        }
+
+        e.preventDefault();
+
+        // Set flag that user has interacted with navigation
+        userHasClickedSubNav = true;
+
+        // Remove active class from all sub links
+        document.querySelectorAll(".nav-sub-link").forEach((item) => {
+          item.classList.remove("active");
+        });
+
+        // Add active class to clicked link
+        this.classList.add("active");
+
+        const targetId = href;
+        const targetElement = document.querySelector(targetId);
+
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: "smooth",
+          });
+        }
+      });
+    });
+
+    // Set active submenu item on scroll, but only after user has interacted
+    window.addEventListener("scroll", function () {
+      // Don't update active link on initial page load scroll events
+      if (!userHasClickedSubNav && window.scrollY < 100) {
+        return;
+      }
+
+      const scrollPosition = window.scrollY;
+
+      // Get all sections
+      const sections = [
+        document.querySelector("#mapSection"),
+        document.querySelector("#activeVesselsSection"),
+        document.querySelector("#analyticsSection"),
+      ];
+
+      // Find the current section in view
+      let currentSection = null;
+      sections.forEach((section) => {
+        if (section) {
+          const sectionTop = section.offsetTop - 100;
+          const sectionBottom = sectionTop + section.offsetHeight;
+
+          if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+            currentSection = section.id;
+          }
+        }
+      });
+
+      // Set active state on navigation only when user has clicked a sub-nav link
+      if (currentSection && userHasClickedSubNav) {
+        document.querySelectorAll(".nav-sub-link").forEach((link) => {
+          link.classList.remove("active");
+
+          if (link.getAttribute("href") === "#" + currentSection) {
+            link.classList.add("active");
+          }
+        });
+      }
+    });
+
+    // Initial layout state
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add("sidebar-collapsed");
+      mainContent.classList.add("sidebar-collapsed-content");
+    }
+
+    // Handle window resize events
+    window.addEventListener("resize", function () {
+      // Resize charts on window resize
+      charts.forEach((chart) => {
+        chart.resize();
+      });
+    });
+  });
   /* ------------------------------- START OF DROPDOWN FOR USER PROFILE -------------------------------*/
   const profileToggle = document.querySelector(".user-profile i.fas");
   const profileDropdown = document.getElementById("profileDropdown");

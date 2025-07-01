@@ -1,356 +1,340 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>User Management | Smart Port</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="/static/ADMIN/admin-users.css" />
-  </head>
-  <body>
-    <div class="container">
-      <!-- Sidebar Navigation -->                         <!-- START(SideBar) -->
-      <div class="sidebar">
-        <div class="sidebar-header">
-          <div class="logo">
-            <i class="fas fa-anchor logo-icon"></i>
-            <span class="logo-text">SMART PORT</span>
-            <button class="collapse-btn">
-              <i class="fas fa-bars"></i>
-            </button>
+{% extends "smartportApp/admin/admin-base.html" %}
+<!---->
+{% load static %}
+<!---->
+{% block title %} User Management {% endblock %}
+<!---->
+{% block head %}
+<!-- CUSTOM CSS -->
+<link rel="stylesheet" href="{% static 'admin/css/admin-users.css' %}" />
+{% endblock %}
+<!--BODY-->
+
+<!-- START OF SIDEBAR -->
+{% block sidebar %}
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-anchor logo-icon"></i>
+      <span class="logo-text">SMART PORT</span>
+      <button class="collapse-btn">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+  <ul class="nav-menu">
+    <li class="nav-item">
+      <a href="{% url 'admin-dashboard' %}" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="admin-vessels.html" class="nav-link">
+        <i class="fas fa-ship"></i>
+        <span>Vessels</span>
+      </a>
+    </li>
+    <li class="nav-item expanded">
+      <a href="{% url 'user-management' %}" class="nav-link active">
+        <i class="fas fa-users"></i>
+        <span>Users</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="admin-manifests.html" class="nav-link">
+        <i class="fas fa-file-alt"></i>
+        <span>Manifests</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="admin-reports.html" class="nav-link">
+        <i class="fas fa-chart-line"></i>
+        <span>Reports</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+<!--MAIN CONTENT-->
+{% block content %}
+<div class="users-content">
+  <div class="page-header">
+    <div class="page-title">
+      <h1>User Management</h1>
+      <p>Manage port employees, shippers, and customs personnel</p>
+    </div>
+    <div class="add-buttons">
+      <a class="btn btn-secondary" id="addAdmin">
+        <i class="fas fa-plus"></i>
+        New Admin
+      </a>
+      <a class="btn btn-secondary" id="addEmployee">
+        <i class="fas fa-plus"></i>
+        New Employee
+      </a>
+    </div>
+  </div>
+  <!-- END(TopBar) -->
+  <!-- User Type Tabs -->
+  <div class="user-type-tabs">
+    <button class="tab-btn active" data-tab="admin">Admins</button>
+    <button class="tab-btn" data-tab="employees">Employees</button>
+    <button class="tab-btn" data-tab="shippers">Shippers</button>
+    <button class="tab-btn" data-tab="customs">Customs</button>
+  </div>
+
+  <!-- User Grid -->
+  <div class="user-grid-wrapper">
+    <!-- LOADER -->
+    <div id="userLoader" class="user-loader" style="display: none">
+      <div class="user-spinner"></div>
+    </div>
+    <div class="user-grid">
+      <!-- Employee Cards -->
+      <div
+        class="user-card userCard"
+        data-first-name="John"
+        data-last-name="Doe"
+      >
+        <div class="user-header">
+          <div class="user-avatar">JD</div>
+          <div class="user-info">
+            <h3>John Doe</h3>
+            <p>Port Operations Manager</p>
+            <span class="user-status status-active">Active</span>
           </div>
         </div>
+      </div>
 
-        <ul class="nav-menu">
-          <li class="nav-item">
-            <a href="dashboard.html" class="nav-link">
-              <i class="fas fa-tachometer-alt"></i>
-              <span>Dashboard</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="admin-vessels.html" class="nav-link">
-              <i class="fas fa-ship"></i>
-              <span>Vessels</span>
-            </a>
-          </li>
-          <li class="nav-item expanded">
-            <a href="#" class="nav-link active">
-              <i class="fas fa-users"></i>
-              <span>Users</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="admin-manifests.html" class="nav-link">
-              <i class="fas fa-file-alt"></i>
-              <span>Manifests</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="admin-reports.html" class="nav-link">
-              <i class="fas fa-chart-line"></i>
-              <span>Reports</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="fas fa-cog"></i>
-              <span>Settings</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="index.html" class="nav-link">
-              <i class="fas fa-sign-out-alt"></i>
-              <span>Logout</span>
-            </a>
-          </li>
-        </ul>
-      </div>  
-                                                                              <!-- END(SideBar) -->
-      <!-- Main Content Area -->                                              <!-- START OF MAIN CONTENT -->
-      <div class="main-content">  
-        <!-- Top Bar -->                                                      <!-- START(TopBar) -->
-        <div class="topbar">
-          <div class="search-bar">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Search users..." />
-          </div>
-
-          <div class="user-menu">
-            <button class="notification-btn">
-              <i class="fas fa-bell"></i>
-              <span class="notification-badge">3</span>
-            </button>
-
-            <div class="user-profile">
-              <div class="user-avatar">AD</div>
-              <span class="user-name">Admin User</span>
-              <i class="fas fa-chevron-down"></i>
-            </div>
+      <div
+        class="user-card userCard"
+        data-first-name="Alice"
+        data-last-name="Smith"
+      >
+        <div class="user-header">
+          <div class="user-avatar">AS</div>
+          <div class="user-info">
+            <h3>Alice Smith</h3>
+            <p>Safety Inspector</p>
+            <span class="user-status status-active">Active</span>
           </div>
         </div>
+      </div>
 
-        <div class="page-header">
-          <div class="page-title">
-            <h1>User Management</h1>
-            <p>Manage port employees, shippers, and customs personnel</p>
-          </div>
-          <div class="add-buttons">
-            <a class="btn btn-secondary" id="addAdmin">
-              <i class="fas fa-plus"></i>
-              New Admin
-            </a>
-            <a class="btn btn-secondary" id="addEmployee">
-              <i class="fas fa-plus"></i>
-              New Employee
-            </a>
+      <!-- Shipper Cards -->
+      <div class="user-card userCard">
+        <div class="user-header">
+          <div class="user-avatar">RJ</div>
+          <div class="user-info">
+            <h3>Robert Johnson</h3>
+            <p>Shipping Company Representative</p>
+            <span class="user-status status-active">Active</span>
           </div>
         </div>
-                                                                            <!-- END(TopBar) -->
-        <!-- User Type Tabs -->
-        <div class="user-type-tabs">
-          <button class="tab-btn active" data-tab="admin">Admins</button>
-          <button class="tab-btn" data-tab="employees">Employees</button>
-          <button class="tab-btn" data-tab="shippers">Shippers</button>
-          <button class="tab-btn" data-tab="customs">Customs</button>
-        </div>
+      </div>
 
-        <!-- User Grid -->
-        <div class="user-grid-wrapper">
-          <!-- LOADER -->
-          <div id="userLoader" class="user-loader" style="display: none">
-            <div class="user-spinner"></div>
-          </div>
-          <div class="user-grid">
-            <!-- Employee Cards -->
-            <div
-              class="user-card userCard"
-              data-first-name="John"
-              data-last-name="Doe"
-            >
-              <div class="user-header">
-                <div class="user-avatar">JD</div>
-                <div class="user-info">
-                  <h3>John Doe</h3>
-                  <p>Port Operations Manager</p>
-                  <span class="user-status status-active">Active</span>
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="user-card userCard"
-              data-first-name="Alice"
-              data-last-name="Smith"
-            >
-              <div class="user-header">
-                <div class="user-avatar">AS</div>
-                <div class="user-info">
-                  <h3>Alice Smith</h3>
-                  <p>Safety Inspector</p>
-                  <span class="user-status status-active">Active</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Shipper Cards -->
-            <div class="user-card userCard">
-              <div class="user-header">
-                <div class="user-avatar">RJ</div>
-                <div class="user-info">
-                  <h3>Robert Johnson</h3>
-                  <p>Shipping Company Representative</p>
-                  <span class="user-status status-active">Active</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Customs Officer Cards -->
-            <div class="user-card userCard">
-              <div class="user-header">
-                <div class="user-avatar">MP</div>
-                <div class="user-info">
-                  <h3>Maria Perez</h3>
-                  <p>Customs Officer</p>
-                  <span class="user-status status-inactive">Inactive</span>
-                </div>
-              </div>
-            </div>
+      <!-- Customs Officer Cards -->
+      <div class="user-card userCard">
+        <div class="user-header">
+          <div class="user-avatar">MP</div>
+          <div class="user-info">
+            <h3>Maria Perez</h3>
+            <p>Customs Officer</p>
+            <span class="user-status status-inactive">Inactive</span>
           </div>
         </div>
       </div>
     </div>
-
-    <!--CREATE ADMIN MODAL-->
-    <div class="modal-overlay" id="createAdminModal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">Create Admin</h2>
-          <button class="modal-close" id="closeAdminModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <!-- Success/Error Message -->
-          <div
-            id="accountStatusMessage"
-            class="status-message"
-            style="display: none"
-          >
-            <i class="fas fa-check-circle"></i>
-            <span id="statusMessageText">Account Creation Successful!</span>
-          </div>
-          <div class="form-group">
-            <label for="adminFirstName">First Name</label>
-            <input type="text" id="adminFirstName" class="form-input" />
-          </div>
-          <div class="form-group">
-            <label for="adminLastName">Last Name</label>
-            <input type="text" id="adminLastName" class="form-input" />
-          </div>
-          <div class="form-group">
-            <label for="adminEmail">Email</label>
-            <input type="email" id="adminEmail" class="form-input" />
-          </div>
-          <div
-            class="modal-footer"
-            style="
-              display: flex;
-              justify-content: flex-end;
-              gap: 1rem;
-              padding-top: 1rem;
-            "
-          >
-            <button class="btn btn-cancel" id="cancelAdminModal">Cancel</button>
-            <button class="btn btn-create" id="createAdmin">
-              Create Account
-            </button>
-          </div>
-        </div>
+  </div>
+  <!--END OF MAIN  CONTENT-->
+</div>
+{% endblock %}
+<!---->
+{% block modal %}
+<!--CREATE ADMIN MODAL-->
+<div class="modal-overlay" id="createAdminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Create Admin</h2>
+      <button class="modal-close" id="closeAdminModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Success/Error Message -->
+      <div
+        id="accountStatusMessage"
+        class="status-message"
+        style="display: none"
+      >
+        <i class="fas fa-check-circle"></i>
+        <span id="statusMessageText">Account Creation Successful!</span>
+      </div>
+      <div class="form-group">
+        <label for="adminFirstName">First Name</label>
+        <input type="text" id="adminFirstName" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label for="adminLastName">Last Name</label>
+        <input type="text" id="adminLastName" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label for="adminEmail">Email</label>
+        <input type="email" id="adminEmail" class="form-input" />
+      </div>
+      <div
+        class="modal-footer"
+        style="
+          display: flex;
+          justify-content: flex-end;
+          gap: 1rem;
+          padding-top: 1rem;
+        "
+      >
+        <button class="btn btn-cancel" id="cancelAdminModal">Cancel</button>
+        <button class="btn btn-create" id="createAdmin">Create Account</button>
       </div>
     </div>
+  </div>
+</div>
 
-    <!--CREATE EMPLOYEE MODAL-->
-    <div class="modal-overlay" id="createEmployeeModal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">Create Employee</h2>
-          <button class="modal-close" id="closeEmployeeModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <!-- Success/Error Message -->
-          <div
-            id="accountStatusMessage"
-            class="status-message"
-            style="display: none"
-          >
-            <i class="fas fa-check-circle"></i>
-            <span id="statusMessageText">Account Creation Successful!</span>
-          </div>
-          <div class="form-group">
-            <label for="employeeFirstName">First Name</label>
-            <input type="text" id="employeeFirstName" class="form-input" />
-          </div>
-          <div class="form-group">
-            <label for="employeeLastName">Last Name</label>
-            <input type="text" id="employeeLastName" class="form-input" />
-          </div>
-          <div class="form-group">
-            <label for="employeeEmail">Email</label>
-            <input type="email" id="employeeEmail" class="form-input" />
-          </div>
-          <div
-            class="modal-footer"
-            style="
-              display: flex;
-              justify-content: flex-end;
-              gap: 1rem;
-              padding-top: 1rem;
-            "
-          >
-            <button class="btn btn-cancel" id="cancelEmployeeModal">
-              Cancel
-            </button>
-            <button class="btn btn-create" id="createEmployee">
-              Create Account
-            </button>
-          </div>
-        </div>
+<!--CREATE EMPLOYEE MODAL-->
+<div class="modal-overlay" id="createEmployeeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Create Employee</h2>
+      <button class="modal-close" id="closeEmployeeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Success/Error Message -->
+      <div
+        id="accountStatusMessage"
+        class="status-message"
+        style="display: none"
+      >
+        <i class="fas fa-check-circle"></i>
+        <span id="statusMessageText">Account Creation Successful!</span>
+      </div>
+      <div class="form-group">
+        <label for="employeeFirstName">First Name</label>
+        <input type="text" id="employeeFirstName" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label for="employeeLastName">Last Name</label>
+        <input type="text" id="employeeLastName" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label for="employeeEmail">Email</label>
+        <input type="email" id="employeeEmail" class="form-input" />
+      </div>
+      <div
+        class="modal-footer"
+        style="
+          display: flex;
+          justify-content: flex-end;
+          gap: 1rem;
+          padding-top: 1rem;
+        "
+      >
+        <button class="btn btn-cancel" id="cancelEmployeeModal">Cancel</button>
+        <button class="btn btn-create" id="createEmployee">
+          Create Account
+        </button>
       </div>
     </div>
+  </div>
+</div>
 
-    <!--VIEW USER DETAILS MODAL-->
-    <div class="modal-overlay" id="userProfileModal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">Admin John Doe</h2>
-          <button class="modal-close" id="closeProfileModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <!-- Profile Picture -->
-          <div class="profile-picture-wrapper">
-            <div class="profile-picture-container">
-              <img
-                src="/static/nagi.jpg"
-                alt="Admin Profile"
-                class="profile-picture"
-                id="adminProfilePic"
-              />
-              <span class="status-indicator active"></span>
-            </div>
-          </div>
-
-          <!-- Editable Fields -->
-          <div class="form-group">
-            <label for="editFirstName">First Name</label>
-            <input
-              type="text"
-              id="editFirstName"
-              class="form-input editable"
-              value="John"
-              readonly
-            />
-          </div>
-          <div class="form-group">
-            <label for="editLastName">Last Name</label>
-            <input
-              type="text"
-              id="editLastName"
-              class="form-input editable"
-              value="Doe"
-              readonly
-            />
-          </div>
-          <div class="form-group">
-            <label for="editEmail">Email</label>
-            <input
-              type="email"
-              id="editEmail"
-              class="form-input not-editable"
-              value="john.doe@example.com"
-              readonly
-            />
-          </div>
-
-          <!-- Modal Footer -->
-          <div class="modal-footer">
-            <button class="btn btn-cancel" id="cancelProfileModal">
-              Cancel
-            </button>
-            <button class="btn btn-create" id="saveProfileChanges">Save</button>
-          </div>
+<!--VIEW USER DETAILS MODAL-->
+<div class="modal-overlay" id="userProfileModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Admin John Doe</h2>
+      <button class="modal-close" id="closeProfileModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Profile Picture -->
+      <div class="profile-picture-wrapper">
+        <div class="profile-picture-container">
+          <img
+            src="/static/nagi.jpg"
+            alt="Admin Profile"
+            class="profile-picture"
+            id="adminProfilePic"
+          />
+          <span class="status-indicator active"></span>
         </div>
       </div>
-    </div>
 
-    <script src="/static/ADMIN/admin-users.js"></script>
-  </body>
-</html>
+      <!-- Editable Fields -->
+      <div class="form-group">
+        <label for="editFirstName">First Name</label>
+        <input
+          type="text"
+          id="editFirstName"
+          class="form-input editable"
+          value="John"
+          readonly
+        />
+      </div>
+      <div class="form-group">
+        <label for="editLastName">Last Name</label>
+        <input
+          type="text"
+          id="editLastName"
+          class="form-input editable"
+          value="Doe"
+          readonly
+        />
+      </div>
+      <div class="form-group">
+        <label for="editEmail">Email</label>
+        <input
+          type="email"
+          id="editEmail"
+          class="form-input not-editable"
+          value="john.doe@example.com"
+          readonly
+        />
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-cancel" id="cancelProfileModal">Cancel</button>
+        <button class="btn btn-create" id="saveProfileChanges">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<!--SCRIPT-->
+{% block script %}
+<script src="{% static 'admin/js/admin-users.js' %}"></script>
+{% endblock %}

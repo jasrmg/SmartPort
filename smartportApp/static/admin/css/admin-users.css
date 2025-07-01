@@ -1,0 +1,420 @@
+.add-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.2rem;
+  background-color: var(--secondary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+}
+
+.btn i {
+  margin-right: 0.5rem;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn-secondary:hover {
+  background-color: #172f6e;
+}
+
+/* Add custom scrollbar for sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Dashboard Content */
+.dashboard-content {
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+/* Success/Failure Message Styles */
+.status-message {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.status-message i {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+.status-message.success {
+  background-color: var(--accent);
+  color: white;
+}
+
+.status-message.error {
+  background-color: var(--danger);
+  color: white;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"] {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--gray);
+  background-color: #f8f8f8;
+  cursor: pointer;
+}
+
+.form-group input[type="text"]:not([readonly]),
+.form-group input[type="email"]:not([readonly]) {
+  background-color: white;
+  cursor: text;
+}
+
+.btn-cancel,
+.btn-create {
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  background-color: #ccc;
+  color: #333;
+}
+.btn-cancel:hover {
+  background-color: #b3b3b3;
+  color: #000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.btn-create {
+  background-color: var(--accent);
+  color: white;
+}
+
+.btn-create:disabled {
+  background-color: #a7d5bc; /* desaturated version of #2d9c5a */
+  color: #ffffff;
+  cursor: not-allowed;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* User Management Specific Styles */
+.user-type-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--gray);
+  padding-bottom: 1rem;
+}
+
+.tab-btn {
+  padding: 0.8rem 1.5rem;
+  background: none;
+  border: none;
+  font-family: "Montserrat", sans-serif;
+  font-size: 1rem;
+  color: var(--dark-gray);
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.tab-btn::after {
+  content: "";
+  position: absolute;
+  bottom: -1rem;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: var(--secondary);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.tab-btn.active {
+  color: var(--secondary);
+}
+
+.tab-btn.active::after {
+  transform: scaleX(1);
+}
+
+/* -------------------- USERS SCROLLBAR -------------------- */
+.user-grid-wrapper::-webkit-scrollbar {
+  width: 10px; /* scrollbar width */
+}
+
+.user-grid-wrapper::-webkit-scrollbar-track {
+  background: var(--light); /* light background */
+  border-radius: 10px;
+}
+
+.user-grid-wrapper::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border: 2px solid var(--light); /* padding effect */
+}
+
+.user-grid-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: var(--secondary); /* lighter blue on hover */
+}
+/* -------------------- END OF USERS SCROLLBAR -------------------- */
+
+/* -------------------- USERS LIST -------------------- */
+.user-grid-wrapper {
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px; /* optional scrollbar buffer */
+  border: 1px solid var(--gray); /* optional styling */
+}
+
+.user-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.user-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+}
+
+.user-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.user-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.user-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.user-info p {
+  color: var(--dark-gray);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.user-status {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.status-active {
+  background-color: rgba(45, 156, 90, 0.1);
+  color: var(--accent);
+}
+
+.status-inactive {
+  background-color: rgba(209, 67, 67, 0.1);
+  color: var(--danger);
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.action-btn {
+  padding: 0.5rem;
+  background: none;
+  border: 1px solid var(--gray);
+  border-radius: 4px;
+  color: var(--dark-gray);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background-color: var(--light);
+  color: var(--primary);
+}
+/* -------------------- END OF USERS LIST -------------------- */
+/* -------------------- USER MODAL -------------------- */
+.profile-picture-wrapper {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.profile-picture-container {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-picture {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+/* Status Indicator Dot */
+.status-indicator {
+  position: absolute;
+  bottom: 5px;
+  right: 16px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+/* Active = Green */
+.status-indicator.active {
+  background-color: var(--accent);
+}
+
+/* Inactive = Gray */
+.status-indicator.inactive {
+  background-color: var(--dark-gray);
+}
+
+.profile-picture:hover {
+  transform: scale(1.05);
+}
+
+input.editable[readonly] {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+input.not-editable[readonly] {
+  cursor: not-allowed;
+}
+input.not-editable:focus {
+  outline: none;
+}
+
+/* Optional fullscreen image */
+.fullscreen-image {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.fullscreen-image img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.close-fullscreen-btn {
+  position: absolute;
+  top: 1.6rem;
+  right: 8rem;
+  font-size: 2.5rem;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.close-fullscreen-btn:hover {
+  color: var(--danger);
+}
+/* -------------------- END OF USER MODAL -------------------- */
+
+/* SPINNER FOR THE USERS GRID */
+.user-loader {
+  text-align: center;
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid var(--gray);
+  border-top: 5px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .search-filter-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar {
+    max-width: none;
+  }
+
+  .filter-group {
+    flex-wrap: wrap;
+  }
+}

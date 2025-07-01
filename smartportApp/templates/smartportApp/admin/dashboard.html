@@ -12,415 +12,388 @@
 />
 <!--CHARTS-->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- CUSTOM CSS -->
 <link rel="stylesheet" href="{% static 'admin/css/admin-dashboard.css' %}" />
 {% endblock %}
 <!--BODY-->
-<div class="container">
-  <!--MAIN CONTENT-->
 
-  <!--START OF SIDEBAR-->
-  {% block sidebar %}
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">
-        <i class="fas fa-anchor logo-icon"></i>
-        <span class="logo-text">SMART PORT</span>
-        <button class="collapse-btn">
-          <i class="fas fa-bars"></i>
-        </button>
-      </div>
+<!--START OF SIDEBAR-->
+{% block sidebar %}
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-anchor logo-icon"></i>
+      <span class="logo-text">SMART PORT</span>
+      <button class="collapse-btn">
+        <i class="fas fa-bars"></i>
+      </button>
     </div>
+  </div>
 
-    <ul class="nav-menu">
-      <li class="nav-item expanded">
-        <a href="#" class="nav-link active">
-          <i class="fas fa-tachometer-alt"></i>
-          <span>Dashboard</span>
-        </a>
-        <ul class="nav-sub-menu">
-          <li>
-            <a href="#mapSection" class="nav-sub-link">
-              <i class="fas fa-map-marked-alt"></i>
-              <span>Map</span>
-            </a>
-          </li>
-          <li>
-            <a href="#activeVesselsSection" class="nav-sub-link">
-              <i class="fas fa-ship"></i>
-              <span>Active Vessels</span>
-            </a>
-          </li>
-          <li>
-            <a href="#analyticsSection" class="nav-sub-link">
-              <i class="fas fa-chart-bar"></i>
-              <span>Analytics</span>
-            </a>
-          </li>
-        </ul>
-      </li>
-      <li class="nav-item">
-        <a href="admin-vessels.html" class="nav-link">
+  <ul class="nav-menu">
+    <li class="nav-item expanded">
+      <a href="#" class="nav-link active">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#mapSection" class="nav-sub-link">
+            <i class="fas fa-map-marked-alt"></i>
+            <span>Map</span>
+          </a>
+        </li>
+        <li>
+          <a href="#activeVesselsSection" class="nav-sub-link">
+            <i class="fas fa-ship"></i>
+            <span>Active Vessels</span>
+          </a>
+        </li>
+        <li>
+          <a href="#analyticsSection" class="nav-sub-link">
+            <i class="fas fa-chart-bar"></i>
+            <span>Analytics</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a href="admin-vessels.html" class="nav-link">
+        <i class="fas fa-ship"></i>
+        <span>Vessels</span>
+      </a>
+      <ul class="nav-sub-menu" style="display: none">
+        <li>
+          <a href="admin-vessels.html" class="nav-sub-link">
+            <i class="fas fa-list"></i>
+            <span>View All Vessels</span>
+          </a>
+        </li>
+        <li>
+          <a href="vessel-activity-log.html" class="nav-sub-link">
+            <i class="fas fa-history"></i>
+            <span>Activity Logs</span>
+          </a>
+        </li>
+        <li>
+          <a href="assign-route.html" class="nav-sub-link">
+            <i class="fas fa-route"></i>
+            <span>Assign Route</span>
+          </a>
+        </li>
+        <li>
+          <a href="voyage-report.html" class="nav-sub-link">
+            <i class="fas fa-file-alt"></i>
+            <span>Voyage Report</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'user-management' %}" class="nav-link">
+        <i class="fas fa-users"></i>
+        <span>Users</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="admin-manifests.html" class="nav-link">
+        <i class="fas fa-file-alt"></i>
+        <span>Manifests</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="incident-report-feed.html" class="nav-link">
+        <i class="fas fa-chart-line"></i>
+        <span>Reports</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="incident-report-feed.html" class="nav-sub-link">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Incident Reports</span>
+          </a>
+        </li>
+        <li>
+          <a href="#maintenance" class="nav-sub-link">
+            <i class="fas fa-tools"></i>
+            <span>Maintenance Reports</span>
+          </a>
+        </li>
+        <li>
+          <a href="#customs" class="nav-sub-link">
+            <i class="fas fa-file-contract"></i>
+            <span>Customs Reports</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+<!--MAIN CONTENT-->
+{% block content %}
+<!-- Dashboard Content -->
+<div class="dashboard-content">
+  <div class="page-header">
+    <div class="page-title">
+      <h1>SmartPort Management Dashboard</h1>
+      <p>Welcome back! Here's what's happening with your port today.</p>
+    </div>
+    <a class="btn btn-secondary" id="addAdmin">
+      <i class="fas fa-plus"></i>
+      New Vessel
+    </a>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="dashboard-grid">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Active Vessels</h3>
+        <div class="card-icon blue">
           <i class="fas fa-ship"></i>
-          <span>Vessels</span>
-        </a>
-        <ul class="nav-sub-menu" style="display: none">
-          <li>
-            <a href="admin-vessels.html" class="nav-sub-link">
-              <i class="fas fa-list"></i>
-              <span>View All Vessels</span>
-            </a>
-          </li>
-          <li>
-            <a href="add-vessel.html" class="nav-sub-link">
-              <i class="fas fa-plus"></i>
-              <span>Add New Vessel</span>
-            </a>
-          </li>
-          <li>
-            <a href="vessel-activity-log.html" class="nav-sub-link">
-              <i class="fas fa-history"></i>
-              <span>Activity Logs</span>
-            </a>
-          </li>
-          <li>
-            <a href="assign-route.html" class="nav-sub-link">
-              <i class="fas fa-route"></i>
-              <span>Assign Route</span>
-            </a>
-          </li>
-          <li>
-            <a href="voyage-report.html" class="nav-sub-link">
-              <i class="fas fa-file-alt"></i>
-              <span>Voyage Report</span>
-            </a>
-          </li>
-          <li>
-            <a href="shipping-details.html" class="nav-sub-link">
-              <i class="fas fa-info-circle"></i>
-              <span>Shipping Details</span>
-            </a>
-          </li>
-          <li>
-            <a href="shipping-verification.html" class="nav-sub-link">
-              <i class="fas fa-check-circle"></i>
-              <span>Shipping Verification</span>
-            </a>
-          </li>
-        </ul>
-      </li>
-      <li class="nav-item">
-        <a href="admin-users.html" class="nav-link">
-          <i class="fas fa-users"></i>
-          <span>Users</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="admin-manifests.html" class="nav-link">
+        </div>
+      </div>
+      <div class="card-value">24</div>
+      <p class="card-description">5 new arrivals today</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Pending Manifesto</h3>
+        <div class="card-icon green">
           <i class="fas fa-file-alt"></i>
-          <span>Manifests</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="incident-report-feed.html" class="nav-link">
-          <i class="fas fa-chart-line"></i>
-          <span>Reports</span>
-        </a>
-        <ul class="nav-sub-menu">
-          <li>
-            <a href="incident-report-feed.html" class="nav-sub-link">
-              <i class="fas fa-exclamation-triangle"></i>
-              <span>Incident Reports</span>
-            </a>
-          </li>
-          <li>
-            <a href="#maintenance" class="nav-sub-link">
-              <i class="fas fa-tools"></i>
-              <span>Maintenance Reports</span>
-            </a>
-          </li>
-          <li>
-            <a href="#customs" class="nav-sub-link">
-              <i class="fas fa-file-contract"></i>
-              <span>Customs Reports</span>
-            </a>
-          </li>
-        </ul>
-      </li>
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <i class="fas fa-cog"></i>
-          <span>Settings</span>
-        </a>
-        <ul class="nav-sub-menu">
-          <li>
-            <a href="#" id="sidebarChangePassword" class="nav-sub-link">
-              <i class="fas fa-key"></i>
-              <span>Change Password</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
-              <i class="fas fa-user-edit"></i>
-              <span>Edit Profile</span>
-            </a>
-          </li>
-        </ul>
-      </li>
+        </div>
+      </div>
+      <div class="card-value">12</div>
+      <p class="card-description">Cargo Manifest</p>
+    </div>
 
-      <li class="nav-item">
-        <a id="SBlogout-btn" class="nav-link">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </a>
-      </li>
-    </ul>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Recent Incidents</h3>
+        <div class="card-icon gold">
+          <i class="fas fa-boxes"></i>
+        </div>
+      </div>
+      <div class="card-value">26</div>
+      <p class="card-description">8 new report incidents</p>
+    </div>
   </div>
-  {% endblock %}
-  <!--END OF SIDEBAR-->
-  <!--TOPBAR-->
 
-  <!--END OF TOPBAR-->
-  {% block content %}
-  <!--START OF MAIN CONTENT -->
-  <div class="main-content">
-    <!-- Dashboard Content -->
-    <div class="dashboard-content">
-      <div class="page-header">
-        <div class="page-title">
-          <h1>SmartPort Management Dashboard</h1>
-          <p>Welcome back! Here's what's happening with your port today.</p>
-        </div>
-        <a class="btn btn-secondary" id="addAdmin">
-          <i class="fas fa-plus"></i>
-          New Vessel
-        </a>
+  <!-- Map Section -->
+  <div id="mapSection" class="section">
+    <div class="section-header">
+      <h2 class="section-title">Philippine Maritime Tracking</h2>
+    </div>
+
+    <div id="vessel-map"></div>
+  </div>
+
+  <!-- Main Sections -->
+  <div class="main-sections">
+    <!-- Vessels Section -->
+    <div id="activeVesselsSection" class="section">
+      <div class="section-header">
+        <h2 class="section-title">Active Vessels</h2>
+        <button class="btn btn-outline">View All</button>
       </div>
 
-      <!-- Stats Cards -->
-      <div class="dashboard-grid">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Active Vessels</h3>
-            <div class="card-icon blue">
-              <i class="fas fa-ship"></i>
-            </div>
-          </div>
-          <div class="card-value">24</div>
-          <p class="card-description">5 new arrivals today</p>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Pending Manifesto</h3>
-            <div class="card-icon green">
-              <i class="fas fa-file-alt"></i>
-            </div>
-          </div>
-          <div class="card-value">12</div>
-          <p class="card-description">Cargo Manifest</p>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Recent Incidents</h3>
-            <div class="card-icon gold">
-              <i class="fas fa-boxes"></i>
-            </div>
-          </div>
-          <div class="card-value">26</div>
-          <p class="card-description">8 new report incidents</p>
-        </div>
+      <div class="table-responsive">
+        <table class="vessels-table">
+          <thead>
+            <tr>
+              <th>
+                <button class="sort-btn" data-column="0" data-order="none">
+                  Vessel Name <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="1" data-order="none">
+                  Type <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="2" data-order="none">
+                  Origin <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="3" data-order="none">
+                  Destination <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="4" data-order="none">
+                  Status <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="5" data-order="none">
+                  ETA <i class="fas fa-sort"></i>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Manila Bay Express</td>
+              <td>Container Ship</td>
+              <td>Hong Kong</td>
+              <td>Manila</td>
+              <td><span class="status-badge arrived">Arrived</span></td>
+              <td>Today, 08:45</td>
+            </tr>
+            <tr>
+              <td>Cebu Pearl</td>
+              <td>Bulk Carrier</td>
+              <td>Singapore</td>
+              <td>Cebu</td>
+              <td><span class="status-badge docked">Docked</span></td>
+              <td>Today, 11:30</td>
+            </tr>
+            <tr>
+              <td>Mindanao Explorer</td>
+              <td>Tanker</td>
+              <td>Kaohsiung</td>
+              <td>Davao</td>
+              <td>
+                <span class="status-badge in-transit">In Transit</span>
+              </td>
+              <td>Tomorrow, 14:15</td>
+            </tr>
+            <tr>
+              <td>Visayas Navigator</td>
+              <td>Container Ship</td>
+              <td>Jakarta</td>
+              <td>Iloilo</td>
+              <td>
+                <span class="status-badge in-transit">In Transit</span>
+              </td>
+              <td>May 18, 09:00</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
-      <!-- Map Section -->
-      <div id="mapSection" class="section">
-        <div class="section-header">
-          <h2 class="section-title">Philippine Maritime Tracking</h2>
+      <!-- Charts Section -->
+      <div id="analyticsSection" class="analytics-section">
+        <!-- Row 1 -->
+        <div class="card chart-card">
+          <div class="card-header">
+            <h3 class="card-title">Monthly Shipment Volume</h3>
+            <div class="chart-actions">
+              <select class="chart-filter">
+                <option>Last 6 Months</option>
+                <option>Last Year</option>
+                <option>Custom Range</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="shipmentChart" height="250"></canvas>
+          </div>
+          <div class="chart-footer">
+            <div class="chart-stat">
+              <span class="stat-value">+12.5%</span>
+              <span class="stat-label">vs last period</span>
+            </div>
+            <div class="chart-legend">
+              <span class="legend-item"
+                ><i class="fas fa-square" style="color: #1e3a8a"></i>
+                Current</span
+              >
+              <span class="legend-item"
+                ><i class="fas fa-square" style="color: #8ca6db"></i>
+                Previous</span
+              >
+            </div>
+          </div>
         </div>
 
-        <div id="vessel-map"></div>
-      </div>
-
-      <!-- Main Sections -->
-      <div class="main-sections">
-        <!-- Vessels Section -->
-        <div id="activeVesselsSection" class="section">
-          <div class="section-header">
-            <h2 class="section-title">Active Vessels</h2>
-            <button class="btn btn-outline">View All</button>
+        <div class="card chart-card">
+          <div class="card-header">
+            <h3 class="card-title">Vessel Status Distribution</h3>
           </div>
-
-          <div class="table-responsive">
-            <table class="vessels-table">
-              <thead>
-                <tr>
-                  <th>
-                    <button class="sort-btn" data-column="0" data-order="none">
-                      Vessel Name <i class="fas fa-sort"></i>
-                    </button>
-                  </th>
-                  <th>
-                    <button class="sort-btn" data-column="1" data-order="none">
-                      Type <i class="fas fa-sort"></i>
-                    </button>
-                  </th>
-                  <th>
-                    <button class="sort-btn" data-column="2" data-order="none">
-                      Origin <i class="fas fa-sort"></i>
-                    </button>
-                  </th>
-                  <th>
-                    <button class="sort-btn" data-column="3" data-order="none">
-                      Destination <i class="fas fa-sort"></i>
-                    </button>
-                  </th>
-                  <th>
-                    <button class="sort-btn" data-column="4" data-order="none">
-                      Status <i class="fas fa-sort"></i>
-                    </button>
-                  </th>
-                  <th>
-                    <button class="sort-btn" data-column="5" data-order="none">
-                      ETA <i class="fas fa-sort"></i>
-                    </button>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Manila Bay Express</td>
-                  <td>Container Ship</td>
-                  <td>Hong Kong</td>
-                  <td>Manila</td>
-                  <td><span class="status-badge arrived">Arrived</span></td>
-                  <td>Today, 08:45</td>
-                </tr>
-                <tr>
-                  <td>Cebu Pearl</td>
-                  <td>Bulk Carrier</td>
-                  <td>Singapore</td>
-                  <td>Cebu</td>
-                  <td><span class="status-badge docked">Docked</span></td>
-                  <td>Today, 11:30</td>
-                </tr>
-                <tr>
-                  <td>Mindanao Explorer</td>
-                  <td>Tanker</td>
-                  <td>Kaohsiung</td>
-                  <td>Davao</td>
-                  <td>
-                    <span class="status-badge in-transit">In Transit</span>
-                  </td>
-                  <td>Tomorrow, 14:15</td>
-                </tr>
-                <tr>
-                  <td>Visayas Navigator</td>
-                  <td>Container Ship</td>
-                  <td>Jakarta</td>
-                  <td>Iloilo</td>
-                  <td>
-                    <span class="status-badge in-transit">In Transit</span>
-                  </td>
-                  <td>May 18, 09:00</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="chart-container">
+            <canvas id="vesselChart" height="250"></canvas>
           </div>
-
-          <!-- Charts Section -->
-          <div id="analyticsSection" class="analytics-section">
-            <!-- Row 1 -->
-            <div class="card chart-card">
-              <div class="card-header">
-                <h3 class="card-title">Monthly Shipment Volume</h3>
-                <div class="chart-actions">
-                  <select class="chart-filter">
-                    <option>Last 6 Months</option>
-                    <option>Last Year</option>
-                    <option>Custom Range</option>
-                  </select>
-                </div>
+          <div class="chart-footer">
+            <div class="chart-stats-grid">
+              <div class="stat-item">
+                <div class="stat-value" style="color: #2d9c5a">60%</div>
+                <div class="stat-label">Operational</div>
               </div>
-              <div class="chart-container">
-                <canvas id="shipmentChart" height="250"></canvas>
+              <div class="stat-item">
+                <div class="stat-value" style="color: #fcddb0">25%</div>
+                <div class="stat-label">Maintenance</div>
               </div>
-              <div class="chart-footer">
-                <div class="chart-stat">
-                  <span class="stat-value">+12.5%</span>
-                  <span class="stat-label">vs last period</span>
-                </div>
-                <div class="chart-legend">
-                  <span class="legend-item"
-                    ><i class="fas fa-square" style="color: #1e3a8a"></i>
-                    Current</span
-                  >
-                  <span class="legend-item"
-                    ><i class="fas fa-square" style="color: #8ca6db"></i>
-                    Previous</span
-                  >
-                </div>
+              <div class="stat-item">
+                <div class="stat-value" style="color: #d14343">15%</div>
+                <div class="stat-label">Damage</div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <div class="card chart-card">
-              <div class="card-header">
-                <h3 class="card-title">Vessel Status Distribution</h3>
-              </div>
-              <div class="chart-container">
-                <canvas id="vesselChart" height="250"></canvas>
-              </div>
-              <div class="chart-footer">
-                <div class="chart-stats-grid">
-                  <div class="stat-item">
-                    <div class="stat-value" style="color: #2d9c5a">60%</div>
-                    <div class="stat-label">Operational</div>
-                  </div>
-                  <div class="stat-item">
-                    <div class="stat-value" style="color: #fcddb0">25%</div>
-                    <div class="stat-label">Maintenance</div>
-                  </div>
-                  <div class="stat-item">
-                    <div class="stat-value" style="color: #d14343">15%</div>
-                    <div class="stat-label">Damage</div>
-                  </div>
-                </div>
-              </div>
+        <!-- Row 3 -->
+        <div class="card chart-card full-width">
+          <div class="card-header">
+            <h3 class="card-title">Incident Reports</h3>
+            <div class="chart-actions">
+              <select class="chart-filter">
+                <option>Last 6 Months</option>
+                <option>Last Year</option>
+                <option>All Time</option>
+              </select>
             </div>
-
-            <!-- Row 3 -->
-            <div class="card chart-card full-width">
-              <div class="card-header">
-                <h3 class="card-title">Incident Reports</h3>
-                <div class="chart-actions">
-                  <select class="chart-filter">
-                    <option>Last 6 Months</option>
-                    <option>Last Year</option>
-                    <option>All Time</option>
-                  </select>
-                </div>
-              </div>
-              <div class="chart-container">
-                <canvas id="incidentChart" height="300"></canvas>
-              </div>
-              <div class="chart-footer">
-                <div class="chart-stat">
-                  <span class="stat-value" style="color: #d14343">+8</span>
-                  <span class="stat-label">new reports this month</span>
-                </div>
-                <div class="chart-legend">
-                  <span class="legend-item"
-                    ><i class="fas fa-square" style="color: #d14343"></i>
-                    Incidents</span
-                  >
-                </div>
-              </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="incidentChart" height="300"></canvas>
+          </div>
+          <div class="chart-footer">
+            <div class="chart-stat">
+              <span class="stat-value" style="color: #d14343">+8</span>
+              <span class="stat-label">new reports this month</span>
+            </div>
+            <div class="chart-legend">
+              <span class="legend-item"
+                ><i class="fas fa-square" style="color: #d14343"></i>
+                Incidents</span
+              >
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <!--END OF MAIN CONTENT-->
 </div>
 {% endblock %}
 <!--SCRIPTS-->
