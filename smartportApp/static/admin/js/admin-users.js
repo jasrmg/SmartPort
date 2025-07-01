@@ -54,6 +54,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const card = document.createElement("div");
             card.classList.add("user-card", "userCard");
 
+            card.dataset.firstName = user.first_name;
+            card.dataset.lastName = user.last_name;
+            card.dataset.email = user.email;
+            card.dataset.role = user.role;
+            card.dataset.avatar = user.avatar;
+
             const avatarHTML = user.avatar
               ? `<img src="${user.avatar}" class="user-avatar-img" alt="${user.role}" />`
               : `<div class="user-avatar">${user.first_name[0]}${user.last_name[0]}</div>`;
@@ -74,6 +80,70 @@ document.addEventListener("DOMContentLoaded", function () {
               </div>
             </div>
           `;
+
+            // Attach click listener immediately to open the user detail modal
+            card.addEventListener("click", () => {
+              document.getElementById("editFirstName").value = user.first_name;
+              document.getElementById("editLastName").value = user.last_name;
+              document.getElementById("editEmail").value = user.email;
+
+              const profilePic = document.getElementById("adminProfilePic");
+              profilePic.src = user.avatar || "/static/default-avatar.png";
+
+              document.querySelector(
+                ".modal-title"
+              ).textContent = `${capitalize(user.role)} ${user.first_name} ${
+                user.last_name
+              }`;
+              document.getElementById("userProfileModal").style.display =
+                "flex";
+
+              document.querySelectorAll(".editable").forEach((input) => {
+                input.addEventListener(
+                  "click",
+                  function () {
+                    this.removeAttribute("readonly");
+                    this.focus();
+                  },
+                  { once: true }
+                );
+              });
+
+              profilePic.addEventListener("click", () => {
+                if (document.querySelector(".fullscreen-image")) return;
+
+                // Create the fullscreen overlay
+                const fullscreenDiv = document.createElement("div");
+                fullscreenDiv.classList.add("fullscreen-image");
+
+                // Create the image element
+                const img = document.createElement("img");
+                img.src = profilePic.src;
+                img.classList.add("fullscreen-img");
+
+                // Create the close button
+                const closeBtn = document.createElement("button");
+                closeBtn.innerHTML = "&times;";
+                closeBtn.classList.add("close-fullscreen-btn");
+
+                // Append everything
+                fullscreenDiv.appendChild(closeBtn);
+                fullscreenDiv.appendChild(img);
+                document.body.appendChild(fullscreenDiv);
+
+                // Close on button click
+                closeBtn.addEventListener("click", () => {
+                  fullscreenDiv.remove();
+                });
+
+                // Close on clicking outside the image
+                fullscreenDiv.addEventListener("click", (e) => {
+                  if (e.target === fullscreenDiv) {
+                    fullscreenDiv.remove();
+                  }
+                });
+              });
+            });
 
             userGrid.appendChild(card);
           });
@@ -151,71 +221,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // ------------- CLOSE MODAL IF CLICKING OUTSIDE USING DRY PRINCIPLE -------------
   window.addEventListener("click", (e) => {
     if (e.target.classList.contains("modal-overlay")) {
-      console.log(e.target);
       closeModal(e.target);
     }
-  });
-
-  // TRIGGER TO OPEN THE MODAL
-  document.querySelectorAll(".userCard").forEach((card) => {
-    card.addEventListener("click", () => {
-      const fname = card.dataset.firstName;
-      const lname = card.dataset.lastName;
-
-      //set modal content:
-      document.getElementById("editFirstName").innerText = fname;
-      document.getElementById("editLastName").innerText = lname;
-
-      //show modal:
-      userModal.style.display = "flex";
-
-      // Toggle fields editable on focus or click
-      document.querySelectorAll(".editable").forEach((input) => {
-        input.addEventListener("click", function () {
-          this.removeAttribute("readonly");
-          this.focus();
-        });
-      });
-
-      // TO DO: EDIT USER PROFILE LOGIC
-
-      // Fullscreen profile picture preview
-      const profilePic = document.getElementById("adminProfilePic");
-      profilePic.addEventListener("click", () => {
-        if (document.querySelector(".fullscreen-image")) return;
-
-        // Create the fullscreen overlay
-        const fullscreenDiv = document.createElement("div");
-        fullscreenDiv.classList.add("fullscreen-image");
-
-        // Create the image element
-        const img = document.createElement("img");
-        img.src = profilePic.src;
-        img.classList.add("fullscreen-img");
-
-        // Create the close button
-        const closeBtn = document.createElement("button");
-        closeBtn.innerHTML = "&times;";
-        closeBtn.classList.add("close-fullscreen-btn");
-
-        // Append everything
-        fullscreenDiv.appendChild(closeBtn);
-        fullscreenDiv.appendChild(img);
-        document.body.appendChild(fullscreenDiv);
-
-        // Close on button click
-        closeBtn.addEventListener("click", () => {
-          fullscreenDiv.remove();
-        });
-
-        // Close on clicking outside the image
-        fullscreenDiv.addEventListener("click", (e) => {
-          if (e.target === fullscreenDiv) {
-            fullscreenDiv.remove();
-          }
-        });
-      });
-    });
   });
 });
 

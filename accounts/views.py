@@ -529,7 +529,8 @@ def get_users_by_role(request):
       'last_name': user.last_name,
       'role': user.role,
       'avatar': user.avatar or "",
-      'is_online': user.is_online
+      'is_online': user.is_online,
+      'email': user.email,
     }
     for user in users
   ]
