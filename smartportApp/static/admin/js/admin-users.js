@@ -1,32 +1,5 @@
 // Toggle sidebar collapse
 document.addEventListener("DOMContentLoaded", function () {
-  const sidebar = document.querySelector(".sidebar");
-  const mainContent = document.querySelector(".main-content");
-
-  document
-    .querySelector(".collapse-btn")
-    .addEventListener("click", function (e) {
-      e.preventDefault();
-
-      // Apply transitions
-      sidebar.classList.toggle("sidebar-collapsed");
-      mainContent.classList.toggle("sidebar-collapsed-content");
-
-      // Force a reflow for smooth transitions
-      void sidebar.offsetWidth;
-
-      // Check for and fix expanded items when sidebar collapses
-      if (sidebar.classList.contains("sidebar-collapsed")) {
-        // Reset expanded nav items when sidebar collapses
-        document.querySelectorAll(".nav-item.expanded").forEach((item) => {
-          if (window.getComputedStyle(sidebar).width === "80px") {
-            // Keep the expanded class for hover effect but collapse the height
-            item.querySelector(".nav-sub-menu").style.height = "0";
-          }
-        });
-      }
-    });
-
   // Tab switching functionality
   const tabButtons = document.querySelectorAll(".tab-btn");
 
