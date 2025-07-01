@@ -447,6 +447,7 @@ from urllib.parse import urljoin
 # EDIT PROFILE:
 @csrf_exempt
 def update_profile(request):
+
   if request.method != "POST":
     return JsonResponse({"error": "Invalid method request"}, status=405)
   
@@ -513,3 +514,25 @@ def update_profile(request):
     return JsonResponse({"message": "Profile updated"})
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
+  
+# API ENDPOINT TO GET USERS IN USER MANAGEMENT TAB:
+@csrf_exempt
+def get_users_by_role(request):
+  role = request.GET.get("role")
+  if not role:
+    return JsonResponse({"error": "Missing role parameter"}, status=400)
+  
+  users = UserProfile.objects.filter(role=role)
+  user_list = [
+    {
+      'first_name': user.first_name,
+      'last_name': user.last_name,
+      'role': user.role,
+      'avatar': user.avatar or "",
+      'is_online': user.is_online
+    }
+    for user in users
+  ]
+
+  return JsonResponse({"users": user_list})
+

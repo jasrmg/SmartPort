@@ -53,6 +53,7 @@
   overflow-x: hidden;
   box-sizing: border-box;
 }
+/* BASIN I DELETE ANG .dashboard-content */
 /* Success/Failure Message Styles */
 .status-message {
   display: flex;
@@ -176,6 +177,21 @@
 .tab-btn.active::after {
   transform: scaleX(1);
 }
+/* USERS TAB ERROR MESSAGE */
+.no-users-message {
+  width: 100%;
+  text-align: center;
+  color: var(--dark-gray);
+  font-size: 1.1rem;
+  padding: 2rem;
+  font-weight: 500;
+}
+.error-message {
+  text-align: center;
+  color: var(--danger);
+  padding: 1.5rem;
+  font-weight: bold;
+}
 
 /* -------------------- USERS SCROLLBAR -------------------- */
 .user-grid-wrapper::-webkit-scrollbar {
@@ -230,6 +246,38 @@
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
+}
+.user-avatar-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--gray);
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--secondary);
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-info {
+  margin-left: 1rem;
 }
 
 .user-info h3 {

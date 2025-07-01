@@ -5,6 +5,8 @@ from firebase_admin import auth
 from accounts.models import UserProfile
 
 import traceback
+
+from django.utils import timezone
 class FirebaseAuthMiddleware:
   def __init__(self, get_response):
     self.get_response = get_response
@@ -27,6 +29,12 @@ class FirebaseAuthMiddleware:
         try:
           user = UserProfile.objects.get(firebase_uid=uid)
           request.user_profile = user
+
+          # update last seen
+          user.last_seen = timezone.now()
+          user.save(update_fields=['last_seen'])
+          print(f"✅ Updating last_seen for: {user.email}")
+
         except UserProfile.DoesNotExist:
           request.user_profile = None  # User is authenticated but not yet registered in DB
 

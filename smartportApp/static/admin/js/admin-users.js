@@ -2,40 +2,95 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Tab switching functionality
   const tabButtons = document.querySelectorAll(".tab-btn");
+  const userGrid = document.querySelector(".user-grid");
+  const loader = document.getElementById("userLoader");
 
-  tabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      // Remove active class from all buttons
-      tabButtons.forEach((btn) => btn.classList.remove("active"));
-      // Add active class to clicked button
-      button.classList.add("active");
-
-      // Here you would typically show/hide the corresponding user cards
-      // This is a placeholder for the filtering logic
-      const userType = button.dataset.tab;
-      console.log(`Showing ${userType} users`);
-    });
-  });
-
-  // Submenu toggle functionality
-  const navItems = document.querySelectorAll(".nav-item");
-  navItems.forEach((item) => {
-    const link = item.querySelector(".nav-link");
-    const hasSubmenu = item.querySelector(".nav-sub-menu");
-
-    if (hasSubmenu) {
-      link.addEventListener("click", function (e) {
-        e.preventDefault();
-        item.classList.toggle("expanded");
-
-        // Close other expanded items
-        navItems.forEach((otherItem) => {
-          if (otherItem !== item && otherItem.classList.contains("expanded")) {
-            otherItem.classList.remove("expanded");
-          }
-        });
-      });
+  firebase.auth().onAuthStateChanged((user) => {
+    if (!user) {
+      console.warn("❌ No user is signed in.");
+      return;
     }
+
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        // TOGGLE ACTIVE TAB:
+        tabButtons.forEach((b) => b.classList.remove("active"));
+        button.classList.add("active");
+
+        const role = button.dataset.role;
+
+        // CLEAR GRID AND SHOW LOADER:
+        userGrid.innerHTML = "";
+        loader.style.display = "flex";
+
+        try {
+          const token = await user.getIdToken();
+
+          const [response] = await Promise.all([
+            fetch(`/api/account/get-users/?role=${role}`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }),
+            new Promise((resolve) => setTimeout(resolve, 500)), // to show loader
+          ]);
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+          }
+
+          const data = await response.json();
+
+          if (data.users.length === 0) {
+            userGrid.innerHTML =
+              '<p class="no-users-msg">No users found for this role.</p>';
+            return;
+          }
+
+          // RENDER USER CARDS
+          data.users.forEach((user) => {
+            const card = document.createElement("div");
+            card.classList.add("user-card", "userCard");
+
+            const avatarHTML = user.avatar
+              ? `<img src="${user.avatar}" class="user-avatar-img" alt="${user.role}" />`
+              : `<div class="user-avatar">${user.first_name[0]}${user.last_name[0]}</div>`;
+
+            card.innerHTML = `
+            <div class="user-header">
+              <div class="user-avatar-wrapper">
+                ${avatarHTML}
+              </div>
+              <div class="user-info">
+                <h3>${user.first_name} ${user.last_name}</h3>
+                <p>${capitalize(user.role)}</p>
+                <span class="user-status ${
+                  user.is_online ? "status-active" : "status-inactive"
+                }">
+                  ${user.is_online ? "Active" : "Inactive"}
+                </span>
+              </div>
+            </div>
+          `;
+
+            userGrid.appendChild(card);
+          });
+        } catch (error) {
+          console.error(error);
+          userGrid.innerHTML =
+            '<p class="error-msg">Something went wrong while loading users.</p>';
+        } finally {
+          loader.style.display = "none";
+        }
+      });
+    });
+
+    // ✅ Trigger admin tab after all listeners are set
+    setTimeout(() => {
+      document.querySelector('.tab-btn[data-role="admin"]')?.click();
+    }, 0);
   });
 
   // ------------- CREATE ADMIN MODAL -------------
@@ -163,3 +218,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+
+// OUTSIDE DOM
+const capitalize = (word) => {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+};

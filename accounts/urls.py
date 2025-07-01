@@ -27,5 +27,8 @@ urlpatterns = [
   path("notify-password-change/", views.notify_change_password, name="notify-password-change"),
 
   # UPDATE PROFILE:
-  path("update-profile/", views.update_profile, name="update-profile")
+  path("update-profile/", views.update_profile, name="update-profile"),
+
+  # API ENDPOINT FOR FETCHING THE USERS IN THE DB:
+  path("get-users/", views.get_users_by_role, name="get_users_by_role"),
 ]

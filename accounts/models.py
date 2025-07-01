@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from django.utils import timezone
+from datetime import timedelta
+
 # Create your models here.
 class UserProfile(models.Model):
   class Role(models.TextChoices):
@@ -22,6 +25,14 @@ class UserProfile(models.Model):
     )
   avatar = models.URLField(blank=True, null=True)
   created_at = models.DateTimeField(auto_now_add=True)
+  last_seen = models.DateTimeField(null=True, blank=True)
+
+  @property
+  def is_online(self):
+    if not self.last_seen:
+      return False
+    now = timezone.now()
+    return now - self.last_seen <= timedelta(minutes=5)
 
   def __str__(self):
     return f'{self.firebase_uid}. {self.first_name} {self.last_name}, ({self.role})'
