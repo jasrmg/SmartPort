@@ -46,6 +46,19 @@ def firebase_register_view(request):
       data = json.loads(request.body)
       email = decoded["email"]
       uid = decoded["uid"]
+      
+      role = data["role"]
+      # avatar = ""
+      # if role == "admin":
+      #   avatar = "/media/avatars/default_admin.jfif"
+      # elif role == "custom":
+      #   avatar = "/media/avatars/default_custom.jfif"
+      # elif role == "employee":
+      #   avatar = "/media/avatars/default_employee.jfif"
+      # elif role == "shipper":
+      #   avatar = "/media/avatars/default_shipper.jfif"
+      # else:
+      #   avatar = "/media/avatars/default.png"
 
       # ✅ Now safe to query DB
       if UserProfile.objects.filter(email=email).exists() or UserProfile.objects.filter(firebase_uid=uid).exists():
@@ -66,7 +79,7 @@ def firebase_register_view(request):
           "first_name": data["first_name"],
           "last_name": data["last_name"],
           "email": email,
-          "role": data["role"],
+          "role": role,
           "avatar": data["avatar"]
         }
       )
@@ -199,11 +212,12 @@ def resend_verification_email_view(request):
       email = decoded["email"]
       
       # Generate a new token
-      serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
-      token = serializer.dumps(uid, salt="email-verify")
-      data = json.load(request.body)
+      data = json.loads(request.body.decode("utf-8"))
       first_name = data.get("first_name", "").title()
       last_name = data.get("last_name", "").title()
+
+      serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
+      token = serializer.dumps(uid, salt="email-verify")
       verification_url = request.build_absolute_uri(
         reverse("verify-email") + f"?token={token}"
       )
@@ -245,6 +259,7 @@ def resend_verification_email_view(request):
       email_message = EmailMessage(
         email_subject, email_body, to=[email]
       )
+      email_message.content_subtype = "html"
       email_message.send()
 
       return JsonResponse({"message": "Verification email resent."})

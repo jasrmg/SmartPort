@@ -472,7 +472,18 @@ document.addEventListener("DOMContentLoaded", () => {
           const token = await user.getIdToken(true);
           const userInfo = getUserInfo();
 
-          const avatar = "https://example.com/avatar.png";
+          let avatar = "";
+          if (userInfo.role === "admin") {
+            avatar = `${window.location.origin}/media/avatars/default_admin.jfif`;
+          } else if (userInfo.role === "custom") {
+            avatar = `${window.location.origin}/media/avatars/default_custom.jfif`;
+          } else if (userInfo.role === "shipper") {
+            avatar = `${window.location.origin}/media/avatars/default_shipper.jfif`;
+          } else if (userInfo.role === "employee") {
+            avatar = `${window.location.origin}/media/avatars/default_employee.jfif`;
+          } else {
+            avatar = `${window.location.origin}/media/avatars/default.png`;
+          }
 
           // INITIALIZE FIRESTORE:
           const db = firebase.firestore();

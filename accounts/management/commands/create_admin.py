@@ -43,7 +43,7 @@ class Command(BaseCommand):
           "last_name": last_name,
           "email": email,
           "role": "admin",
-          "avatar": "/media/avatars/default_admin.png",  # optional default avatar
+          "avatar": "/media/avatars/default_admin.jfif",  # optional default avatar
         }
       )
 
@@ -56,7 +56,7 @@ class Command(BaseCommand):
         "last_name": last_name,
         "email": email,
         "role": "admin",
-        "avatar": "/media/avatars/default_admin.png",
+        "avatar": "/media/avatars/default_admin.jfif",
       })
 
       # Generate verification token

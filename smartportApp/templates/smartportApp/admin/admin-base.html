@@ -101,7 +101,7 @@
           <div class="user-avatar">
             <img
               id="userAvatarImg"
-              src="{{ user_profile.avatar }}"
+              src="{{ user_profile.avatar | default:'/media/avatars/default.png' }}"
               alt="Avatar"
             />
           </div>
