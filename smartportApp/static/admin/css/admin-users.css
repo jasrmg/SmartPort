@@ -62,6 +62,7 @@
   border-radius: 8px;
   margin-bottom: 1rem;
   font-size: 1rem;
+  gap: 1rem;
 }
 
 .status-message i {

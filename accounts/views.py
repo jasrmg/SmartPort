@@ -90,6 +90,10 @@ import string
 
 @csrf_exempt
 def create_user_account(request):
+  """
+  Allows admins to create a new user (admin/employee),
+  registers them in Firebase Auth + Django + Firestore, and sends a verification email.
+  """
   if request.method != "POST":
     return JsonResponse({"error": "Invalid request method"}, status=405)
   
@@ -98,7 +102,7 @@ def create_user_account(request):
     if not hasattr(request, "user_profile") or not request.user_profile:
       return JsonResponse({"error": "Unauthorized"}, status=403)
     
-    if request.user_profile.role != "superadmin" and request.user_profile.role != "admin":
+    if request.user_profile.role != "admin":
       return JsonResponse({"error": "Permission denied"}, status=403)
     
     data = json.loads(request.body)
@@ -119,13 +123,15 @@ def create_user_account(request):
     password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(8))
 
     # Create Firebase user
-    user_record = auth.create_user(
-      email=email,
-      password=password,
-    )
+    user_record = auth.create_user(email=email, password=password)
+    uid = user_record.uid
 
     # Send email verification link
-    verification_url = auth.generate_email_verification_link(email)
+    serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
+    token = serializer.dumps(user_record.uid, salt="email-verify")
+    verification_url = request.build_absolute_uri(
+      reverse("verify-email") + f"?token={token}"
+    )
 
     # Create Django User + UserProfile
     django_user = User.objects.create_user(
@@ -145,6 +151,9 @@ def create_user_account(request):
       role=role,
       avatar=avatar
     )
+
+    # STORE USER IN FIRESTORE
+    save_user_to_firestore(uid, first_name, last_name, email, role, avatar)
 
     # SEND EMAIL VERIFICATION WITH THE PASSWORD
     email_body = f"""
@@ -190,10 +199,11 @@ def create_user_account(request):
     """
 
     message = EmailMessage(
-      subject=f"SmartPort {role} Account",
+      subject=f"SmartPort {role.capitalize()} Account",
       body=email_body,
       to=[email]
     )
+    message.content_subtype = "html" 
     message.send()
 
     return JsonResponse({"message": f"{role} account created and email verification sent!"})
@@ -228,6 +238,18 @@ def verify_email_view(request):
   except BadSignature:
     # return JsonResponse({"error": "Invalid token."}, status=400)
     return redirect("email_invalid")
+
+# HELPER FOR SAVING USER DETAILS IN FIRESTORE
+def save_user_to_firestore(uid, first_name, last_name, email, role, avatar_url=""):
+  db = firestore.client()
+  doc_ref = db.collection("users").document(uid)
+  doc_ref.set({
+    "first_name": first_name,
+    "last_name": last_name,
+    "email": email,
+    "role": role,
+    "avatar": avatar_url,
+  })
 
 
 # ENDPOINT FOR THE CUSTOM VERIFICATION USING DJANGO + FIREBASE SDK IN SENDING EMAIL

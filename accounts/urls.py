@@ -31,4 +31,7 @@ urlpatterns = [
 
   # API ENDPOINT FOR FETCHING THE USERS IN THE DB:
   path("get-users/", views.get_users_by_role, name="get_users_by_role"),
+
+  # APU ENDPOINT FOR CREATING ADMIN OR EMPLOYEE IN ADMIN SIDE:
+  path("create-user/", views.create_user_account, name="create_user_account"),
 ]

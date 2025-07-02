@@ -594,40 +594,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   };
-  /* ------------- REGISTER IN FIRESTORE AND MYSQL ------------- */
-  // const registerUserInFirestoreAndMYySQL = async (user, userInfo, token) => {
-  //   try {
-  //     // initialize firestore
-  //     const db = firebase.firestore();
-  //     // store user info in firestore
-  //     await db.collection("users").doc(user.uid).set({
-  //       first_name: userInfo.firstName,
-  //       last_name: userInfo.lastName,
-  //       email: user.email,
-  //       role: userInfo.role,
-  //       avatar: "https://example.com/avatar.png",
-  //     });
-
-  //     // register in django backend
-  //     await fetch("/api/account/firebase-register/", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //       body: JSON.stringify({
-  //         first_name: userInfo.firstName,
-  //         lastName: userInfo.lastName,
-  //         email: userInfo.email,
-  //         role: userInfo.role,
-  //         avatar: "https://example.com/avatar.png",
-  //       }),
-  //     });
-  //     console.log;
-  //   } catch (error) {
-  //     console.error("Registration error: ", error);
-  //   }
-  // };
 
   /* ------------- VERIFICATION ------------- */
   const verificationOptions = document.querySelectorAll(

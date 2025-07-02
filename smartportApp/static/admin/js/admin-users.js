@@ -171,22 +171,35 @@ document.addEventListener("DOMContentLoaded", function () {
   const addAdminCancelBtn = document.getElementById("cancelAdminModal");
   const createAdminBtn = document.getElementById("createAdmin");
 
-  const closeModal = (modal) => {
-    modal.style.display = "none";
-  };
-
   const adminCloseBtns = [addAdminCancelBtn, addAdminCloseBtn];
   adminCloseBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       closeModal(addAdminModal);
+      clearStatusModal(addAdminModal);
     });
   });
 
   addAdminBtn.addEventListener("click", () => {
+    // OPEN CREATE ADMIN MODAL
     addAdminModal.style.display = "flex";
   });
 
   // TODO: CREATE ADMIN LOGIC HERE
+  createAdminBtn.addEventListener("click", async () => {
+    const adminFirstName = document
+      .getElementById("adminFirstName")
+      .value.trim();
+    const adminLastName = document.getElementById("adminLastName").value.trim();
+    const adminEmail = document.getElementById("adminEmail").value.trim();
+    createUser(
+      adminFirstName,
+      adminLastName,
+      adminEmail,
+      "admin",
+      createAdminBtn,
+      addAdminModal
+    );
+  });
 
   // ------------- CREATE EMPLOYEE MODAL -------------
   const addEmployeeBtn = document.getElementById("addEmployee");
@@ -199,14 +212,34 @@ document.addEventListener("DOMContentLoaded", function () {
   employeeCloseBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       closeModal(addEmployeeModal);
+      clearStatusModal(addEmployeeModal);
     });
   });
 
   addEmployeeBtn.addEventListener("click", () => {
+    // OPEN CREATE EMPLOYEE MODAL MODAL
     addEmployeeModal.style.display = "flex";
   });
 
   // TODO: CREATE EMPLOYEE LOGIC HERE
+  createEmployeeBtn.addEventListener("click", async () => {
+    const employeeFirstName = document
+      .getElementById("employeeFirstName")
+      .value.trim();
+    const employeeLastName = document
+      .getElementById("employeeLastName")
+      .value.trim();
+    const employeeEmail = document.getElementById("employeeEmail").value.trim();
+
+    createUser(
+      employeeFirstName,
+      employeeLastName,
+      employeeEmail,
+      "employee",
+      createEmployeeBtn,
+      addEmployeeModal
+    );
+  });
 
   // ------------- VIEW USER MODAL -------------
   const userModal = document.getElementById("userProfileModal");
@@ -230,4 +263,91 @@ document.addEventListener("DOMContentLoaded", function () {
 // OUTSIDE DOM
 const capitalize = (word) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
+};
+
+const createUser = async (
+  first_name,
+  last_name,
+  email,
+  role,
+  button,
+  modal
+) => {
+  const statusBox = modal.querySelector(".status-message");
+  const statusText = modal.querySelector(".status-message-text");
+  const spinner = button.querySelector(".spinner");
+  const btnText = button.querySelector(".btn-text");
+
+  try {
+    button.disabled = true;
+    spinner.style.display = "inline-block";
+    btnText.textContent = "Creating";
+    // GETS THE LOGGED USER IN FIREBASE
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error("Not authenticated");
+
+    const token = await user.getIdToken();
+
+    avatar =
+      role === "admin"
+        ? `${window.location.origin}/media/avatars/default_admin.jfif`
+        : `${window.location.origin}/media/avatars/default_employee.jfif`;
+
+    // MYSQL BACKEND
+    const response = await fetch("/api/account/create-user/", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        first_name: first_name,
+        last_name: last_name,
+        email: email,
+        role: role,
+        avatar: avatar,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Something went wrong");
+    }
+
+    statusBox.style.display = "flex";
+    statusBox.classList.remove("error");
+    statusBox.classList.add("success");
+    statusText.textContent = `${capitalize(
+      role
+    )} account successfully created!`;
+
+    // Clear form fields
+    if (role === "admin") {
+      document.getElementById("adminFirstName").value = "";
+      document.getElementById("adminLastName").value = "";
+      document.getElementById("adminEmail").value = "";
+    } else {
+      document.getElementById("employeeFirstName").value = "";
+      document.getElementById("employeeLastName").value = "";
+      document.getElementById("employeeEmail").value = "";
+    }
+  } catch (err) {
+    console.error(err);
+    statusBox.style.display = "flex";
+    statusBox.classList.add("error");
+    statusText.textContent = err.message;
+  } finally {
+    button.disabled = false;
+    spinner.style.display = "none";
+    btnText.textContent = "Create";
+  }
+};
+
+const closeModal = (modal) => {
+  modal.style.display = "none";
+};
+
+const clearStatusModal = (modal) => {
+  modal.querySelector(".status-message").style.display = "none";
 };
