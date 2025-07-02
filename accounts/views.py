@@ -149,7 +149,8 @@ def create_user_account(request):
       last_name=last_name,
       email=email,
       role=role,
-      avatar=avatar
+      avatar=avatar,
+      created_by=request.user_profile
     )
 
     # STORE USER IN FIRESTORE

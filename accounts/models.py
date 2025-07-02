@@ -25,6 +25,13 @@ class UserProfile(models.Model):
     )
   avatar = models.URLField(blank=True, null=True)
   created_at = models.DateTimeField(auto_now_add=True)
+  created_by = models.ForeignKey(
+    "self",
+    null=True,
+    blank=True,
+    on_delete=models.SET_NULL,
+    related_name="created_users"
+  )
   last_seen = models.DateTimeField(null=True, blank=True)
 
   @property
