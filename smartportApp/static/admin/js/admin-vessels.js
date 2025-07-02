@@ -335,6 +335,57 @@ document.addEventListener("DOMContentLoaded", function () {
     // INITIAL CHECK WHEN MODAL IS OPENED:
     clearFormValidation();
   });
+
+  addVesselForm.addEventListener("submit", async function () {
+    e.preventDefault();
+
+    const name = document.getElementById("newVesselName").value.trim();
+    const imo = document.getElementById("newVesselIMO").value.trim();
+    const vesselType = document.getElementById("newVesselType").value;
+    const capacity = paraseInt(
+      document.getElementById("newVesselCapacity").value,
+      10
+    );
+
+    const submitBtn = document.getElementById("submitAddVesselBtn");
+    const btnText = submitBtn.querySelector(".btn-text");
+    const spinner = submitBtn.querySelector(".spinner");
+
+    submitBtn.disabled = true;
+    btnText.textContent = "Adding...";
+    spinner.style.display = "inline-block";
+
+    try {
+      const user = firebase.auth().currentUser;
+      const token = await user.getIdToken();
+
+      const response = await fetch("/api/vessels/add/", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          imo,
+          vessel_type: vesselType,
+          capacity,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Something went wrong.");
+      }
+
+      // SHOW ADD VESSEL STATUS:
+      showVesselStatus("Vessel Creation Successful", true, addVesselModal);
+      this.reset();
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  });
+
   const clearFormValidation = () => {
     addVesselFields.forEach((field) => {
       field.classList.remove("valid", "invalid");
@@ -410,3 +461,19 @@ document.addEventListener("DOMContentLoaded", function () {
   // ------------------ END OF ADD VESSEL MODAL ------------------
 });
 // OUTSIDE DOMCONTENTLOADED
+const showVesselStatus = (message, isSuccess = true, modal) => {
+  const statusBox = modal.querySelector(".status-message");
+  const statusText = modal.querySelector(".status-message-text");
+
+  // RESET PREVIOUS STYLES
+  statusBox.classList.remove("error", "success");
+
+  // APPLY NEW STYLES
+  statusBox.classList.add(isSuccess ? "success" : "error");
+
+  // SET MESSAGE TEXT
+  statusText.textContent = message;
+
+  // SHOW THE DIV
+  statusBox.style.display = "flex";
+};

@@ -12,6 +12,9 @@ urlpatterns = [
   path("user-management/", views.admin_users_view, name="user-management"),
   path("all-vessels/", views.admin_all_vessels_view, name="all-vessels"),
 
+  # ADD VESSEL
+  path("api/vessels/add/", views.add_vessel, name="add-vessel"),
+
   # CUSTOM
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),
 

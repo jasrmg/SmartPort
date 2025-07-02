@@ -409,6 +409,10 @@
     </div>
 
     <div class="modal-body">
+      <div class="status-message" style="display: none">
+        <i class="fas fa-check-circle"></i>
+        <span class="status-message-text">Vessel Creation Successful!</span>
+      </div>
       <form id="addVesselForm">
         <div class="form-group">
           <label for="newVesselName">Vessel Name</label>
@@ -429,7 +433,7 @@
             id="newVesselIMO"
             name="vessel_imo"
             required
-            placeholder="e.g., IMO1234567"
+            placeholder="e.g., 1234567"
             class=""
           />
         </div>
@@ -438,11 +442,9 @@
           <label for="newVesselType">Vessel Type</label>
           <select id="newVesselType" name="vessel_type" required class="">
             <option value="">Select Type</option>
-            <option value="cargo">Cargo</option>
-            <option value="tanker">Tanker</option>
-            <option value="passenger">Passenger</option>
-            <option value="container">Container Ship</option>
-            <option value="bulk">Bulk Carrier</option>
+            <option value="container">Container</option>
+            <option value="ro_ro">Ro-Ro</option>
+            <option value="general_cargo">General Cargo</option>
           </select>
         </div>
 
@@ -467,7 +469,8 @@
             Cancel
           </button>
           <button type="submit" class="btn-add" id="submitAddVesselBtn">
-            Add Vessel
+            <span class="btn-text">Add Vessel</span>
+            <span class="spinner"></span>
           </button>
         </div>
       </form>

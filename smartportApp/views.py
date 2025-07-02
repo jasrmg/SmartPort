@@ -51,6 +51,55 @@ def admin_all_vessels_view(request):
   return render(request, "smartportApp/admin/admin-vessels.html")
 
 
+from django.views.decorators.csrf import csrf_exempt
+from . models import Vessel
+# ADD VESSEL 
+@csrf_exempt
+def add_vessel(request):
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+  try:
+    if not hasattr(request, "user_profile"):
+      return JsonResponse({"erorr": "Unauthorized"}, status=403)        
+    
+    data = json.loads(request.body)
+    name = data.get("name", "").strip().title()
+    imo = data.get("imo", "").strip().upper()
+    vessel_type = data.get("vessel_type", "").strip()
+    capacity = int(data.get("capacity", 0))
+    
+    if not name or not imo or not vessel_type or capacity <= 0:
+      return JsonResponse({"error": "All fields are required."}, status=400)
+    
+    if Vessel.object.filter(imo=imo).exists():
+      return JsonResponse({"error": "Vessel with this IMO already exists."}, status=409)
+    
+    vessel = Vessel.objects.create(
+      name=name,
+      imo=imo,
+      vessel_type=vessel_type,
+      capacity=capacity,
+      created_by=request.user_profile
+    )
+
+    return JsonResponse({
+      "message": "Vessel added successfully",
+      "vessel": {
+        "id": vessel.vessel_id,
+        "name": vessel.name,
+        "imo": vessel.imo,
+        "type": vessel.vessel_type,
+        "capacity": vessel.capacity
+      }
+    })
+  
+  except Exception as e:
+    import traceback
+    traceback.print_exc()
+    return JsonResponse({"error": str(e)}, status=500)
+
+
 # --------------------------------- CUSTOM ---------------------------------
 @login_required
 def customs_dashboard(request):
