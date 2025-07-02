@@ -72,7 +72,7 @@ def add_vessel(request):
     if not name or not imo or not vessel_type or capacity <= 0:
       return JsonResponse({"error": "All fields are required."}, status=400)
     
-    if Vessel.object.filter(imo=imo).exists():
+    if Vessel.objects.filter(imo=imo).exists():
       return JsonResponse({"error": "Vessel with this IMO already exists."}, status=409)
     
     vessel = Vessel.objects.create(

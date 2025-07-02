@@ -420,9 +420,7 @@
             type="text"
             id="newVesselName"
             name="vessel_name"
-            required
             placeholder="e.g., MV Pacific Pearl"
-            class=""
           />
         </div>
 
@@ -432,15 +430,13 @@
             type="text"
             id="newVesselIMO"
             name="vessel_imo"
-            required
             placeholder="e.g., 1234567"
-            class=""
           />
         </div>
 
         <div class="form-group">
           <label for="newVesselType">Vessel Type</label>
-          <select id="newVesselType" name="vessel_type" required class="">
+          <select id="newVesselType" name="vessel_type">
             <option value="">Select Type</option>
             <option value="container">Container</option>
             <option value="ro_ro">Ro-Ro</option>
@@ -456,8 +452,6 @@
             name="vessel_capacity"
             min="1"
             placeholder="e.g., 50000"
-            required
-            class=""
           />
         </div>
 
@@ -470,7 +464,7 @@
           </button>
           <button type="submit" class="btn-add" id="submitAddVesselBtn">
             <span class="btn-text">Add Vessel</span>
-            <span class="spinner"></span>
+            <span class="spinner" style="display: none"></span>
           </button>
         </div>
       </form>

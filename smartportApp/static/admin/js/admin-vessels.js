@@ -327,25 +327,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const addVesselForm = document.getElementById("addVesselForm");
   const addVesselFields = addVesselForm.querySelectorAll("input, select");
-  const addVesselSubmitBtn = document.getElementById("addVesselSubmitBtn");
 
   // OPEN ADD VESSEL MODAL:
   addVesselBtn.addEventListener("click", () => {
     addVesselModal.style.display = "flex";
-    // INITIAL CHECK WHEN MODAL IS OPENED:
-    clearFormValidation();
   });
 
-  addVesselForm.addEventListener("submit", async function () {
+  addVesselForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    const name = document.getElementById("newVesselName").value.trim();
-    const imo = document.getElementById("newVesselIMO").value.trim();
-    const vesselType = document.getElementById("newVesselType").value;
-    const capacity = paraseInt(
-      document.getElementById("newVesselCapacity").value,
-      10
-    );
+    const result = validateVesselInputs();
+    if (!result) return;
 
     const submitBtn = document.getElementById("submitAddVesselBtn");
     const btnText = submitBtn.querySelector(".btn-text");
@@ -354,6 +346,8 @@ document.addEventListener("DOMContentLoaded", function () {
     submitBtn.disabled = true;
     btnText.textContent = "Adding...";
     spinner.style.display = "inline-block";
+
+    const { name, imo, vessel_type, capacity } = result;
 
     try {
       const user = firebase.auth().currentUser;
@@ -368,7 +362,7 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify({
           name,
           imo,
-          vessel_type: vesselType,
+          vessel_type,
           capacity,
         }),
       });
@@ -383,71 +377,17 @@ document.addEventListener("DOMContentLoaded", function () {
       this.reset();
     } catch (error) {
       console.log("Error: ", error);
+    } finally {
+      btnText.textContent = "Add Vessel";
+      spinner.style.display = "none";
     }
   });
-
-  const clearFormValidation = () => {
-    addVesselFields.forEach((field) => {
-      field.classList.remove("valid", "invalid");
-      field.dataset.touched = "false";
-    });
-    addVesselSubmitBtn.disabled = true;
-  };
-  // Validate a field only if it's been touched (blurred)
-  const validateField = (field) => {
-    if (field.dataset.touched === "true") {
-      if (field.checkValidity()) {
-        field.classList.add("valid");
-        field.classList.remove("invalid");
-      } else {
-        field.classList.add("invalid");
-        field.classList.remove("valid");
-      }
-    }
-  };
-
-  // Run overall form validation
-  const validateForm = () => {
-    let allValid = true;
-    addVesselFields.forEach((field) => {
-      validateField(field);
-      if (!field.checkValidity()) {
-        allValid = false;
-      }
-    });
-    addVesselSubmitBtn.disabled = !allValid;
-  };
-
-  // Mark fields as touched on blur
-  addVesselFields.forEach((field) => {
-    field.dataset.touched = "false";
-
-    field.addEventListener("blur", () => {
-      field.dataset.touched = "true";
-      validateField(field);
-      validateForm();
-    });
-
-    field.addEventListener("input", () => {
-      validateForm();
-    });
-  });
-
-  const resetAddVesselForm = () => {
-    addVesselForm.reset(); // resets all input values
-    addVesselFields.forEach((field) => {
-      field.classList.remove("valid", "invalid");
-      field.dataset.touched = "false";
-    });
-    addVesselSubmitBtn.disabled = true;
-  };
 
   // CLOSE ADD VESSEL MODAL:
   const btnToCloseAddVesselModal = [addVesselCloseBtn, addVesselCancelBtn];
   const closeAddVesselModal = () => {
     addVesselModal.style.display = "none";
-    resetAddVesselForm();
-    clearFormValidation();
+    addVesselModal.querySelector(".status-message").style.display = "none";
   };
   btnToCloseAddVesselModal.forEach((btn) => {
     btn.addEventListener("click", () => closeAddVesselModal());
@@ -458,9 +398,74 @@ document.addEventListener("DOMContentLoaded", function () {
       closeAddVesselModal();
     }
   });
-  // ------------------ END OF ADD VESSEL MODAL ------------------
 });
+
 // OUTSIDE DOMCONTENTLOADED
+const resetAddVesselForm = () => {
+  addVesselForm.reset(); // resets all input values
+  addVesselFields.forEach((field) => {
+    field.classList.remove("valid", "invalid");
+    field.dataset.touched = "false";
+  });
+  addVesselSubmitBtn.disabled = true;
+};
+
+const validateVesselInputs = () => {
+  const nameInput = document.getElementById("newVesselName");
+  const imoInput = document.getElementById("newVesselIMO");
+  const typeInput = document.getElementById("newVesselType");
+  const capacityInput = document.getElementById("newVesselCapacity");
+
+  const name = nameInput.value.trim();
+  const imo = imoInput.value.trim();
+  const vessel_type = typeInput.value;
+  const capacity = parseInt(capacityInput.value, 10);
+
+  // Clear previous validation classes
+  [nameInput, imoInput, typeInput, capacityInput].forEach((field) => {
+    field.classList.remove("invalid");
+  });
+
+  // Vessel name
+  if (!name) {
+    nameInput.classList.add("invalid");
+    showVesselStatus("Vessel name is required.", false, addVesselModal);
+    return false;
+  }
+
+  // IMO number format: IMO1234567
+  if (!/^IMO\d{7}$/.test(imo)) {
+    imoInput.classList.add("invalid");
+    showVesselStatus("IMO must only have 7 digits.", false, addVesselModal);
+    return false;
+  }
+
+  // Vessel type
+  if (!vessel_type) {
+    typeInput.classList.add("invalid");
+    showVesselStatus("Please select a vessel type.", false, addVesselModal);
+    return false;
+  }
+
+  // Capacity
+  if (isNaN(capacity) || capacity <= 0) {
+    capacityInput.classList.add("invalid");
+    showVesselStatus(
+      "Capacity must be a positive number.",
+      false,
+      addVesselModal
+    );
+    return false;
+  }
+
+  return {
+    name,
+    imo,
+    vessel_type,
+    capacity,
+  };
+};
+
 const showVesselStatus = (message, isSuccess = true, modal) => {
   const statusBox = modal.querySelector(".status-message");
   const statusText = modal.querySelector(".status-message-text");
