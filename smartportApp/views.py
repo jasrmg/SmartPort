@@ -47,6 +47,9 @@ def admin_dashboard(request):
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
+def admin_all_vessels_view(request):
+  return render(request, "smartportApp/admin/admin-vessels.html")
+
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

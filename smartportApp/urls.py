@@ -10,6 +10,7 @@ urlpatterns = [
   # ADMIN
   path("admin-dashboard/", views.admin_dashboard, name="admin-dashboard"),
   path("user-management/", views.admin_users_view, name="user-management"),
+  path("all-vessels/", views.admin_all_vessels_view, name="all-vessels"),
 
   # CUSTOM
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),
