@@ -42,21 +42,27 @@
           </a>
         </li>
         <li>
-          <a href="vessel-activity-log.html" class="nav-sub-link">
-            <i class="fas fa-history"></i>
-            <span>Activity Log</span>
-          </a>
-        </li>
-        <li>
           <a href="assign-route.html" class="nav-sub-link">
             <i class="fas fa-route"></i>
             <span>Assign Route</span>
           </a>
         </li>
         <li>
+          <a href="" class="nav-sub-link">
+            <i class="fas fa-compass"></i>
+            <span>Manage Voyage</span>
+          </a>
+        </li>
+        <li>
           <a href="voyage-report.html" class="nav-sub-link">
             <i class="fas fa-file-alt"></i>
             <span>Voyage Report</span>
+          </a>
+        </li>
+        <li>
+          <a href="vessel-activity-log.html" class="nav-sub-link">
+            <i class="fas fa-history"></i>
+            <span>Activity Log</span>
           </a>
         </li>
       </ul>
@@ -141,27 +147,17 @@
               </th>
               <th>
                 <button class="sort-btn" data-column="0" data-order="none">
+                  IMO <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="0" data-order="none">
                   Type <i class="fas fa-sort"></i>
-                </button>
-              </th>
-              <th class="from-column">
-                <button class="sort-btn" data-column="0" data-order="none">
-                  Origin <i class="fas fa-sort"></i>
-                </button>
-              </th>
-              <th class="to-column">
-                <button class="sort-btn" data-column="0" data-order="none">
-                  Destination <i class="fas fa-sort"></i>
                 </button>
               </th>
               <th class="status-column">
                 <button class="sort-btn" data-column="0" data-order="none">
                   Status <i class="fas fa-sort"></i>
-                </button>
-              </th>
-              <th>
-                <button class="sort-btn" data-column="0" data-order="none">
-                  ETA <i class="fas fa-sort"></i>
                 </button>
               </th>
               <th>
@@ -175,15 +171,13 @@
             {% for vessel in vessels %}
             <tr>
               <td>{{ vessel.name }}</td>
+              <td>{{ vessel.imo }}</td>
               <td>{{ vessel.type }}</td>
-              <td class="from-column">{{ vessel.origin }}</td>
-              <td class="to-column">{{ vessel.destination }}</td>
               <td class="status-column">
                 <span class="status-badge {{ vessel.status|lower }}"
                   >{{ vessel.status }}</span
                 >
               </td>
-              <td>{{ vessel.eta }}</td>
               <td>
                 <button
                   class="btn-icon edit"

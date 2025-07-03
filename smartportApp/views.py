@@ -48,7 +48,7 @@ def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
 def admin_all_vessels_view(request):
-  vessels = get_vessel_with_latest_voyage_data()
+  vessels = get_vessels_data()
   context = {
     "vessels": vessels,
   }
@@ -58,7 +58,7 @@ def admin_all_vessels_view(request):
 from . models import Vessel, Voyage, Port
 
 # HELPER FUNCTION FOR GETTING THE VESSEL LIST
-def get_vessel_with_latest_voyage_data():
+def get_vessels_data():
   vessels = Vessel.objects.all()
   vessel_data = []
 
@@ -70,10 +70,7 @@ def get_vessel_with_latest_voyage_data():
       "imo": vessel.imo,
       "type": vessel.get_vessel_type_display(),
       "capacity": vessel.capacity,
-      "status": latest_voyage.get_status_display() if latest_voyage else vessel.get_status_display(),
-      "origin": latest_voyage.departure_port.port_name if latest_voyage else "N/A",
-      "destination": latest_voyage.arrival_port.port_name if latest_voyage else "N/A",
-      "eta": latest_voyage.eta.strftime("%b %d, %Y - %I:%M %p") if latest_voyage else None,
+      "status": vessel.get_status_display(),
     })
 
   return vessel_data
@@ -83,6 +80,40 @@ def get_port_options(request):
   ports = Port.objects.all().values("port_name")
   port_list = [port["port_name"] for port in ports]
   return JsonResponse({"ports": port_list})
+
+# API ENDPOINT FOR UPDATING THE VESSELS TABLE IN THE ALL VESSELS
+@csrf_exempt
+def update_vessel_cell(request):
+  if request.method == "POST":
+    try:
+      data = json.loads(request.body)
+      imo = data.get("imo")
+      field = data.get("field")
+      value = data.get("value")
+
+      vessel = Vessel.objects.get(imo=imo)
+      voyage = Voyage.objects.filter(vessel=vessel).order_by("-arrival_date").first()
+      if not voyage:
+        return JsonResponse({"success": False, "mesage": "No voyage found."})
+      
+      if field == "status":
+        voyage.status = value.lower().replace(" ", "_")
+      elif field == "origin":
+        port = Port.objects.get(port_name=value)
+        voyage.departure_port = port
+      elif field == "destination":
+        port = Port.objects.get(port_name=value)
+        voyage.arrival_port = port
+      else:
+        return JsonResponse({"success": False, "message": "Invalid field"})
+      
+      voyage.save()
+      return JsonResponse({"success": True})
+    
+    except Exception as e:
+      return JsonResponse({"success": False, "message": str(e)})
+  return JsonResponse({"success": False, "message": "Invalid request"})
+
 
 from django.views.decorators.csrf import csrf_exempt
 # ADD VESSEL 
