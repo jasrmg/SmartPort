@@ -53,3 +53,27 @@ class Vessel(models.Model):
     return f"{self.name} (IMO {self.imo })"
   
   
+class Voyage(models.Model):
+
+  voyage_id = models.AutoField(primary_key=True)
+  vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE, related_name='voyages')
+
+  departure_port = models.ForeignKey(Port, on_delete=models.SET_NULL, null=True, related_name="departures")
+  arrival_port = models.ForeignKey(Port, on_delete=models.SET_NULL, null=True, related_name="arrivals")
+  departure_date = models.DateTimeField()
+  arrival_date = models.DateTimeField()
+
+  #reuse vessel status:
+  status = models.CharField(
+    max_length=20,
+    choices=Vessel.VesselStatus.choices,
+    default=Vessel.VesselStatus.IN_TRANSIT
+  )
+
+  voyage_number = models.CharField(max_length=50, unique=True)
+
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  def __str__(self):
+    return f"{self.vessel.name} Voyage {self.voyage_number}"

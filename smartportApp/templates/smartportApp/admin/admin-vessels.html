@@ -312,6 +312,10 @@
 
     <!-- Modal Body -->
     <div class="modal-body">
+      <div class="status-message" style="display: none">
+        <i class="fas fa-check-circle"></i>
+        <span class="status-message-text">Vessel Creation Successful!</span>
+      </div>
       <form id="editVesselForm">
         <!-- Vessel Name (editable) -->
         <div class="form-group">
@@ -384,6 +388,10 @@
       <button class="modal-close" id="deleteVesselCloseBtn">&times;</button>
     </div>
     <div class="modal-body">
+      <div class="status-message" style="display: none">
+        <i class="fas fa-check-circle"></i>
+        <span class="status-message-text">Vessel Creation Successful!</span>
+      </div>
       <p>
         Are you sure you want to delete this vessel? This action cannot be
         undone.
@@ -430,7 +438,7 @@
             type="text"
             id="newVesselIMO"
             name="vessel_imo"
-            placeholder="e.g., 1234567"
+            placeholder="e.g., IMO1234567"
           />
         </div>
 
