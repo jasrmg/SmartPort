@@ -48,13 +48,17 @@ def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
 def admin_all_vessels_view(request):
-  return render(request, "smartportApp/admin/admin-vessels.html")
+  vessels = get_vessel_with_latest_voyage_data()
+  context = {
+    "vessels": vessels,
+  }
+  return render(request, "smartportApp/admin/admin-vessels.html", context)
 
 
 from . models import Vessel, Voyage
 
 # HELPER FUNCTION FOR GETTING THE VESSEL LIST
-def get_vessel_with_latest_voyage_date():
+def get_vessel_with_latest_voyage_data():
   vessels = Vessel.objects.all()
   vessel_data = []
 
