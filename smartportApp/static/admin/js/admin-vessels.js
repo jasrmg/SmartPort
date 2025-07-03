@@ -417,7 +417,7 @@ const validateVesselInputs = () => {
   const capacityInput = document.getElementById("newVesselCapacity");
 
   const name = nameInput.value.trim();
-  const imo = imoInput.value.trim();
+  let imo = imoInput.value.trim();
   const vessel_type = typeInput.value;
   const capacity = parseInt(capacityInput.value, 10);
 
@@ -432,6 +432,18 @@ const validateVesselInputs = () => {
     showVesselStatus("Vessel name is required.", false, addVesselModal);
     return false;
   }
+
+  // AUTO CORRECT USER INPUT IF INPUT ARE JUST DIGITS
+  if (/^\d{7}$/.test(imo)) {
+    imo = `IMO${imo}`;
+  }
+
+  // IF IT STARTS WITH LOWER CASE IMO:
+  else if (/^imo\d{7}$/.test(imo)) {
+    imo = `IMO${imo.slice(3)}`;
+  }
+
+  imoInput.value = imo;
 
   // IMO number format: IMO1234567
   if (!/^IMO\d{7}$/.test(imo)) {
