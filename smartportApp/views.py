@@ -105,6 +105,33 @@ def update_vessel_status(request):
   except Exception as e:
     return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
+# NAME EDIT FOR THE VESSELS:
+@csrf_exempt
+def update_vessel_name(request):
+  if request.method != "POST":
+    return JsonResponse({"success": False, "message": "Invalid request method"}, status=400)
+
+  try:
+    data = json.loads(request.body)
+    imo = data.get("imo")
+    new_name = data.get("name")
+
+    if not imo or not new_name:
+      return JsonResponse({"success": False, "message": "Missing data"}, status=400)
+
+    vessel = Vessel.objects.get(imo=imo)
+    vessel.name = new_name
+    vessel.save()
+
+    return JsonResponse({"success": True, "message": "Vessel name updated"})
+
+  except Vessel.DoesNotExist:
+    return JsonResponse({"success": False, "message": "Vessel not found"}, status=404)
+
+  except Exception as e:
+    return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+
 from django.views.decorators.csrf import csrf_exempt
 # ADD VESSEL 
 @csrf_exempt

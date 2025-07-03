@@ -44,6 +44,74 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  // VESSEL NAME EDIT:
+  editVesselForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const newName = vesselNameInput.value.trim();
+    const imo = vesselIMOInput.value.trim();
+
+    const statusBox = editVesselModal.querySelector(".status-message");
+    const statusText = statusBox.querySelector(".status-message-text");
+
+    if (!newName || newName === originalName) return;
+
+    try {
+      const response = await fetch("/api/vessels/update-name/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": document.querySelector('meta[name="csrf-token"]')
+            .content,
+        },
+        body: JSON.stringify({
+          name: newName,
+          imo: imo,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        alert(
+          "Failed to update vessel name: " + (data.message || "Unknown error")
+        );
+        return;
+      }
+
+      // Update table immediately
+      const row = document
+        .querySelector(`.btn-icon.edit[data-imo='${imo}']`)
+        .closest("tr");
+      if (row) row.children[0].textContent = newName;
+
+      const editBtn = row.querySelector(".btn-icon.edit");
+      if (editBtn) editBtn.setAttribute("data-name", newName);
+
+      // SUCCESS MESSAGE
+      statusText.textContent = "Vessel name updated successfully!";
+      statusBox.classList.remove("error");
+      statusBox.classList.add("success");
+      statusBox.style.display = "flex";
+
+      setTimeout(() => {
+        statusBox.style.display = "none";
+        editVesselModal.style.display = "none";
+
+        originalName = newName;
+
+        editVesselForm.reset();
+        updateEditVesselBtn.disabled = true;
+      }, 1500);
+    } catch (err) {
+      // ERROR MESSAGE
+      statusText.textContent = "Error updating vessel!";
+      statusBox.classList.remove("success");
+      statusBox.classList.add("error");
+      statusBox.style.display = "flex";
+    }
+  });
+
   // TRACK CHANGES IN VESSEL NAME:
   vesselNameInput.addEventListener("input", () => {
     const currentName = vesselNameInput.value.trim();
