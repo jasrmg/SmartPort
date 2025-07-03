@@ -16,7 +16,7 @@ class Command(BaseCommand):
     # Sample data
     vessel_types = [v[0] for v in Vessel.VesselType.choices]
     vessel_statuses = [s[0] for s in Vessel.VesselStatus.choices]
-    port_ids = list(Port.objects.values_list('id', flat=True))
+    port_ids = list(Port.objects.values_list('port_id', flat=True))
 
     if len(port_ids) < 2:
       self.stdout.write(self.style.ERROR("❌ You need at least 2 ports in the Port table."))
