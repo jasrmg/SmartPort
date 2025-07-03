@@ -132,6 +132,34 @@ def update_vessel_name(request):
     return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 
+
+# DELETE VESSEL:
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+from smartportApp.models import Vessel
+
+@require_POST
+def delete_vessel(request):
+  try:
+    data = json.loads(request.body)
+    imo = data.get("imo")
+
+    if not imo:
+      return JsonResponse({"success": False, "message": "IMO is required."}, status=400)
+
+    vessel = Vessel.objects.filter(imo=imo).first()
+    if not vessel:
+      return JsonResponse({"success": False, "message": "Vessel not found."}, status=404)
+
+    vessel.delete()
+    return JsonResponse({"success": True})
+
+  except Exception as e:
+    return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+
 from django.views.decorators.csrf import csrf_exempt
 # ADD VESSEL 
 @csrf_exempt

@@ -144,12 +144,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const deleteVesselConfirmBtn = document.getElementById("confirmDeleteBtn");
 
   let targetRowToDelete = null;
+  let targetIMO = null;
 
   // OPEN DELETE VESSEL MODAL:
   document.querySelectorAll(".btn-icon.delete").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       targetRowToDelete = btn.closest("tr");
+      targetIMO = btn.dataset.imo;
       deleteVesselModal.style.display = "flex";
     });
   });
@@ -162,6 +164,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const closeVesselDeleteModal = () => {
     deleteVesselModal.style.display = "none";
     targetRowToDelete = null;
+    targetIMO = null;
   };
   btnToCloseDeleteVesselModal.forEach((btn) => {
     btn.addEventListener("click", () => closeVesselDeleteModal());
@@ -170,6 +173,60 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("click", (e) => {
     if (e.target === deleteVesselModal) {
       closeVesselDeleteModal();
+    }
+  });
+
+  deleteVesselConfirmBtn.addEventListener("click", async () => {
+    if (!targetRowToDelete) return;
+
+    const statusBox = deleteVesselModal.querySelector(".status-message");
+    const statusText = statusBox.querySelector(".status-message-text");
+
+    if (!targetIMO) {
+      statusText.textContent = "Unable to find vessel IMO!";
+      statusBox.classList.add("error");
+      statusBox.style.display = "flex";
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/vessels/delete/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({ imo: targetIMO }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        statusText.textContent = "Failed to delete vessel!";
+        statusBox.classList.add("error");
+        statusBox.style.display = "flex";
+        return;
+      }
+
+      // Successfully deleted — remove row from DOM
+      targetRowToDelete.remove();
+
+      // SUCCESS MESSAGE
+      statusText.textContent = "Vessel deleted successfully!";
+      statusBox.classList.remove("error");
+      statusBox.classList.add("success");
+      statusBox.style.display = "flex";
+
+      setTimeout(() => {
+        statusBox.style.display = "none";
+        closeVesselDeleteModal();
+      }, 1500);
+    } catch (err) {
+      // ERROR MESSAGE
+      statusText.textContent = "An error occurred while deleting the vessel.";
+      statusBox.classList.remove("success");
+      statusBox.classList.add("error");
+      statusBox.style.display = "flex";
     }
   });
 
@@ -206,9 +263,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const { name, imo, vessel_type, capacity } = result;
 
     try {
-      const user = firebase.auth().currentUser;
-      const token = await user.getIdToken();
-
       const response = await fetch("/api/vessels/add/", {
         method: "POST",
         headers: {
