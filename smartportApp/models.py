@@ -60,8 +60,10 @@ class Voyage(models.Model):
 
   departure_port = models.ForeignKey(Port, on_delete=models.SET_NULL, null=True, related_name="departures")
   arrival_port = models.ForeignKey(Port, on_delete=models.SET_NULL, null=True, related_name="arrivals")
+
   departure_date = models.DateTimeField()
-  arrival_date = models.DateTimeField()
+  eta = models.DateTimeField()
+  arrival_date = models.DateTimeField(null=True, blank=True)
 
   #reuse vessel status:
   status = models.CharField(
