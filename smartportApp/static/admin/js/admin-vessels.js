@@ -1,3 +1,9 @@
+const vesselStatusChoices = [
+  { value: "available", label: "Available" },
+  { value: "assigned", label: "Assigned" },
+  { value: "maintenance", label: "Under Maintenance" },
+];
+
 document.addEventListener("DOMContentLoaded", function () {
   // ------------------ EDIT VESSEL MODAL ------------------
   const editVesselButtons = document.querySelectorAll(".btn-icon.edit");
@@ -180,9 +186,146 @@ document.addEventListener("DOMContentLoaded", function () {
       closeAddVesselModal();
     }
   });
+  // ------------------ STATUS UPDATE WHEN CLICKED ------------------
+
+  let selectedCell = null;
+  let originalValue = "";
+
+  const confirmModal = document.getElementById("confirmStatusChangeModal");
+
+  const cancelBtn = confirmModal.querySelector(".btn-cancel");
+  const confirmBtn = confirmModal.querySelector(".btn-update");
+  const closeBtn = confirmModal.querySelector(".modal-close");
+
+  cancelBtn.addEventListener("click", cancelStatusChange);
+  confirmBtn.addEventListener("click", confirmStatusChange);
+  closeBtn.addEventListener("click", closeConfirmModal);
+
+  makeStatusCellsEditable();
 });
 
 // OUTSIDE DOMCONTENTLOADED
+
+const showConfirmModal = (newValue) => {
+  document
+    .getElementById("confirmStatusMsg")
+    .querySelector("strong").textContent = newValue;
+  document.getElementById("confirmStatusChangeModal").style.display = "flex";
+};
+
+const closeConfirmModal = () => {
+  document.getElementById("confirmStatusChangeModal").style.display = "none";
+};
+
+const showSuccessModal = () => {
+  const modal = document.getElementById("statusSuccessModal");
+  modal.style.display = "flex";
+  setTimeout(() => (modal.style.display = "none"), 1500);
+};
+
+const cancelStatusChange = () => {
+  selectedCell.innerHTML = `
+    <span class="status-badge ${getStatusClass(originalValue)}">
+      ${originalValue}
+    </span>
+  `;
+  closeConfirmModal();
+};
+
+const getStatusClass = (label) => {
+  const map = {
+    Available: "available",
+    Assigned: "assigned",
+    "Under Maintenance": "maintenance",
+  };
+  return map[label] || "";
+};
+
+const confirmStatusChange = () => {
+  const newValue = selectedCell.querySelector("select").value;
+  const row = selectedCell.closest("tr");
+  const imo = row.querySelector(".btn-icon.edit").dataset.imo;
+
+  fetch("/update-vessel-status/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrftoken,
+    },
+    body: JSON.stringify({ imo, status: newValue }),
+  })
+    .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+    .then(({ ok, data }) => {
+      if (ok && data.success) {
+        selectedCell.innerHTML = `
+        <span class="status-badge ${newValue}">
+          ${formatStatus(newValue)}
+        </span>`;
+        showSuccessModal();
+      } else {
+        console.error("Backend error:", data);
+        alert("Failed to update: " + (data.message || "Unknown error"));
+        cancelStatusChange();
+      }
+    })
+    .catch((err) => {
+      console.error("Fetch error:", err);
+      alert("Error updating status.");
+      cancelStatusChange();
+    })
+    .finally(() => {
+      closeConfirmModal();
+    });
+};
+
+const formatStatus = (val) => {
+  const found = vesselStatusChoices.find((v) => v.value === val);
+  return found ? found.label : val;
+};
+
+const makeStatusCellsEditable = () => {
+  document.querySelectorAll("td.status-column").forEach((cell) => {
+    cell.addEventListener("click", () => {
+      if (cell.querySelector("select")) return;
+
+      selectedCell = cell;
+      originalValue = cell.textContent.trim();
+
+      const matched = vesselStatusChoices.find(
+        (opt) => opt.label.toLowerCase() === originalValue.toLowerCase()
+      );
+      const originalValueSlug = matched ? matched.value : "";
+
+      const select = document.createElement("select");
+      vesselStatusChoices.forEach((opt) => {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.label;
+        if (opt.value === originalValueSlug) option.selected = true;
+        select.appendChild(option);
+      });
+
+      cell.textContent = "";
+      cell.appendChild(select);
+      select.focus();
+
+      select.addEventListener("blur", () => {
+        const selectedValue = select.value;
+        if (
+          selectedValue === originalValue.toLowerCase().replace(/\s+/g, "_")
+        ) {
+          // No change made, just revert to original
+          selectedCell.innerHTML = `<span class="status-badge ${selectedValue}">${originalValue}</span>`;
+          return;
+        }
+
+        const selectedLabel = select.options[select.selectedIndex].text;
+        showConfirmModal(selectedLabel);
+      });
+    });
+  });
+};
+
 const resetAddVesselForm = () => {
   addVesselForm.reset(); // resets all input values
   addVesselFields.forEach((field) => {

@@ -351,6 +351,12 @@
           setTimeout(hideLoader, 1500);
         });
       }
+
+      const csrftoken = document.querySelector(
+        'meta[name="csrf-token"]'
+      ).content;
+
+      console.log("CSRF TOKEN: ", csrftoken);
     </script>
   </body>
 </html>

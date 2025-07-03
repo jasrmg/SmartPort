@@ -256,45 +256,29 @@ td.editable:hover {
   font-weight: 500;
 }
 
-.status-badge.in.transit {
-  background-color: rgba(255, 193, 7, 0.15); /* amber background */
-  color: #ff9800; /* amber text */
+.status-badge.assigned {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #ff9800;
 }
 
-.status-badge.arrived {
-  background-color: rgba(76, 175, 80, 0.15); /* green background */
-  color: #4caf50; /* green text */
+.status-badge.available {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
 }
 
-.status-badge.under.maintenance {
-  background-color: rgba(33, 150, 243, 0.15); /* blue background */
-  color: #2196f3; /* blue text */
+.status-badge.maintenance {
+  background-color: rgba(33, 150, 243, 0.15);
+  color: #2196f3;
 }
 
-.status-badge.delayed {
-  background-color: rgba(244, 67, 54, 0.15); /* red background */
-  color: #f44336; /* red text */
+/* SUCCESS AND ERROR TOAST */
+.toast-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* space between icon and text */
+  padding: 1rem;
 }
-
-.status-badge.decommissioned {
-  background-color: rgba(128, 128, 128, 0.15); /* light gray background */
-  color: #6c757d; /* muted gray text */
-}
-
-/* .status-badge.arrived {
-  background-color: rgba(45, 156, 90, 0.1);
-  color: var(--accent);
-}
-
-.status-badge.docked {
-  background-color: rgba(70, 130, 180, 0.1);
-  color: var(--light-blue);
-}
-
-.status-badge.in-transit {
-  background-color: rgba(212, 175, 55, 0.1);
-  color: var(--highlight);
-} */
 
 /* Add Vessel Form */
 .form-grid {

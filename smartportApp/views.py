@@ -83,37 +83,27 @@ def get_port_options(request):
 
 # API ENDPOINT FOR UPDATING THE VESSELS TABLE IN THE ALL VESSELS
 @csrf_exempt
-def update_vessel_cell(request):
-  if request.method == "POST":
-    try:
-      data = json.loads(request.body)
-      imo = data.get("imo")
-      field = data.get("field")
-      value = data.get("value")
+def update_vessel_status(request):
+  if request.method != "POST":
+    return JsonResponse({'success': False, 'message': 'Invalid method'}, status=405)
 
-      vessel = Vessel.objects.get(imo=imo)
-      voyage = Voyage.objects.filter(vessel=vessel).order_by("-arrival_date").first()
-      if not voyage:
-        return JsonResponse({"success": False, "mesage": "No voyage found."})
-      
-      if field == "status":
-        voyage.status = value.lower().replace(" ", "_")
-      elif field == "origin":
-        port = Port.objects.get(port_name=value)
-        voyage.departure_port = port
-      elif field == "destination":
-        port = Port.objects.get(port_name=value)
-        voyage.arrival_port = port
-      else:
-        return JsonResponse({"success": False, "message": "Invalid field"})
-      
-      voyage.save()
-      return JsonResponse({"success": True})
-    
-    except Exception as e:
-      return JsonResponse({"success": False, "message": str(e)})
-  return JsonResponse({"success": False, "message": "Invalid request"})
+  try:
+    data = json.loads(request.body)
+    imo = data.get('imo')
+    new_status = data.get('status')
 
+    if not imo or not new_status:
+      return JsonResponse({'success': False, 'message': 'Missing fields'}, status=400)
+
+    vessel = Vessel.objects.get(imo=imo)
+    vessel.status = new_status
+    vessel.save()
+
+    return JsonResponse({'success': True})
+  except Vessel.DoesNotExist:
+    return JsonResponse({'success': False, 'message': 'Vessel not found'}, status=404)
+  except Exception as e:
+    return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 from django.views.decorators.csrf import csrf_exempt
 # ADD VESSEL 

@@ -168,7 +168,7 @@
             </tr>
           </thead>
           <tbody>
-            {% for vessel in vessels %}
+            {% if vessels %} {% for vessel in vessels %}
             <tr>
               <td>{{ vessel.name }}</td>
               <td>{{ vessel.imo }}</td>
@@ -193,7 +193,21 @@
                 </button>
               </td>
             </tr>
-            {% endfor %}
+            {% endfor %} {% else %}
+            <tr>
+              <td
+                colspan="5"
+                style="
+                  text-align: center;
+                  color: var(--dark-gray);
+                  padding: 1.25rem;
+                "
+              >
+                <i class="fas fa-info-circle" style="margin-right: 8px"></i>
+                No vessels found in the database.
+              </td>
+            </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>
@@ -379,6 +393,39 @@
     </div>
   </div>
 </div>
+
+<!-- Confirm Change Modal -->
+<div id="confirmStatusChangeModal" class="modal-overlay" style="display: none">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Confirm Status Change</span>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmStatusMsg">
+        Are you sure you want to set status to <strong></strong>?
+      </p>
+      <div class="modal-actions" style="text-align: right">
+        <button class="btn-cancel">Cancel</button>
+        <button class="btn-update">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="statusSuccessModal" class="modal-overlay" style="display: none">
+  <div class="modal">
+    <div class="toast-body">
+      <i
+        class="fas fa-check-circle"
+        style="color: var(--accent); font-size: 1.5rem"
+      ></i>
+      <span class="status-message-text">Status updated successfully!</span>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 <!---->
 {% block script %}

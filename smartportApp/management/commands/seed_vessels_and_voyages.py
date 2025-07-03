@@ -15,6 +15,7 @@ class Command(BaseCommand):
 
     vessel_types = [v[0] for v in Vessel.VesselType.choices]
     vessel_statuses = [s[0] for s in Vessel.VesselStatus.choices]
+    voyage_statuses = [s[0] for s in Voyage.VoyageStatus.choices]
     port_ids = list(Port.objects.values_list('port_id', flat=True))
 
     if len(port_ids) < 2:
@@ -52,8 +53,8 @@ class Command(BaseCommand):
         departure_date=departure_date,
         eta=eta,
         arrival_date=arrival_date,
-        status=random.choice(vessel_statuses),
+        status=random.choice(voyage_statuses),
         voyage_number=f"VOY-{1000 + i}"
       )
 
-    self.stdout.write(self.style.SUCCESS("✅ 8 voyages created with ETA."))
+    self.stdout.write(self.style.SUCCESS("✅ 8 voyages created with ETA and updated statuses."))

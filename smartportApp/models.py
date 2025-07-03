@@ -17,10 +17,9 @@ class Vessel(models.Model):
   vessel_id = models.AutoField(primary_key=True)
   
   class VesselStatus(models.TextChoices):
-    ARRIVED = "arrived", "Arrived"
-    IN_TRANSIT = "in_transit", "In Transit"
+    AVAILABLE = "available", "Available"
+    ASSIGNED = "assigned", "Assigned"
     UNDER_MAINTENANCE = "maintenance", "Under Maintenance"
-    DELAYED = "delayed", "Delayed"
 
   class VesselType(models.TextChoices):
     CONTAINER = "container", "Container"
@@ -37,7 +36,7 @@ class Vessel(models.Model):
   status = models.CharField(
     max_length=20,
     choices=VesselStatus.choices,
-    default=VesselStatus.IN_TRANSIT
+    default=VesselStatus.AVAILABLE
   )
   capacity = models.PositiveIntegerField()
   created_at = models.DateTimeField(auto_now_add=True)
@@ -55,6 +54,11 @@ class Vessel(models.Model):
   
 class Voyage(models.Model):
 
+  class VoyageStatus(models.TextChoices):
+    ARRIVED = "arrived", "Arrived" 
+    IN_TRANSIT = "in_transit", "In Transit"
+    DELAYED = "delayed", "Delayed"
+
   voyage_id = models.AutoField(primary_key=True)
   vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE, related_name='voyages')
 
@@ -65,11 +69,10 @@ class Voyage(models.Model):
   eta = models.DateTimeField(blank=True, null=True)
   arrival_date = models.DateTimeField(null=True, blank=True)
 
-  #reuse vessel status:
   status = models.CharField(
     max_length=20,
-    choices=Vessel.VesselStatus.choices,
-    default=Vessel.VesselStatus.IN_TRANSIT
+    choices=VoyageStatus.choices,
+    default=VoyageStatus.IN_TRANSIT
   )
 
   voyage_number = models.CharField(max_length=50, unique=True)

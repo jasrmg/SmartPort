@@ -714,8 +714,8 @@ h6 {
 
 .form-status.success {
   background-color: #e6f9f2;
-  border-color: var(--success);
-  color: var(--success);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .form-status.error {
