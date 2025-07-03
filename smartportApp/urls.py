@@ -12,6 +12,9 @@ urlpatterns = [
   path("user-management/", views.admin_users_view, name="user-management"),
   path("all-vessels/", views.admin_all_vessels_view, name="all-vessels"),
 
+  # PORTS ENDPOINT FOR THE LEAFLET MAP
+  path('get-ports/', views.get_ports, name='get_ports'),
+
   # ADD VESSEL
   path("api/vessels/add/", views.add_vessel, name="add-vessel"),
   # API ENDPOINT FOR GETTING THE PORT LIST

@@ -57,6 +57,23 @@ def admin_all_vessels_view(request):
 
 from . models import Vessel, Voyage, Port
 
+# FUNCTION FOR GETTING PORT LOCATION TO FILL THE LEAFLET MAP
+def get_ports(request):
+  try:
+    ports = Port.objects.all()
+    data = [{
+      'port_id': port.port_id,
+      'name': port.port_name,
+      'code': port.port_code,
+      'latitude': port.latitude,
+      'longitude': port.longitude,
+      'description': port.port_description,
+    } for port in ports]
+
+    return JsonResponse({'ports': data})
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
+
 # HELPER FUNCTION FOR GETTING THE VESSEL LIST
 def get_vessels_data():
   vessels = Vessel.objects.all()

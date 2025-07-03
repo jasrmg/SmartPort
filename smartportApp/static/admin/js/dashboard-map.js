@@ -6,6 +6,34 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
+// ---------- NEW ----------
+const fetchPorts = async () => {
+  try {
+    const response = await fetch("/get-ports/");
+    const data = await response.json();
+    const portIcon = L.icon({
+      iconUrl: "/static/port2.png",
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32],
+    });
+
+    data.ports.forEach((port) => {
+      const marker = L.marker([port.latitude, port.longitude], {
+        icon: portIcon,
+      }).addTo(map);
+      marker.bindPopup(`
+        <strong>${port.name} (${port.code})</strong><br />
+        ${port.description || "No description"}
+        `);
+    });
+  } catch (error) {
+    console.error("Error loading port data: ", error);
+  }
+};
+
+fetchPorts();
+
 // Define Philippine territorial waters boundary (simplified polygon)
 // This is an approximate boundary for demonstration purposes
 const philTerritorialWaters = [
@@ -24,16 +52,16 @@ const philTerritorialWaters = [
 ];
 
 // Philippine major ports with coordinates
-const philippinePorts = {
-  Manila: [14.5995, 120.9842],
-  Cebu: [10.3157, 123.9054],
-  Davao: [7.0727, 125.6127],
-  Iloilo: [10.7202, 122.5621],
-  Subic: [14.7824, 120.2817],
-  Zamboanga: [6.9214, 122.079],
-  "Cagayan de Oro": [8.4542, 124.6319],
-  Batangas: [13.7565, 121.0583],
-};
+// const philippinePorts = {
+//   Manila: [14.5995, 120.9842],
+//   Cebu: [10.3157, 123.9054],
+//   Davao: [7.0727, 125.6127],
+//   Iloilo: [10.7202, 122.5621],
+//   Subic: [14.7824, 120.2817],
+//   Zamboanga: [6.9214, 122.079],
+//   "Cagayan de Oro": [8.4542, 124.6319],
+//   Batangas: [13.7565, 121.0583],
+// };
 
 // Add vessel markers for Philippine locations
 const vesselMarkers = [
@@ -79,10 +107,16 @@ const vesselMarkers = [
   },
 ];
 
+const vesselIcon = L.icon({
+  iconUrl: "/static/vessel.png",
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+});
 // Add vessel markers to the map
 vesselMarkers.forEach((vessel) => {
   const marker = L.marker(vessel.position, {
-    icon: vessel.icon,
+    icon: vesselIcon,
     title: vessel.name,
   }).addTo(map);
 
@@ -121,17 +155,17 @@ vesselMarkers.forEach((vessel) => {
 });
 
 // Add port markers
-Object.entries(philippinePorts).forEach(([portName, coords]) => {
-  L.marker(coords, {
-    icon: L.divIcon({
-      html: '<i class="fas fa-anchor" style="color: #1E3A8A; font-size: 20px;"></i>',
-      className: "port-marker",
-      iconSize: [20, 20],
-    }),
-  })
-    .addTo(map)
-    .bindPopup(`<b>${portName} Port</b>`);
-});
+// Object.entries(philippinePorts).forEach(([portName, coords]) => {
+//   L.marker(coords, {
+//     icon: L.divIcon({
+//       html: '<i class="fas fa-anchor" style="color: #1E3A8A; font-size: 20px;"></i>',
+//       className: "port-marker",
+//       iconSize: [20, 20],
+//     }),
+//   })
+//     .addTo(map)
+//     .bindPopup(`<b>${portName} Port</b>`);
+// });
 
 // Add territorial waters polygon
 L.polygon(philTerritorialWaters, {
