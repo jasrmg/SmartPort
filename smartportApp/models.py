@@ -11,7 +11,7 @@ class Port(models.Model):
   port_description = models.TextField(blank=True)
 
   def __str__(self):
-    return f"{self.port_name}" ({self.port_code})
+    return f"{self.port_name} ({self.port_code})" 
   
 class Vessel(models.Model):
   vessel_id = models.AutoField(primary_key=True)
