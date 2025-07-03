@@ -70,7 +70,7 @@ def get_vessel_with_latest_voyage_data():
       "imo": vessel.imo,
       "type": vessel.get_vessel_type_display(),
       "capacity": vessel.capacity,
-      "status": latest_voyage.status if latest_voyage else vessel.status,
+      "status": latest_voyage.get_status_display() if latest_voyage else vessel.get_status_display(),
       "origin": latest_voyage.departure_port.port_name if latest_voyage else "N/A",
       "destination": latest_voyage.arrival_port.port_name if latest_voyage else "N/A",
       "eta": latest_voyage.eta.strftime("%b %d, %Y - %I:%M %p") if latest_voyage else None,

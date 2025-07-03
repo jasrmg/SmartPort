@@ -121,9 +121,29 @@
 
 /* ---------- START OF VESSEL TABLE ---------- */
 .table-responsive {
+  max-height: 380px;
   width: 100%;
   overflow-x: auto;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive thead th {
+  position: sticky;
+  top: 0;
+  background-color: var(--light);
+  z-index: 1;
+}
+
+.table-responsive::-webkit-scrollbar {
+  width: 8px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+  background-color: var(--dark-gray);
+  border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-track {
+  background-color: var(--light);
 }
 
 .vessels-table {
@@ -236,7 +256,7 @@ td.editable:hover {
   font-weight: 500;
 }
 
-.status-badge.in-transit {
+.status-badge.in.transit {
   background-color: rgba(255, 193, 7, 0.15); /* amber background */
   color: #ff9800; /* amber text */
 }
@@ -246,7 +266,7 @@ td.editable:hover {
   color: #4caf50; /* green text */
 }
 
-.status-badge.under-maintenance {
+.status-badge.under.maintenance {
   background-color: rgba(33, 150, 243, 0.15); /* blue background */
   color: #2196f3; /* blue text */
 }
