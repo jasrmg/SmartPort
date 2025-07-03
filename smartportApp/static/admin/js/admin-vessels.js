@@ -3,8 +3,43 @@ const vesselStatusChoices = [
   { value: "assigned", label: "Assigned" },
   { value: "maintenance", label: "Under Maintenance" },
 ];
+const tableBody = document.querySelector(".vessels-table tbody");
 
 document.addEventListener("DOMContentLoaded", function () {
+  // ------------------ SORT TABLE LOGIC ------------------
+  const sortButtons = document.querySelectorAll(".sort-btn");
+
+  sortButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.sortable === "false") return;
+
+      const column = parseInt(btn.dataset.column);
+      let order = btn.dataset.order;
+
+      // reset other buttons icon and order:
+      sortButtons.forEach((b) => {
+        if (b !== btn) {
+          b.dataset.order = "none";
+          const icon = b.querySelector("i");
+          if (icon) icon.className = "fas fa-sort";
+        }
+      });
+
+      // toggle sorting order:
+      if (order === "none" || order === "desc") {
+        order = "asc";
+        btn.dataset.order = "asc";
+        btn.querySelector("i").className = "fas fa-sort-up";
+      } else {
+        order = "desc";
+        btn.dataset.order = "desc";
+        btn.querySelector("i").className = "fas fa-sort-down";
+      }
+
+      sortTableByColumn(column, order);
+    });
+  });
+
   // ------------------ EDIT VESSEL MODAL ------------------
   const editVesselButtons = document.querySelectorAll(".btn-icon.edit");
   const editVesselModal = document.getElementById("editVesselModal");
@@ -540,4 +575,33 @@ const showVesselStatus = (message, isSuccess = true, modal) => {
 
   // SHOW THE DIV
   statusBox.style.display = "flex";
+};
+
+// SORTING FUNCTION
+const sortTableByColumn = (columnIndex, order) => {
+  const rows = Array.from(tableBody.querySelectorAll("tr")).filter(
+    (row) => !row.querySelector("td[colspan]")
+  );
+  rows.sort((a, b) => {
+    const aText = getCellText(a, columnIndex);
+    const bText = getCellText(b, columnIndex);
+
+    if (!isNaN(aText) && !isNaN(bText)) {
+      return order === "asc"
+        ? parseFloat(aText) - parseFloat(bText)
+        : parseFloat(bText) - parseFloat(aText);
+    }
+
+    return order === "asc"
+      ? aText.localeCompare(bText)
+      : bText.localeCompare(aText);
+  });
+
+  // append sorted rows
+  rows.forEach((row) => tableBody.appendChild(row));
+};
+
+const getCellText = (row, index) => {
+  const cell = row.children[index];
+  return cell ? cell.textContent.trim().toLowerCase() : "";
 };
