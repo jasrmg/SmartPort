@@ -79,3 +79,4 @@ class Voyage(models.Model):
 
   def __str__(self):
     return f"{self.vessel.name} Voyage {self.voyage_number}"
+  

@@ -223,7 +223,7 @@ def verify_email_view(request):
   serializer = URLSafeTimedSerializer(settings.SECRET_KEY)
 
   try:
-    uid = serializer.loads(token, salt="email-verify", max_age=60) #30 mins
+    uid = serializer.loads(token, salt="email-verify", max_age=1800) #30 mins
     user = auth.get_user(uid)
 
     # print("UID VERIFY: ", uid)

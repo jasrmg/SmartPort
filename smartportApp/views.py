@@ -61,16 +61,16 @@ def get_vessel_with_latest_voyage_date():
   for vessel in vessels:
     latest_voyage = Voyage.objects.filter(vessel=vessel).order_by("-arrival_date").first()
 
-  vessel_data.append({
-    "name": vessel.name,
-    "imo": vessel.imo,
-    "type": vessel.get_vessel_type_display(),
-    "capacity": vessel.capacity,
-    "status": latest_voyage.status if latest_voyage else vessel.status,
-    "origin": latest_voyage.departure_port.port_name if latest_voyage else "N/A",
-    "destination": latest_voyage.arrival_port.port_name if latest_voyage else "N/A",
-    "eta": latest_voyage.arrival_date if latest_voyage else None,
-  })
+    vessel_data.append({
+      "name": vessel.name,
+      "imo": vessel.imo,
+      "type": vessel.get_vessel_type_display(),
+      "capacity": vessel.capacity,
+      "status": latest_voyage.status if latest_voyage else vessel.status,
+      "origin": latest_voyage.departure_port.port_name if latest_voyage else "N/A",
+      "destination": latest_voyage.arrival_port.port_name if latest_voyage else "N/A",
+      "eta": latest_voyage.eta.strftime("%b %d, %Y - %I:%M %p") if latest_voyage else None,
+    })
 
   return vessel_data
 
