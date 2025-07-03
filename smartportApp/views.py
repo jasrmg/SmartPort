@@ -55,7 +55,7 @@ def admin_all_vessels_view(request):
   return render(request, "smartportApp/admin/admin-vessels.html", context)
 
 
-from . models import Vessel, Voyage
+from . models import Vessel, Voyage, Port
 
 # HELPER FUNCTION FOR GETTING THE VESSEL LIST
 def get_vessel_with_latest_voyage_data():
@@ -77,6 +77,12 @@ def get_vessel_with_latest_voyage_data():
     })
 
   return vessel_data
+
+# API ENDPOINT FOR THE LIST OF PORTS
+def get_port_options(request):
+  ports = Port.objects.all().values("port_name")
+  port_list = [port["port_name"] for port in ports]
+  return JsonResponse({"ports": port_list})
 
 from django.views.decorators.csrf import csrf_exempt
 # ADD VESSEL 

@@ -70,7 +70,16 @@ document.addEventListener("DOMContentLoaded", function () {
     "Under Maintenance",
     "Delayed",
   ];
-  const portOptions = ["Manila", "Cebu", "Davao", "Zamboanga", "Iloilo"];
+  const portOptions = [];
+
+  // FETCH PORT OPTIONS FROM BACKEND API ON LOAD
+  fetch("/api/ports/")
+    .then((res) => res.json())
+    .then((data) => {
+      portOptions = data.ports || [];
+      initEditableCells();
+    })
+    .catch((error) => console.error("Failed to load port options: ", error));
 
   // Apply event delegation to all editable td cells
   document.querySelectorAll("table.vessels-table tbody td").forEach((cell) => {
@@ -493,4 +502,92 @@ const showVesselStatus = (message, isSuccess = true, modal) => {
 
   // SHOW THE DIV
   statusBox.style.display = "flex";
+};
+
+// REFACTORED LOGIC FOR MAKING THE TABLE TD TO EDITABLE IF CLICKED
+const initEditableCells = () => {
+  document.querySelectorAll("table.vessels-table tbody td").forEach((cell) => {
+    const header = cell
+      .closest("table")
+      .querySelectorAll("thead th")
+      [cell.cellIndex].textContent.trim();
+
+    const isEditable = ["Origin", "Destination", "Status"].includes(header);
+    if (!isEditable) return;
+
+    cell.classList.add("editable");
+
+    cell.addEventListener("click", (e) => {
+      if (cell.querySelector("select")) return;
+
+      const currentValue = cell.textContent.trim();
+      const select = document.createElement("select");
+
+      const options = header === "Status" ? statusOptions : portOptions;
+      options.forEach((option) => {
+        const optionEl = document.createElement("option");
+        optionEl.value = opt;
+        optionEl.textContent = opt;
+        if (opt === currentValue) optionEl.selected = true;
+        select.appendChild(optionEl);
+      });
+
+      cell.textContent = "";
+      cell.appendChild(select);
+      select.focus();
+
+      const commitChange = () => {
+        const newValue = select.value;
+
+        // send update to backend
+        const row = cell.closest("tr");
+        const imo = row.querySelector(".btn-icon-edit").dataset.imo;
+        const field = header.toLowerCase(); // kung origin, destination or status ba
+
+        fetch("/update-vessel-cell/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify({
+            imo,
+            field,
+            value: newValue,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              if (field === "status") {
+                const badge = document.createElement("span");
+                badge.classList.add("status-badge");
+
+                const classMap = {
+                  Arrived: "arrived",
+                  "In Transit": "in-transit",
+                  "Under Maintenance": "under-maintenance",
+                  Delayed: "delayed",
+                };
+
+                const badgeClass = classMap[newValue];
+                if (badgeClass) badge.classList.add(badgeClass);
+
+                badge.textContent = newValue;
+                cell.innerHTML = "";
+                cell.appendChild(badge);
+              } else {
+                cell.textContent = newValue;
+              }
+            } else {
+              alert("Update Failed: ", data.message);
+              cell.textContent = currentValue;
+            }
+          });
+      };
+
+      select.addEventListener("blur", commitChange);
+      select.addEventListener("change", commitChange);
+    });
+  });
 };

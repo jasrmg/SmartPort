@@ -14,6 +14,8 @@ urlpatterns = [
 
   # ADD VESSEL
   path("api/vessels/add/", views.add_vessel, name="add-vessel"),
+  # API ENDPOINT FOR GETTING THE PORT LIST
+  path("api/ports/", views.get_port_options, name="get_port_options"),
 
   # CUSTOM
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),
