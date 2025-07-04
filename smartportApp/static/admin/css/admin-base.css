@@ -20,6 +20,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.leaflet-control-attribution {
+  display: none !important;
+}
+
 body {
   font-family: "Montserrat", sans-serif;
   background-color: var(--light);
@@ -231,10 +235,29 @@ h6 {
   padding: 1.5rem 1rem;
   position: fixed;
   height: 100vh;
-  /*overflow-y: hidden;*/
-  overflow-y: none;
+  overflow-y: auto;
   transition: width 0.3s ease;
   z-index: 100;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Add the same scrollbar styles as vessel-activity-log.html */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 .sidebar-collapsed {
@@ -313,6 +336,7 @@ h6 {
   margin-left: 80px;
   width: calc(100% - 80px);
 }
+
 /* END OF SIDEBAR COLLAPSE AND MAIN CONTENT CSS */
 
 /* START OF PAGE HEADER */

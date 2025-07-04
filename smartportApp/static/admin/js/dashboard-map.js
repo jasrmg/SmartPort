@@ -1,10 +1,9 @@
 // Initialize map centered on Philippines
 const map = L.map("vessel-map").setView([12.8797, 121.774], 6);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-}).addTo(map);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {}).addTo(
+  map
+);
 
 // ---------- NEW ----------
 const fetchPorts = async () => {

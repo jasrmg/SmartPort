@@ -10,7 +10,7 @@
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
 />
-<link rel="stylesheet" href="/static/ADMIN/assign-route.css" />
+<link rel="stylesheet" href="{% static 'admin/css/assign-route.css' %}" />
 {% endblock %}
 <!--BODY-->
 <!--START OF SIDEBAR-->
@@ -40,20 +40,20 @@
       </a>
       <ul class="nav-sub-menu" style="height: auto">
         <li>
-          <a href="admin-vessels.html" class="nav-sub-link">
+          <a href="{% url 'all-vessels' %}" class="nav-sub-link">
             <i class="fas fa-list"></i> <span>View All Vessels</span>
           </a>
         </li>
         <li>
-          <a href="vessel-activity-log.html" class="nav-sub-link">
-            <i class="fas fa-history"></i>
-            <span>Activity Log</span>
+          <a href="{% url 'assign-route' %}" class="nav-sub-link active">
+            <i class="fas fa-route"></i>
+            <span>Assign Route</span>
           </a>
         </li>
         <li>
-          <a href="assign-route.html" class="nav-sub-link active">
-            <i class="fas fa-route"></i>
-            <span>Assign Route</span>
+          <a href="" class="nav-sub-link">
+            <i class="fas fa-compass"></i>
+            <span>Manage Voyage</span>
           </a>
         </li>
         <li>
@@ -62,10 +62,16 @@
             <span>Voyage Report</span>
           </a>
         </li>
+        <li>
+          <a href="vessel-activity-log.html" class="nav-sub-link">
+            <i class="fas fa-history"></i>
+            <span>Activity Log</span>
+          </a>
+        </li>
       </ul>
     </li>
     <li class="nav-item">
-      <a href="admin-users.html" class="nav-link">
+      <a href="{% url 'user-management' %}" class="nav-link">
         <i class="fas fa-users"></i>
         <span>Users</span>
       </a>
@@ -88,9 +94,23 @@
         <i class="fas fa-cog"></i>
         <span>Settings</span>
       </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
     </li>
     <li class="nav-item">
-      <a href="index.html" class="nav-link">
+      <a id="SBlogout-btn" class="nav-link">
         <i class="fas fa-sign-out-alt"></i>
         <span>Logout</span>
       </a>
@@ -185,5 +205,5 @@
 {% block script %}
 <!-- FLATPICKER JS -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="/static/ADMIN/assign-route.js"></script>
+<script src="{% static 'admin/js/assign-route.js' %}"></script>
 {% endblock %}

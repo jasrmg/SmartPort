@@ -11,6 +11,7 @@ urlpatterns = [
   path("admin-dashboard/", views.admin_dashboard, name="admin-dashboard"),
   path("user-management/", views.admin_users_view, name="user-management"),
   path("all-vessels/", views.admin_all_vessels_view, name="all-vessels"),
+  path("assign-route/", views.assign_route_view, name="assign-route"),
 
   # PORTS ENDPOINT FOR THE LEAFLET MAP
   path('get-ports/', views.get_ports, name='get_ports'),

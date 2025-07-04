@@ -54,6 +54,9 @@ def admin_all_vessels_view(request):
   }
   return render(request, "smartportApp/admin/admin-vessels.html", context)
 
+def assign_route_view(request):
+  return render(request, "smartportApp/admin/assign-route.html")
+
 
 from . models import Vessel, Voyage, Port
 
