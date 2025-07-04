@@ -53,16 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (hasSubmenu) {
       link.addEventListener("click", function (e) {
-        // If the link has a real URL (not just #), navigate to it
-        if (this.getAttribute("href") && this.getAttribute("href") !== "#") {
-          window.location.href = this.getAttribute("href");
+        const href = this.getAttribute("href");
+        if (href && href !== "#") {
+          window.location.href = href;
           return;
         }
 
         e.preventDefault();
-
-        // Reset userHasClickedSubNav flag when clicking main Dashboard nav
-        // This ensures sub-links won't be active until explicitly clicked
         userHasClickedSubNav = false;
 
         // Remove active class from all sub-links when main nav is clicked
@@ -70,17 +67,34 @@ document.addEventListener("DOMContentLoaded", () => {
           subLink.classList.remove("active");
         });
 
-        // Don't toggle if sidebar is collapsed - use hover instead
         if (!sidebar.classList.contains("sidebar-collapsed")) {
           item.classList.toggle("expanded");
 
-          // Close other expanded items
+          const subMenu = item.querySelector(".nav-sub-menu");
+          if (item.classList.contains("expanded") && subMenu) {
+            subMenu.style.height = subMenu.scrollHeight + "px";
+          } else if (subMenu) {
+            subMenu.style.height = "0";
+          }
+
+          // Close other expanded navs
           navItems.forEach((otherItem) => {
             if (
               otherItem !== item &&
               otherItem.classList.contains("expanded")
             ) {
               otherItem.classList.remove("expanded");
+              const otherSubMenu = otherItem.querySelector(".nav-sub-menu");
+              if (otherSubMenu) otherSubMenu.style.height = "0";
+            }
+          });
+
+          // ✅ Re-highlight active sub-link (restore it after expanding)
+          const currentPath = window.location.pathname;
+          const subLinks = item.querySelectorAll(".nav-sub-link");
+          subLinks.forEach((subLink) => {
+            if (subLink.getAttribute("href") === currentPath) {
+              subLink.classList.add("active");
             }
           });
         }
@@ -125,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
       this.classList.add("active");
 
       const targetId = href;
+      if (!targetId || targetId === "#") return;
       const targetElement = document.querySelector(targetId);
 
       if (targetElement) {
@@ -182,6 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
     sidebar.classList.add("sidebar-collapsed");
     mainContent.classList.add("sidebar-collapsed-content");
   }
+
+  setActiveSubNavOnLoad();
 
   /* ------------------------------- START OF DROPDOWN FOR USER PROFILE -------------------------------*/
   const profileToggle = document.querySelector(".user-profile i.fas");
@@ -599,4 +616,25 @@ const clearEditProfileModal = () => {
   statusBox.classList.remove("success", "error", "warning");
   statusIcon.className = "fas";
   statusMsg.textContent = "";
+};
+
+const setActiveSubNavOnLoad = () => {
+  const currentPath = window.location.pathname;
+
+  document.querySelectorAll(".nav-sub-link").forEach((subLink) => {
+    const linkHref = subLink.getAttribute("href");
+    if (linkHref === currentPath) {
+      subLink.classList.add("active");
+
+      const parentItem = subLink.closest(".nav-item");
+      if (parentItem) {
+        parentItem.classList.add("expanded");
+
+        const subMenu = parentItem.querySelector(".nav-sub-menu");
+        if (subMenu) {
+          subMenu.style.height = subMenu.scrollHeight + "px";
+        }
+      }
+    }
+  });
 };
