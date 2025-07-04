@@ -357,6 +357,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Rebind the newly added row’s edit and delete buttons
       bindVesselActionButtons(row);
+      makeStatusCellsEditable();
+
       btnText.textContent = "Add Vessel";
       spinner.style.display = "none";
 
@@ -365,7 +367,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("Error: ", error);
     } finally {
       setTimeout(() => {
-        addVesselModal.style.display = "none";
+        closeAddVesselModal();
       }, 1500);
     }
   });
