@@ -350,6 +350,10 @@ def assign_route(request):
     return JsonResponse({"error": str(e)}, status=500)
   
   
+# MANAGE VOYAGE
+def manage_voyage_view(request):
+  return render(request, "smartportApp/admin/manage-voyage.html")
+
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

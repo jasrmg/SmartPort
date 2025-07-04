@@ -1,0 +1,450 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ---------- START OF MAIN CONTENT ---------- */
+.main-content {
+  flex: 1;
+  margin-left: 250px;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  min-height: 100vh;
+  width: calc(100% - 250px);
+  max-width: calc(100% - 80px);
+  overflow-x: hidden;
+}
+
+.sidebar-collapsed-content {
+  margin-left: 80px;
+  width: calc(100% - 80px);
+}
+
+/* Page Content */
+.dashboard-content {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.page-title h1 {
+  font-size: 1.8rem;
+  color: var(--primary);
+}
+
+.page-title p {
+  color: var(--dark-gray);
+  font-size: 0.95rem;
+}
+
+/* ---------- BUTTON STYLES ---------- */
+.btn {
+  display: inline-block;
+  padding: 0.7rem 1.2rem;
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn:hover {
+  background-color: #248a4a;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+}
+
+.btn-secondary:hover {
+  background-color: #172f6e;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--secondary);
+  color: var(--secondary);
+}
+
+.btn-outline:hover {
+  background: rgba(30, 58, 138, 0.1);
+  transform: none;
+}
+/* ---------- END OF BUTTON STYLES ---------- */
+/* Main Content Sections */
+.main-sections {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.section {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* ---------- START OF VESSEL TABLE ---------- */
+.table-responsive {
+  max-height: 380px;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive thead th {
+  position: sticky;
+  top: 0;
+  background-color: var(--light);
+  z-index: 1;
+}
+
+.table-responsive::-webkit-scrollbar {
+  width: 8px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+  background-color: var(--dark-gray);
+  border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-track {
+  background-color: var(--light);
+}
+
+.vessels-table {
+  width: 100%;
+  min-width: 800px; /* Minimum width to prevent squishing */
+  /* border-collapse: collapse; */
+}
+
+.vessels-table th {
+  text-align: left;
+  padding: 0.8rem 1rem;
+  background-color: var(--light);
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+/* FIXED WIDTH FOR THE STATUS COLUMN */
+.status-column {
+  width: 208px;
+  min-width: 208px;
+  max-width: 208px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.status-column select {
+  width: 100%;
+  box-sizing: border-box;
+}
+.to-column,
+.from-column {
+  width: 150px;
+  min-width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.to-column select,
+.from-column select {
+  width: 100%;
+  box-sizing: border-box;
+}
+/* DROPDOWN CSS FOR THE VESSEL TABLE */
+table.vessels-table td select {
+  width: 100%;
+  padding: 6px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  appearance: none; /* Remove default browser style */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 8L0.803848 0.5L11.1962 0.5L6 8Z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 8px;
+}
+table.vessels-table td select:hover,
+table.vessels-table td select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.vessels-table td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--gray);
+  font-size: 0.95rem;
+}
+
+.vessels-table tr:last-child td {
+  border-bottom: none;
+}
+
+.vessels-table tr:hover td {
+  background-color: rgba(70, 130, 180, 0.05);
+}
+
+/* EDITABLE TABLE */
+td.editable {
+  cursor: pointer;
+}
+
+td.editable:hover {
+  background-color: #f0f8ff;
+}
+
+.sort-btn {
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+}
+
+.sort-btn i {
+  font-size: 12px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.assigned {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #ff9800;
+}
+
+.status-badge.available {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.status-badge.maintenance {
+  background-color: rgba(33, 150, 243, 0.15);
+  color: #2196f3;
+}
+
+/* SUCCESS AND ERROR TOAST */
+.toast-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* space between icon and text */
+  padding: 1rem;
+}
+
+/* Add Vessel Form */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.status-message {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  gap: 1rem;
+}
+
+.status-message i {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+.status-message.success {
+  background-color: var(--accent);
+  color: white;
+}
+
+.status-message.error {
+  background-color: var(--danger);
+  color: white;
+}
+
+/* .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--primary);
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--gray);
+  border-radius: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--light-blue);
+  box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.2);
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--gray);
+  border-radius: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 16px;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--light-blue);
+  box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.2);
+} */
+/* FOR EDIT ACTIVE VESSEL CSS */
+.form-group {
+  margin-bottom: 0.8rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--gray);
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #f8f8f8;
+}
+
+/* ADD VESSEL MODAL */
+#addVesselModal .form-group input:focus,
+#addVesselModal .form-group select:focus {
+  outline: none;
+  border-color: var(--accent, #2d9c5a);
+  box-shadow: 0 0 0 2px rgba(45, 156, 90, 0.2);
+}
+
+.btn-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-group .btn {
+  flex: 1;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    padding: 1rem;
+  }
+
+  .sidebar-collapsed {
+    width: 70%;
+  }
+
+  .nav-menu {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .nav-item {
+    margin-bottom: 0;
+    margin-right: 0.5rem;
+  }
+
+  .nav-link {
+    white-space: nowrap;
+  }
+
+  .search-bar {
+    width: 200px;
+  }
+}
+
+/* Smooth transition for all section containers */
+.section,
+.card,
+.dashboard-grid,
+.analytics-section,
+.chart-card {
+  transition: width 0.3s ease, max-width 0.3s ease;
+  box-sizing: border-box;
+}

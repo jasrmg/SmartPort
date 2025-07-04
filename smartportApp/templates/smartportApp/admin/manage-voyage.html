@@ -1,0 +1,253 @@
+{% extends "smartportApp/admin/admin-base.html" %}
+<!---->
+{% load static %}
+<!---->
+{% block title %} Manage Voyage {% endblock %}
+<!---->
+{% block head %}
+<link rel="stylesheet" href="{% static 'admin/css/manage-voyage.css' %}" />
+{% endblock %}
+<!--BODY-->
+
+<!--START OF SIDEBAR-->
+{% block sidebar %}
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-anchor logo-icon"></i>
+      <span class="logo-text">SMART PORT</span>
+      <button class="collapse-btn">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+  <ul class="nav-menu">
+    <li class="nav-item">
+      <a href="{% url 'admin-dashboard' %}" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li class="nav-item expanded">
+      <a href="" class="nav-link active">
+        <i class="fas fa-ship"></i>
+        <span>Vessels</span>
+      </a>
+      <ul class="nav-sub-menu" style="height: auto">
+        <li>
+          <a href="{% url 'all-vessels' %}" class="nav-sub-link">
+            <i class="fas fa-list"></i>
+            <span>View All Vessels</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'assign-route' %}" class="nav-sub-link">
+            <i class="fas fa-route"></i>
+            <span>Assign Route</span>
+          </a>
+        </li>
+        <li>
+          <a href="" class="nav-sub-link active">
+            <i class="fas fa-compass"></i>
+            <span>Manage Voyage</span>
+          </a>
+        </li>
+        <li>
+          <a href="voyage-report.html" class="nav-sub-link">
+            <i class="fas fa-file-alt"></i>
+            <span>Voyage Report</span>
+          </a>
+        </li>
+        <li>
+          <a href="vessel-activity-log.html" class="nav-sub-link">
+            <i class="fas fa-history"></i>
+            <span>Activity Log</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'user-management' %}" class="nav-link">
+        <i class="fas fa-users"></i>
+        <span>Users</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="manifest.html" class="nav-link">
+        <i class="fas fa-file-alt"></i>
+        <span>Manifests</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="admin-reports.html" class="nav-link">
+        <i class="fas fa-chart-line"></i>
+        <span>Reports</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+<!-- MAIN CONTENT -->
+{% block content %}
+<!-- Dashboard Content -->
+<div class="dashboard-content">
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Voyage Management</h1>
+      <p>
+        View all active voyages in progress. Monitor key details and update
+        voyage status directly from the table.
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Sections -->
+  <div class="main-sections">
+    <!-- Vessels Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Active Voyage</h2>
+      </div>
+
+      <div class="table-responsive">
+        <table class="vessels-table">
+          <thead>
+            <tr>
+              <th>
+                <button class="sort-btn" data-column="0" data-order="none">
+                  Voyage No. <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="1" data-order="none">
+                  Vessel Name <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="2" data-order="none">
+                  Origin <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="3" data-order="none">
+                  Destination <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="3" data-order="none">
+                  Departure <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="3" data-order="none">
+                  ETA <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>
+                <button class="sort-btn" data-column="3" data-order="none">
+                  Status <i class="fas fa-sort"></i>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>VN2025-001</td>
+              <td>MV Pacific Voyager</td>
+              <td>Manila</td>
+              <td>Cebu</td>
+              <td>Jul 5, 2025 – 08:00 AM</td>
+              <td>Jul 6, 2025 – 02:00 PM</td>
+            </tr>
+            <tr>
+              <td>VN2025-001</td>
+              <td>MV Pacific Voyager</td>
+              <td>Manila</td>
+              <td>Cebu</td>
+              <td>Jul 5, 2025 – 08:00 AM</td>
+              <td>Jul 6, 2025 – 02:00 PM</td>
+            </tr>
+            <tr>
+              <td>VN2025-001</td>
+              <td>MV Pacific Voyager</td>
+              <td>Manila</td>
+              <td>Cebu</td>
+              <td>Jul 5, 2025 – 08:00 AM</td>
+              <td>Jul 6, 2025 – 02:00 PM</td>
+            </tr>
+            <tr>
+              <td>VN2025-001</td>
+              <td>MV Pacific Voyager</td>
+              <td>Manila</td>
+              <td>Cebu</td>
+              <td>Jul 5, 2025 – 08:00 AM</td>
+              <td>Jul 6, 2025 – 02:00 PM</td>
+            </tr>
+            <tr>
+              <td>VN2025-002</td>
+              <td>MV Eastern Star</td>
+              <td>Cebu</td>
+              <td>Iloilo</td>
+              <td>Jul 4, 2025 – 09:30 AM</td>
+              <td>Jul 4, 2025 – 07:00 PM</td>
+            </tr>
+            <tr>
+              <td>VN2025-003</td>
+              <td>MV South Pearl</td>
+              <td>Davao</td>
+              <td>General Santos</td>
+              <td>Jul 5, 2025 – 06:45 AM</td>
+              <td>Jul 5, 2025 – 01:15 PM</td>
+            </tr>
+            <tr>
+              <td>VN2025-004</td>
+              <td>MV Northwind</td>
+              <td>Subic</td>
+              <td>Batangas</td>
+              <td>Jul 5, 2025 – 10:00 AM</td>
+              <td>Jul 5, 2025 – 03:30 PM</td>
+            </tr>
+            <tr>
+              <td>VN2025-005</td>
+              <td>MV Horizon Crest</td>
+              <td>Zamboanga</td>
+              <td>Manila</td>
+              <td>Jul 3, 2025 – 07:00 AM</td>
+              <td>Jul 4, 2025 – 06:00 AM</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block modal %} {% endblock %}
+<!---->
+{% block script %} {% endblock %}

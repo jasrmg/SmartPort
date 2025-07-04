@@ -12,6 +12,7 @@ urlpatterns = [
   path("user-management/", views.admin_users_view, name="user-management"),
   path("all-vessels/", views.admin_all_vessels_view, name="all-vessels"),
   path("assign-route/", views.assign_route_view, name="assign-route"),
+  path("manage-voyage/", views.manage_voyage_view, name="manage-voyage"),
 
   # PORTS ENDPOINT FOR THE LEAFLET MAP COMPLETE PORT DETAILS
   path('get-ports/', views.get_ports, name='get_ports'),
