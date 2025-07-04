@@ -85,15 +85,18 @@ def get_ports(request):
 @require_GET
 def get_vessels(request):
   try:
-    all_vessels = get_vessels_data()
-
-    # filter to only show the available vessels
-    available_vessels = [
-      vessel for vessel in all_vessels
-      if (Vessel.objects.get(pk=vessel["vessel_id"]).status == Vessel.VesselStatus.AVAILABLE)
+    available_vessels_qs = Vessel.objects.filter(status=Vessel.VesselStatus.AVAILABLE)
+    
+    # Convert to JSON response
+    vessels_data = [
+      {
+        "vessel_id": vessel.vessel_id,
+        "name": vessel.name,
+      }
+      for vessel in available_vessels_qs
     ]
 
-    return JsonResponse({"vessels": available_vessels})
+    return JsonResponse({"vessels": vessels_data})
   
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
@@ -181,7 +184,6 @@ def update_vessel_name(request):
 
 
 # DELETE VESSEL:
-
 @require_POST
 def delete_vessel(request):
   try:
@@ -249,6 +251,105 @@ def add_vessel(request):
     traceback.print_exc()
     return JsonResponse({"error": str(e)}, status=500)
 
+
+# ASSIGN ROUTE:
+from django.utils.timezone import now
+# helper function to generate the voyage number:
+def generate_voyage_number(vessel_id):
+  timestamp = now().strftime("%Y%m%d-%H%M")
+  return f"VOY-{timestamp}-{vessel_id}"
+
+
+from datetime import datetime
+from django.utils import timezone
+
+# ASSIGN ROUTE MAIN LOGIC:
+@require_POST
+def assign_route(request):
+  print("[DEBUG] assign_route view was called")
+  try:
+    data = json.loads(request.body)
+
+    vessel_id = data.get("vessel_id")
+    departure_str = data.get("departure")
+    eta_str = data.get("eta")
+    origin_id = data.get("origin_id")
+    destination_id = data.get("destination_id")
+
+
+    # Validate required fields
+    if not all([vessel_id, departure_str, eta_str, origin_id, destination_id]):
+      return JsonResponse({"error": "All fields are required."}, status=400)
+
+    # Parse datetime fields
+    try:
+      departure_dt = datetime.strptime(departure_str, "%Y-%m-%d %H:%M")
+      eta_dt = datetime.strptime(eta_str, "%Y-%m-%d %H:%M")
+
+      # Make them timezone-aware using Django's timezone helper
+      departure_dt = timezone.make_aware(departure_dt)
+      eta_dt = timezone.make_aware(eta_dt)
+    except ValueError:
+      return JsonResponse({"error": "Invalid date format."}, status=400)
+
+    if departure_dt < now():
+      return JsonResponse({"error": "Departure must be in the future."}, status=400)
+
+    if eta_dt <= departure_dt:
+      return JsonResponse({"error": "ETA must be after departure."}, status=400)
+
+    # Fetch related models
+    try:
+      vessel = Vessel.objects.get(pk=vessel_id)
+    except Vessel.DoesNotExist:
+      return JsonResponse({"error": "Vessel not found."}, status=404)
+
+    if vessel.status != Vessel.VesselStatus.AVAILABLE:
+      return JsonResponse({"error": "Selected vessel is not available."}, status=400)
+
+    try:
+      origin = Port.objects.get(pk=origin_id)
+      destination = Port.objects.get(pk=destination_id)
+    except Port.DoesNotExist:
+      return JsonResponse({"error": "Origin or destination port not found."}, status=404)
+
+    # Generate voyage number
+    voyage_number = generate_voyage_number(vessel_id)
+
+
+    print("✅ assign_route view reached")
+    print("Departure:", departure_str)
+    print("ETA:", eta_str)
+    print("Parsed departure:", departure_dt)
+    print("Parsed eta:", eta_dt)
+    print("Vessel ID:", vessel_id)
+    print("Origin ID:", origin_id)
+    print("Destination ID:", destination_id)
+
+
+    # Create voyage
+    voyage = Voyage.objects.create(
+      vessel=vessel,
+      departure_port=origin,
+      arrival_port=destination,
+      departure_date=departure_dt,
+      eta=eta_dt,
+      voyage_number=voyage_number
+    )
+
+    print(f"✅ Voyage #{voyage_number} assigned successfully to vessel ID {vessel_id}")
+
+    # Update vessel status
+    vessel.status = Vessel.VesselStatus.ASSIGNED
+    vessel.save()
+    print(f"✅ VESSEL ID {vessel_id} UPDATED TO ASSIGNED")
+
+    return JsonResponse({"message": "Voyage assigned successfully.", "voyage_number": voyage_number})
+
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
+  
+  
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

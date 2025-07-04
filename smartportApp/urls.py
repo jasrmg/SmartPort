@@ -31,6 +31,8 @@ urlpatterns = [
   path("api/vessels/update-name/", views.update_vessel_name, name="update_vessel_name"),
   # API ENDPOT TO DELETE VESSEL
   path('api/vessels/delete/', views.delete_vessel, name='delete_vessel'),
+  # ASSIGN ROUTE
+  path("assign-route/submit/", views.assign_route, name="assign_route_ajax"),
 
   # CUSTOM
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),

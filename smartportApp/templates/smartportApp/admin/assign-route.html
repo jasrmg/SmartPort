@@ -149,7 +149,7 @@
       </div>
       <div class="form-section">
         <div class="form-group">
-          <label class="form-label">Estimated Travel Time</label>
+          <label class="form-label">Estimated Time of Arrival</label>
           <input
             id="etaPicker"
             class="form-input"
@@ -177,20 +177,70 @@
     </div>
 
     <div class="route-actions">
-      <button class="btn btn-secondary">
-        <i class="fas fa-xmark"></i>
-        Clear
+      <button class="btn btn-secondary" id="assignRouteClrBtn">
+        <span class="btn-text">Clear</span>
       </button>
-      <button class="btn btn-primary">
-        <i class="fas fa-check"></i>
-        Assign Route
+      <button class="btn btn-primary" id="assignRouteBtn">
+        <span class="btn-text">Assign Route</span>
+        <span class="spinner" style="display: none"></span>
       </button>
     </div>
   </div>
 </div>
 {% endblock %}
 <!--MODAL BLOCK-->
-{% block modal %}{% endblock %}
+{% block modal %}
+<div id="confirmClearModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Clear Form</span>
+      <button class="modal-close" id="clearConfirmCloseBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>
+        This will remove all inputs from the route assignment form. Do you want
+        to proceed?
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-danger" id="confirmClearBtn">Yes, Clear</button>
+        <button class="btn btn-secondary" id="cancelClearBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="assignSuccessModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Voyage Assigned</span>
+    </div>
+    <div class="modal-body">
+      <p id="assignVoyageInfo">
+        Voyage <strong>#</strong> has been successfully created.
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="assignCloseSuccessModal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="assignErrorModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Error</span>
+    </div>
+    <div class="modal-body">
+      <p id="assignErrorMsg">An error occurred.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="assignCloseErrorModal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
 <!---->
 {% block script %}
 <!-- FLATPICKER JS -->
