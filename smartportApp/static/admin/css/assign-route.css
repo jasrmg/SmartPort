@@ -1,0 +1,566 @@
+.sidebar {
+  width: 250px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  padding: 1.5rem 1rem;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+  transition: width 0.3s ease;
+  z-index: 100;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Add the same scrollbar styles as vessel-activity-log.html */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 0 1.5rem 1.5rem;
+}
+
+/* ------------------ START OF TOPBAR ------------------ */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  margin: 0 -1.5rem 1.5rem -1.5rem;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+}
+
+.notification-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 1.2rem;
+  margin-right: 1.5rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--danger);
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--secondary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.8rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.user-name {
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.search-bar {
+  position: relative;
+  width: 300px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 0.7rem 1rem 0.7rem 2.5rem;
+  border: 1px solid var(--gray);
+  border-radius: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: var(--light-blue);
+  box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.2);
+}
+
+.search-bar i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--dark-gray);
+}
+
+/* ------------------ END OF TOPBAR ------------------ */
+
+/* ----------- START OF ROUTE ASSIGNMENT CONTAINER ----------- */
+
+.route-assignment-container {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  max-width: 100%;
+}
+
+/* ----------- FLATPICKR ----------- */
+/* .flatpickr-months .flatpickr-month {
+  background-color: var(--primary);
+}
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  background-color: var(--primary);
+}
+span.flatpickr-weekday {
+  background-color: var(--primary);
+}
+span.flatpickr-day.selected {
+  background-color: var(--secondary) !important;
+  border: none;
+}
+
+.flatpickr-calendar {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+} */
+
+/* Day cells */
+/* .flatpickr-day {
+  background: transparent;
+  color: white;
+  border-radius: 4px;
+}
+.flatpickr-day:hover {
+  background: #1e3a8a;
+  color: white;
+}
+*/
+
+/* Selected day */
+/* .flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+  background: #2d9c5a !important; 
+  color: white;
+} */
+
+/* Time inputs */
+/* .flatpickr-time input {
+  background: #0a1f44;
+  color: white;
+  border: 1px solid #1e3a8a;
+} */
+
+/* ------------------ END OF FLATPICKR CSS ------------------ */
+
+.route-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* grid-template-rows: repeat(2, 1fr); */
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.first-row {
+  grid-column: 1 / 3;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--primary);
+}
+
+.form-select,
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--gray);
+  border-radius: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  color: var(--primary);
+  transition: all 0.3s;
+  text-align: center;
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: var(--light-blue);
+  box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.2);
+}
+
+.ports-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.port-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid var(--gray);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.port-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--light-blue);
+}
+
+.port-card.selected {
+  border: 2px solid var(--accent);
+  background-color: rgba(45, 156, 90, 0.05);
+}
+
+.port-name {
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.port-location {
+  color: var(--dark-gray);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.port-function {
+  font-size: 0.85rem;
+  color: var(--dark-gray);
+  line-height: 1.4;
+}
+
+.route-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+/* ------------------ BUTTON CSS ------------------ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn i {
+  margin-right: 0.5rem;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #248c4d;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: var(--light);
+  color: var(--primary);
+  border: 1px solid var(--gray);
+}
+
+.btn-secondary:hover {
+  background-color: var(--gray);
+  transform: translateY(-2px);
+}
+
+.route-summary {
+  background-color: var(--light);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.route-summary h3 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.route-path {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.route-point {
+  background-color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--gray);
+  flex: 1;
+}
+
+.route-arrow {
+  color: var(--dark-gray);
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .route-form {
+    grid-template-columns: 1fr;
+  }
+
+  .ports-container {
+    grid-template-columns: 1fr;
+  }
+
+  .route-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+/* ----- SIDEBAR(?) ------ */
+.sidebar-collapsed {
+  width: 80px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: padding 0.3s ease;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  transition: flex-direction 0.3s ease, align-items 0.3s ease;
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+  margin-right: 0.8rem;
+  color: var(--highlight);
+}
+
+.logo-text {
+  font-family: "Exo 2", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-right: 1rem;
+}
+
+.collapse-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.4rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+  padding: 0.4rem;
+  position: relative;
+  z-index: 5;
+}
+
+.collapse-btn:hover {
+  opacity: 1;
+}
+
+.nav-menu {
+  list-style: none;
+}
+
+.nav-item {
+  margin-bottom: 0.5rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.nav-link i {
+  font-size: 1.1rem;
+  margin-right: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-sub-menu {
+  list-style: none;
+  margin-left: 2.5rem;
+  height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.nav-item.expanded .nav-sub-menu {
+  height: auto;
+  margin-top: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.nav-sub-link {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+  white-space: nowrap; /* Prevent text wrapping in sub-links */
+  margin-bottom: 0.2rem;
+}
+
+.nav-sub-link i {
+  font-size: 0.9rem;
+  width: 20px;
+  margin-right: 0.5rem;
+  text-align: center;
+}
+
+.nav-sub-link:hover,
+.nav-sub-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Sidebar collapsed state styling */
+.sidebar-collapsed .sidebar-header {
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.sidebar-collapsed .logo {
+  flex-direction: column;
+  align-items: center;
+}
+
+.sidebar-collapsed .logo-text {
+  display: none;
+}
+
+.sidebar-collapsed .logo-icon {
+  margin-right: 0;
+  margin-top: 3rem;
+  margin-bottom: 0;
+  font-size: 1.8rem;
+}
+
+.sidebar-collapsed .nav-item.expanded .nav-sub-menu {
+  height: 0;
+}
+
+.sidebar-collapsed .collapse-btn {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0;
+  order: -1;
+  padding: 0.2rem;
+}
+
+/* Sidebar collapsed state sub-menu styles */
+.sidebar-collapsed .nav-sub-menu {
+  display: none; /* Hide submenus completely when sidebar is collapsed */
+}
+
+.sidebar-collapsed .logo-text,
+.sidebar-wcollapsed .nav-link span {
+  display: none;
+}
+
+.sidebar-collapsed .nav-link {
+  justify-content: center;
+  padding: 0.8rem 0;
+}
+
+.sidebar-collapsed .nav-link i {
+  margin-right: 0;
+  font-size: 1.3rem;
+}
+
+.sidebar-collapsed-content {
+  margin-left: 80px;
+  width: calc(100% - 80px);
+}
