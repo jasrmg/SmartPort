@@ -214,7 +214,7 @@ def add_vessel(request):
         "id": vessel.vessel_id,
         "name": vessel.name,
         "imo": vessel.imo,
-        "type": vessel.vessel_type,
+        "type": vessel.get_vessel_type_display(),
         "capacity": vessel.capacity
       }
     })

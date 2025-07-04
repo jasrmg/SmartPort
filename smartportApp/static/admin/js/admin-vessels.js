@@ -5,6 +5,14 @@ const vesselStatusChoices = [
 ];
 const tableBody = document.querySelector(".vessels-table tbody");
 
+let targetRowToDelete = null;
+let targetIMO = null;
+
+const deleteVesselModal = document.getElementById("deleteVesselModal");
+const deleteVesselCloseBtn = document.getElementById("deleteVesselCloseBtn");
+const deleteVesselCancelBtn = document.getElementById("cancelDeleteBtn");
+const deleteVesselConfirmBtn = document.getElementById("confirmDeleteBtn");
+
 document.addEventListener("DOMContentLoaded", function () {
   // ------------------ SORT TABLE LOGIC ------------------
   const sortButtons = document.querySelectorAll(".sort-btn");
@@ -96,8 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": document.querySelector('meta[name="csrf-token"]')
-            .content,
+          "X-CSRFToken": csrftoken,
         },
         body: JSON.stringify({
           name: newName,
@@ -173,13 +180,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // ------------------ END OF EDIT VESSEL MODAL ------------------
 
   // ------------------ DELETE VESSEL CONFIRMATION MODAL ------------------
-  const deleteVesselModal = document.getElementById("deleteVesselModal");
-  const deleteVesselCloseBtn = document.getElementById("deleteVesselCloseBtn");
-  const deleteVesselCancelBtn = document.getElementById("cancelDeleteBtn");
-  const deleteVesselConfirmBtn = document.getElementById("confirmDeleteBtn");
-
-  let targetRowToDelete = null;
-  let targetIMO = null;
 
   // OPEN DELETE VESSEL MODAL:
   document.querySelectorAll(".btn-icon.delete").forEach((btn) => {
@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   deleteVesselConfirmBtn.addEventListener("click", async () => {
-    if (!targetRowToDelete) return;
+    if (!targetRowToDelete || !targetIMO) return;
 
     const statusBox = deleteVesselModal.querySelector(".status-message");
     const statusText = statusBox.querySelector(".status-message-text");
@@ -301,8 +301,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const response = await fetch("/api/vessels/add/", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
         },
         body: JSON.stringify({
           name,
@@ -319,12 +319,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // SHOW ADD VESSEL STATUS:
       showVesselStatus("Vessel Creation Successful", true, addVesselModal);
+
+      // INSERT INTO TABLE
+      const vessel = data.vessel;
+      const tableBody = document.querySelector(".vessels-table tbody");
+
+      // If "No vessels found..." row exists, remove it
+      const emptyRow = tableBody.querySelector("td[colspan]");
+      if (emptyRow) {
+        emptyRow.parentElement.remove();
+      }
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${vessel.name}</td>
+        <td>${vessel.imo}</td>
+        <td>${vessel.type}</td>
+        <td class="status-column">
+          <span class="status-badge available">Available</span>
+        </td>
+        <td>
+          <button
+            class="btn-icon edit"
+            data-name="${vessel.name}"
+            data-type="${vessel.type}"
+            data-imo="${vessel.imo}"
+            data-capacity="${vessel.capacity}"
+          >
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-icon delete" data-imo="${vessel.imo}">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      `;
+      tableBody.appendChild(row);
+
+      // Rebind the newly added row’s edit and delete buttons
+      bindVesselActionButtons(row);
+      btnText.textContent = "Add Vessel";
+      spinner.style.display = "none";
+
       this.reset();
     } catch (error) {
       console.log("Error: ", error);
     } finally {
-      btnText.textContent = "Add Vessel";
-      spinner.style.display = "none";
+      setTimeout(() => {
+        addVesselModal.style.display = "none";
+      }, 1500);
     }
   });
 
@@ -604,4 +646,37 @@ const sortTableByColumn = (columnIndex, order) => {
 const getCellText = (row, index) => {
   const cell = row.children[index];
   return cell ? cell.textContent.trim().toLowerCase() : "";
+};
+
+const bindVesselActionButtons = (row) => {
+  const editBtn = row.querySelector(".btn-icon.edit");
+  const deleteBtn = row.querySelector(".btn-icon.delete");
+  const updateEditVesselBtn = document.getElementById("editVesselUpdateBtn");
+
+  if (editBtn) {
+    editBtn.addEventListener("click", () => {
+      const name = editBtn.getAttribute("data-name");
+      const type = editBtn.getAttribute("data-type");
+      const imo = editBtn.getAttribute("data-imo");
+      const capacity = editBtn.getAttribute("data-capacity");
+
+      document.getElementById("vesselName").value = name;
+      document.getElementById("vesselIMO").value = imo;
+      document.getElementById("vesselType").value = type;
+      document.getElementById("vesselCapacity").value = capacity;
+
+      originalName = name;
+      updateEditVesselBtn.disabled = true;
+      document.getElementById("editVesselModal").style.display = "flex";
+    });
+  }
+
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      targetRowToDelete = deleteBtn.closest("tr");
+      targetIMO = deleteBtn.dataset.imo;
+      deleteVesselModal.style.display = "flex";
+    });
+  }
 };
