@@ -13,13 +13,19 @@ urlpatterns = [
   path("all-vessels/", views.admin_all_vessels_view, name="all-vessels"),
   path("assign-route/", views.assign_route_view, name="assign-route"),
 
-  # PORTS ENDPOINT FOR THE LEAFLET MAP
+  # PORTS ENDPOINT FOR THE LEAFLET MAP COMPLETE PORT DETAILS
   path('get-ports/', views.get_ports, name='get_ports'),
+  # PORTS ENDPOINT FOR NAME AND ID ONLY
+  path('get-port-options/', views.get_port_options, name="get_port_options"),
+  # VESSEL LIST
+  path("get-vessels/", views.get_vessels, name="get_vessels"),
 
   # ADD VESSEL
   path("api/vessels/add/", views.add_vessel, name="add-vessel"),
-  # API ENDPOINT FOR GETTING THE PORT LIST
+
+  # API ENDPOINT FOR GETTING THE PORT LIST FOR DROPDOWNS
   path("api/ports/", views.get_port_options, name="get_port_options"),
+  
   # API ENDPOINT FOR UPDATING THE TABLE IN THE VIEW ALL VESSELS
   path("update-vessel-status/", views.update_vessel_status, name="update_vessel_status"),
   path("api/vessels/update-name/", views.update_vessel_name, name="update_vessel_name"),

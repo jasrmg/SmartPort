@@ -28,7 +28,7 @@
 
   <ul class="nav-menu">
     <li class="nav-item">
-      <a href="admin-dashboard.html" class="nav-link">
+      <a href="{% url 'admin-dashboard' %}" class="nav-link">
         <i class="fas fa-tachometer-alt"></i>
         <span>Dashboard</span>
       </a>
@@ -131,14 +131,10 @@
   <div class="route-assignment-container">
     <div class="route-form">
       <div class="form-section first-row">
+        <!--VESSEL DROPDOWN-->
         <div class="form-group">
           <label class="form-label">Select Vessel</label>
-          <select class="form-select">
-            <option value="">Choose a vessel...</option>
-            <option value="mv_pacific">MV Pacific Navigator</option>
-            <option value="mv_oriental">MV Oriental Star</option>
-            <option value="mv_manila">MV Manila Bay</option>
-          </select>
+          <select class="form-select" name="vessel" id="vesselSelect"></select>
         </div>
       </div>
       <div class="form-section">
@@ -165,22 +161,16 @@
       <div class="form-section">
         <div class="form-group">
           <label class="form-label">Origin</label>
-          <select class="form-select">
-            <option value="">Choose a vessel...</option>
-            <option value="mv_pacific">MV Pacific Navigator</option>
-            <option value="mv_oriental">MV Oriental Star</option>
-            <option value="mv_manila">MV Manila Bay</option>
+          <select class="form-select" name="origin" id="originSelect">
+            <option value="">Select Origin Port</option>
           </select>
         </div>
       </div>
       <div class="form-section">
         <div class="form-group">
           <label class="form-label">Destination</label>
-          <select class="form-select">
-            <option value="">Choose a vessel...</option>
-            <option value="mv_pacific">MV Pacific Navigator</option>
-            <option value="mv_oriental">MV Oriental Star</option>
-            <option value="mv_manila">MV Manila Bay</option>
+          <select class="form-select" name="destination" id="destinationSelect">
+            <option value="">Select Destination Port</option>
           </select>
         </div>
       </div>

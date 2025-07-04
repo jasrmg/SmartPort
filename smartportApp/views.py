@@ -7,6 +7,11 @@ from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from firebase_admin import auth
 from accounts.models import UserProfile
 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
+import json
+from smartportApp.models import Vessel
 
 
 
@@ -77,15 +82,30 @@ def get_ports(request):
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
 
+@require_GET
+def get_vessels(request):
+  try:
+    all_vessels = get_vessels_data()
+
+    # filter to only show the available vessels
+    available_vessels = [
+      vessel for vessel in all_vessels
+      if (Vessel.objects.get(pk=vessel["vessel_id"]).status == Vessel.VesselStatus.AVAILABLE)
+    ]
+
+    return JsonResponse({"vessels": available_vessels})
+  
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
+
 # HELPER FUNCTION FOR GETTING THE VESSEL LIST
 def get_vessels_data():
   vessels = Vessel.objects.all()
   vessel_data = []
 
   for vessel in vessels:
-    latest_voyage = Voyage.objects.filter(vessel=vessel).order_by("-arrival_date").first()
-
     vessel_data.append({
+      "vessel_id": vessel.vessel_id,
       "name": vessel.name,
       "imo": vessel.imo,
       "type": vessel.get_vessel_type_display(),
@@ -95,11 +115,18 @@ def get_vessels_data():
 
   return vessel_data
 
-# API ENDPOINT FOR THE LIST OF PORTS
+# API ENDPOINT FOR THE LIST OF PORTS(NAME AND ID ONLY) FOR PRE FILLING DROPDOWNS
+@require_GET
 def get_port_options(request):
-  ports = Port.objects.all().values("port_name")
-  port_list = [port["port_name"] for port in ports]
-  return JsonResponse({"ports": port_list})
+  try:
+    ports = Port.objects.all()
+    data = [{
+      "id": port.port_id,
+      "name": port.port_name
+    } for port in ports]
+    return JsonResponse({"ports": data})
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
 
 # API ENDPOINT FOR UPDATING THE VESSELS TABLE IN THE ALL VESSELS
 @csrf_exempt
@@ -154,11 +181,6 @@ def update_vessel_name(request):
 
 
 # DELETE VESSEL:
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-import json
-from smartportApp.models import Vessel
 
 @require_POST
 def delete_vessel(request):

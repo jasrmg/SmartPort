@@ -9,6 +9,12 @@
   max-width: 100%;
 }
 
+select:disabled {
+  cursor: not-allowed;
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
 /* ----------- FLATPICKR ----------- */
 /* .flatpickr-months .flatpickr-month {
   background-color: var(--primary);
