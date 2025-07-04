@@ -11,6 +11,13 @@ const errorModal = document.getElementById("assignErrorModal");
 const errorMsg = document.getElementById("assignErrorMsg");
 
 document.addEventListener("DOMContentLoaded", function () {
+  window.addEventListener("storage", (event) => {
+    if (event.key === "vesselAdded") {
+      fetchAvailableVessels();
+      localStorage.removeItem("vesselAdded");
+    }
+  });
+
   // -------------- FLATPICKER --------------
   setupFlatpickr("#departurePicker");
   setupFlatpickr("#etaPicker");
@@ -138,6 +145,14 @@ document.addEventListener("DOMContentLoaded", function () {
       // Show success modal with voyage number
       showSuccessModal(result.voyage_number);
       fetchAvailableVessels();
+
+      localStorage.setItem(
+        "vesselUpdated",
+        JSON.stringify({
+          vesselId: parseInt(vessel),
+          newStatus: "Assigned",
+        })
+      );
 
       // Optional: Clear form
       document.getElementById("vesselSelect").selectedIndex = 0;

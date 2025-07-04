@@ -174,7 +174,7 @@
           </thead>
           <tbody>
             {% if vessels %} {% for vessel in vessels %}
-            <tr>
+            <tr data-vessel-id="{{ vessel.vessel_id }}">
               <td>{{ vessel.name }}</td>
               <td>{{ vessel.imo }}</td>
               <td>{{ vessel.type }}</td>

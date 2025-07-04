@@ -322,6 +322,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // INSERT INTO TABLE
       const vessel = data.vessel;
+      localStorage.setItem(
+        "vesselAdded",
+        JSON.stringify({
+          vesselId: vessel.id,
+          name: vessel.name,
+        })
+      );
       const tableBody = document.querySelector(".vessels-table tbody");
 
       // If "No vessels found..." row exists, remove it
@@ -331,6 +338,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const row = document.createElement("tr");
+      row.setAttribute("data-vessel-id", vessel.id);
       row.innerHTML = `
         <td>${vessel.name}</td>
         <td>${vessel.imo}</td>
@@ -682,3 +690,25 @@ const bindVesselActionButtons = (row) => {
     });
   }
 };
+
+// UPDATING THE TABLE IF THERE IS A VOYAGE MADE:
+window.addEventListener("storage", (event) => {
+  if (event.key === "vesselUpdated") {
+    try {
+      const data = JSON.parse(event.newValue);
+      const { vesselId, newStatus } = data;
+
+      if (vesselId && newStatus) {
+        const row = document.querySelector(`tr[data-vessel-id='${vesselId}']`);
+        if (row) {
+          const statusBadge = row.querySelector(".status-badge");
+          statusBadge.textContent = newStatus;
+          statusBadge.className = `status-badge ${newStatus.toLowerCase()}`;
+        }
+      }
+    } catch (e) {
+      console.error("Invalid vesselUpdated data in localStorage");
+    }
+    localStorage.removeItem("vesselUpdated");
+  }
+});
