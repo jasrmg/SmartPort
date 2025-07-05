@@ -291,3 +291,11 @@ td.editable:hover {
   font-family: "Montserrat", sans-serif;
   font-size: 0.95rem;
 }
+
+.toast-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* space between icon and text */
+  padding: 1rem;
+}

@@ -145,7 +145,7 @@ const showSpinner = (button) => {
   button.querySelector(".spinner").style.display = "inline-block";
 };
 
-const hideSpiner = (button) => {
+const hideSpinner = (button) => {
   button.querySelector(".spinner").style.display = "none";
 };
 

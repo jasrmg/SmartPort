@@ -388,6 +388,11 @@ def update_voyage_status(request):
     new_status = data.get("status")
     reason = data.get("reason", "").strip()
 
+    print("🚢 Voyage ID:", voyage_id)
+    print("✅ New Status:", new_status)
+    print("📝 Reason:", reason)
+
+
     if not voyage_id or not new_status:
       return JsonResponse({"error": "Missing required data."}, status=400)
 
@@ -402,6 +407,8 @@ def update_voyage_status(request):
 
     # Fetch the admin (you may be using Firebase, adjust this block as needed)
     user_email = request.user.email
+    print("👤 User Email:", user_email)
+    
     try:
       user = UserProfile.objects.get(email=user_email)
     except UserProfile.DoesNotExist:
@@ -439,7 +446,7 @@ def update_voyage_status(request):
         "vessel": {
           "name": voyage.vessel.name,
           "imo": voyage.vessel.imo,
-          "type": voyage.vessel.type
+          "type": voyage.vessel.vessel_type
         },
         "voyage_summary": {
           "voyage_number": voyage.voyage_number,
@@ -461,6 +468,7 @@ def update_voyage_status(request):
     return JsonResponse({"error": "Invalid JSON payload."}, status=400)
 
   except Exception as e:
+    print("🔥 Exception:", str(e)) 
     return JsonResponse({"error": str(e)}, status=500)
 
 # --------------------------------- CUSTOM ---------------------------------
