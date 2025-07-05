@@ -352,8 +352,30 @@ def assign_route(request):
   
 # MANAGE VOYAGE
 def manage_voyage_view(request):
-  return render(request, "smartportApp/admin/manage-voyage.html")
+  voyages = get_active_voyages()
+  context = {
+    "voyages": voyages
+  }
+  # print("VOYAGES: ")
+  # for v in voyages:
+  #   print(f"{v.voyage_number}: {v.departure_port} -> {v.arrival_port}")
 
+
+  return render(request, "smartportApp/admin/manage-voyage.html", context)
+
+
+# helper function to fetch the active voyage
+def get_active_voyages():
+  """
+  Returns a queryset of voyages that are currently active (not yet arrived).
+  """
+  return Voyage.objects.select_related(
+    'vessel', 
+    'departure_port', 
+    'arrival_port'
+    ).filter(
+      status__in=['in_transit', 'delayed']
+    ).order_by('-departure_date')
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

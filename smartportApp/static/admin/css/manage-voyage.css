@@ -256,187 +256,19 @@ td.editable:hover {
   font-weight: 500;
 }
 
-.status-badge.assigned {
+.status-badge.in_transit {
   background-color: rgba(255, 193, 7, 0.15);
   color: #ff9800;
 }
 
-.status-badge.available {
+.status-badge.arrived {
   background-color: rgba(76, 175, 80, 0.15);
   color: #4caf50;
 }
 
-.status-badge.maintenance {
-  background-color: rgba(33, 150, 243, 0.15);
-  color: #2196f3;
-}
-
-/* SUCCESS AND ERROR TOAST */
-.toast-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px; /* space between icon and text */
-  padding: 1rem;
-}
-
-/* Add Vessel Form */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-.status-message {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-  gap: 1rem;
-}
-
-.status-message i {
-  margin-right: 8px;
-  font-size: 1.2rem;
-}
-
-.status-message.success {
-  background-color: var(--accent);
-  color: white;
-}
-
-.status-message.error {
-  background-color: var(--danger);
-  color: white;
-}
-
-/* .form-group {
-  margin-bottom: 1.2rem;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--primary);
-}
-
-.form-control {
-  width: 100%;
-  padding: 0.8rem 1rem;
-  border: 1px solid var(--gray);
-  border-radius: 6px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.95rem;
-  transition: all 0.3s;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--light-blue);
-  box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.2);
-}
-
-.form-select {
-  width: 100%;
-  padding: 0.8rem 1rem;
-  border: 1px solid var(--gray);
-  border-radius: 6px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.95rem;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 16px;
-}
-
-.form-select:focus {
-  outline: none;
-  border-color: var(--light-blue);
-  box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.2);
-} */
-/* FOR EDIT ACTIVE VESSEL CSS */
-.form-group {
-  margin-bottom: 0.8rem;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 500;
-  margin-bottom: 0.4rem;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--gray);
-  border-radius: 6px;
-  font-size: 1rem;
-  background-color: #f8f8f8;
-}
-
-/* ADD VESSEL MODAL */
-#addVesselModal .form-group input:focus,
-#addVesselModal .form-group select:focus {
-  outline: none;
-  border-color: var(--accent, #2d9c5a);
-  box-shadow: 0 0 0 2px rgba(45, 156, 90, 0.2);
-}
-
-.btn-group {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.btn-group .btn {
-  flex: 1;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 992px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    height: auto;
-    padding: 1rem;
-  }
-
-  .sidebar-collapsed {
-    width: 70%;
-  }
-
-  .nav-menu {
-    display: flex;
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-  }
-
-  .nav-item {
-    margin-bottom: 0;
-    margin-right: 0.5rem;
-  }
-
-  .nav-link {
-    white-space: nowrap;
-  }
-
-  .search-bar {
-    width: 200px;
-  }
+.status-badge.delayed {
+  background-color: rgba(209, 67, 67, 0.15);
+  color: var(--danger);
 }
 
 /* Smooth transition for all section containers */

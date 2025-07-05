@@ -48,7 +48,7 @@
           </a>
         </li>
         <li>
-          <a href="" class="nav-sub-link active">
+          <a href="{% url 'manage-voyage' %}" class="nav-sub-link active">
             <i class="fas fa-compass"></i>
             <span>Manage Voyage</span>
           </a>
@@ -123,7 +123,7 @@
       <h1>Voyage Management</h1>
       <p>
         View all active voyages in progress. Monitor key details and update
-        voyage status directly from the table.
+        voyage's status directly from the table.
       </p>
     </div>
   </div>
@@ -133,7 +133,7 @@
     <!-- Vessels Section -->
     <div class="section">
       <div class="section-header">
-        <h2 class="section-title">Active Voyage</h2>
+        <h2 class="section-title">Active Voyages</h2>
       </div>
 
       <div class="table-responsive">
@@ -178,70 +178,35 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>VN2025-001</td>
-              <td>MV Pacific Voyager</td>
-              <td>Manila</td>
-              <td>Cebu</td>
-              <td>Jul 5, 2025 – 08:00 AM</td>
-              <td>Jul 6, 2025 – 02:00 PM</td>
+            {% if voyages %} {% for voyage in voyages %}
+            <tr data-voyage-id="{{ voyage.voyage_id }}">
+              <td>{{ voyage.voyage_number }}</td>
+              <td>{{ voyage.vessel.name }}</td>
+              <td>{{ voyage.departure_port.port_name }}</td>
+              <td>{{ voyage.arrival_port.port_name }}</td>
+              <td>{{ voyage.departure_date|date:"M d, Y - h:i A" }}</td>
+              <td>{{ voyage.eta|date:"M d, Y - h:i A" }}</td>
+              <td class="status-column" data-id="{{ voyage.voyage_id }}">
+                <span class="status-badge {{ voyage.status|lower }}">
+                  {{ voyage.get_status_display }}
+                </span>
+              </td>
             </tr>
+            {% endfor %} {% else %}
             <tr>
-              <td>VN2025-001</td>
-              <td>MV Pacific Voyager</td>
-              <td>Manila</td>
-              <td>Cebu</td>
-              <td>Jul 5, 2025 – 08:00 AM</td>
-              <td>Jul 6, 2025 – 02:00 PM</td>
+              <td
+                colspan="7"
+                style="
+                  text-align: center;
+                  color: var(--dark-gray);
+                  padding: 1.25rem;
+                "
+              >
+                <i class="fas fa-info-circle" style="margin-right: 8px"></i>
+                No active voyages found in the database.
+              </td>
             </tr>
-            <tr>
-              <td>VN2025-001</td>
-              <td>MV Pacific Voyager</td>
-              <td>Manila</td>
-              <td>Cebu</td>
-              <td>Jul 5, 2025 – 08:00 AM</td>
-              <td>Jul 6, 2025 – 02:00 PM</td>
-            </tr>
-            <tr>
-              <td>VN2025-001</td>
-              <td>MV Pacific Voyager</td>
-              <td>Manila</td>
-              <td>Cebu</td>
-              <td>Jul 5, 2025 – 08:00 AM</td>
-              <td>Jul 6, 2025 – 02:00 PM</td>
-            </tr>
-            <tr>
-              <td>VN2025-002</td>
-              <td>MV Eastern Star</td>
-              <td>Cebu</td>
-              <td>Iloilo</td>
-              <td>Jul 4, 2025 – 09:30 AM</td>
-              <td>Jul 4, 2025 – 07:00 PM</td>
-            </tr>
-            <tr>
-              <td>VN2025-003</td>
-              <td>MV South Pearl</td>
-              <td>Davao</td>
-              <td>General Santos</td>
-              <td>Jul 5, 2025 – 06:45 AM</td>
-              <td>Jul 5, 2025 – 01:15 PM</td>
-            </tr>
-            <tr>
-              <td>VN2025-004</td>
-              <td>MV Northwind</td>
-              <td>Subic</td>
-              <td>Batangas</td>
-              <td>Jul 5, 2025 – 10:00 AM</td>
-              <td>Jul 5, 2025 – 03:30 PM</td>
-            </tr>
-            <tr>
-              <td>VN2025-005</td>
-              <td>MV Horizon Crest</td>
-              <td>Zamboanga</td>
-              <td>Manila</td>
-              <td>Jul 3, 2025 – 07:00 AM</td>
-              <td>Jul 4, 2025 – 06:00 AM</td>
-            </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>
