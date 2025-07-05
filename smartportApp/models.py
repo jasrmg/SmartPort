@@ -82,4 +82,12 @@ class Voyage(models.Model):
 
   def __str__(self):
     return f"{self.vessel.name} Voyage {self.voyage_number}"
-  
+
+class VoyageReport(models.Model):
+  voyage_report_id = models.AutoField(primary_key=True)
+
+  voyage_report = models.TextField()
+  voyage_number = models.CharField(max_length=50)
+  created_by = models.IntegerField()
+  delayed_reason = models.TextField(blank=True, null=True)
+  created_at = models.DateTimeField(auto_now_add=True)
