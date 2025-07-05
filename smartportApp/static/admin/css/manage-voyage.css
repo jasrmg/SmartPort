@@ -280,3 +280,14 @@ td.editable:hover {
   transition: width 0.3s ease, max-width 0.3s ease;
   box-sizing: border-box;
 }
+
+#delayed-reason-text {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--gray);
+  border-radius: 4px;
+  resize: none;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+}

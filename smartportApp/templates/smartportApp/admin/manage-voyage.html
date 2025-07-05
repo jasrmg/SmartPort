@@ -213,6 +213,61 @@
     </div>
   </div>
 </div>
-{% endblock %} {% block modal %} {% endblock %}
+{% endblock %}
 <!---->
-{% block script %} {% endblock %}
+{% block modal %}
+<!--voyage status change-->
+<div id="confirmVoyageStatusChangeModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Confirm Voyage Status Change</span>
+      <button class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmStatusChangeMsg">
+        Are you sure you want to update the voyage
+        <strong>[Voyage Number]</strong> status to
+        <strong>[New Status]</strong>?
+      </p>
+      <div class="modal-actions">
+        <button class="btn-cancel">Cancel</button>
+        <button class="btn-update">
+          <span class="btn-text">Update</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--voyage delayed reaason-->
+<div id="delayedReasonModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Reason for Delay</span>
+      <button class="modal-close" id="closeDelayModalBtn">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <textarea
+        id="delayed-reason-text"
+        rows="5"
+        placeholder="Explain the delay..."
+        required
+      ></textarea>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancelDelayModal">Cancel</button>
+        <button class="btn-update" id="submitDelayReason">
+          <span class="btn-text">Submit</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+<!---->
+{% block script %}
+<script src="{% static 'admin/js/manage-voyage.js' %}"></script>
+{% endblock %}

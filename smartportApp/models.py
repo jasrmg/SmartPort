@@ -85,9 +85,13 @@ class Voyage(models.Model):
 
 class VoyageReport(models.Model):
   voyage_report_id = models.AutoField(primary_key=True)
+  voyage = models.ForeignKey(Voyage, on_delete=models.CASCADE, related_name="reports", null=True)
 
   voyage_report = models.TextField()
-  voyage_number = models.CharField(max_length=50)
-  created_by = models.IntegerField()
+  # voyage_number = models.CharField(max_length=50)
+  created_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name="voyage_reports")
   delayed_reason = models.TextField(blank=True, null=True)
   created_at = models.DateTimeField(auto_now_add=True)
+
+  def __str__(self):
+    return f"Report for {self.voyage.voyage_number}"

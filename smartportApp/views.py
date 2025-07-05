@@ -63,7 +63,7 @@ def assign_route_view(request):
   return render(request, "smartportApp/admin/assign-route.html")
 
 
-from . models import Vessel, Voyage, Port
+from . models import Vessel, Voyage, Port, VoyageReport
 
 # FUNCTION FOR GETTING PORT LOCATION TO FILL THE LEAFLET MAP
 def get_ports(request):
@@ -376,6 +376,92 @@ def get_active_voyages():
     ).filter(
       status__in=['in_transit', 'delayed']
     ).order_by('-departure_date')
+
+# UPDATE VOYAGE STATUS
+
+@require_POST
+@login_required
+def update_voyage_status(request):
+  try:
+    data = json.loads(request.body)
+    voyage_id = data.get("voyage_id")
+    new_status = data.get("status")
+    reason = data.get("reason", "").strip()
+
+    if not voyage_id or not new_status:
+      return JsonResponse({"error": "Missing required data."}, status=400)
+
+    try:
+      voyage = Voyage.objects.select_related("vessel", "departure_port", "arrival_port").get(voyage_id=voyage_id)
+    except Voyage.DoesNotExist:
+      return JsonResponse({"error": "Voyage not found."}, status=404)
+
+    # Block updates if already arrived
+    if voyage.status == "arrived":
+      return JsonResponse({"error": "Voyage is already marked as 'arrived'."}, status=403)
+
+    # Fetch the admin (you may be using Firebase, adjust this block as needed)
+    user_email = request.user.email
+    try:
+      user = UserProfile.objects.get(email=user_email)
+    except UserProfile.DoesNotExist:
+      return JsonResponse({"error": "Authenticated user not found."}, status=403)
+
+    # Update voyage status
+    voyage.status = new_status
+    if new_status == "arrived":
+      voyage.arrival_date = now()
+    voyage.save()
+
+    # Handle VoyageReport logic
+    report, created = VoyageReport.objects.get_or_create(
+      voyage=voyage,
+      defaults={
+        "created_by": user,
+        "created_at": now()
+      }
+    )
+
+    if new_status == "delayed":
+      if not reason:
+        return JsonResponse({"error": "Reason is required for delayed status."}, status=400)
+      report.delayed_reason = reason
+      report.save()
+
+    elif new_status == "arrived":
+      # Compose report summary (you'll display this in frontend, so save data only)
+      duration = ""
+      if voyage.arrival_date and voyage.departure_date:
+        delta = voyage.arrival_date - voyage.departure_date
+        duration = str(delta)
+
+      report.voyage_report = json.dumps({
+        "vessel": {
+          "name": voyage.vessel.name,
+          "imo": voyage.vessel.imo,
+          "type": voyage.vessel.type
+        },
+        "voyage_summary": {
+          "voyage_number": voyage.voyage_number,
+          "departure_port": voyage.departure_port.port_name,
+          "departure_date": voyage.departure_date.isoformat(),
+          "arrival_port": voyage.arrival_port.port_name,
+          "arrival_date": voyage.arrival_date.isoformat(),
+          "duration": duration,
+          "status": "Arrived",
+          "generated_by": f"{user.first_name} {user.last_name}",
+          "delayed_reason": report.delayed_reason or "No delay occurred"
+        }
+      })
+      report.save()
+
+    return JsonResponse({"message": f"Voyage status updated to {new_status}."})
+
+  except json.JSONDecodeError:
+    return JsonResponse({"error": "Invalid JSON payload."}, status=400)
+
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required
