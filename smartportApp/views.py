@@ -44,13 +44,12 @@ def auth_view(request):
 #   return render(request, "smartportApp/verify.html")
 
 # --------------------------------- ADMIN ---------------------------------
+# -------------------- TEMPLATES --------------------
 def admin_dashboard(request):
   if not request.user.is_authenticated:
     return redirect("/")
   return render(request, "smartportApp/admin/dashboard.html")
 
-def admin_users_view(request):
-  return render(request, "smartportApp/admin/admin-users.html")
 
 def admin_all_vessels_view(request):
   vessels = get_vessels_data()
@@ -62,6 +61,27 @@ def admin_all_vessels_view(request):
 def assign_route_view(request):
   return render(request, "smartportApp/admin/assign-route.html")
 
+def manage_voyage_view(request):
+  voyages = get_active_voyages()
+  context = {
+    "voyages": voyages
+  }
+  # print("VOYAGES: ")
+  # for v in voyages:
+  #   print(f"{v.voyage_number}: {v.departure_port} -> {v.arrival_port}")
+  
+  return render(request, "smartportApp/admin/manage-voyage.html", context)
+
+def voyage_report_view(request):
+  return render(request, "smartpportApp/admin/voyage-report.html")
+
+def admin_users_view(request):
+  return render(request, "smartportApp/admin/admin-users.html")
+
+
+# -------------------- END OF ADMIN TEMPLATES --------------------
+
+# -------------------- TEMPLATES LOGIC --------------------
 
 from . models import Vessel, Voyage, Port, VoyageReport
 
@@ -181,8 +201,6 @@ def update_vessel_name(request):
   except Exception as e:
     return JsonResponse({"success": False, "message": str(e)}, status=500)
 
-
-
 # DELETE VESSEL:
 @require_POST
 def delete_vessel(request):
@@ -202,7 +220,6 @@ def delete_vessel(request):
 
   except Exception as e:
     return JsonResponse({"success": False, "message": str(e)}, status=500)
-
 
 from django.views.decorators.csrf import csrf_exempt
 # ADD VESSEL 
@@ -250,7 +267,6 @@ def add_vessel(request):
     import traceback
     traceback.print_exc()
     return JsonResponse({"error": str(e)}, status=500)
-
 
 # ASSIGN ROUTE:
 from django.utils.timezone import now
@@ -350,18 +366,6 @@ def assign_route(request):
     return JsonResponse({"error": str(e)}, status=500)
   
   
-# MANAGE VOYAGE
-def manage_voyage_view(request):
-  voyages = get_active_voyages()
-  context = {
-    "voyages": voyages
-  }
-  # print("VOYAGES: ")
-  # for v in voyages:
-  #   print(f"{v.voyage_number}: {v.departure_port} -> {v.arrival_port}")
-
-
-  return render(request, "smartportApp/admin/manage-voyage.html", context)
 
 
 # helper function to fetch the active voyage
@@ -378,7 +382,7 @@ def get_active_voyages():
     ).order_by('-departure_date')
 
 # UPDATE VOYAGE STATUS
-
+# MANAGE VOYAGE
 @require_POST
 @login_required
 def update_voyage_status(request):

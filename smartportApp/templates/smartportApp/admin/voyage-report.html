@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Voyage Report | Smart Port</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/static/ADMIN/voyage-report.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar Navigation -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <i class="fas fa-anchor logo-icon"></i>
+            <span class="logo-text">SMART PORT</span>
+            <button class="collapse-btn"><i class="fas fa-bars"></i></button>
+          </div>
+        </div>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="admin-dashboard.html" class="nav-link">
+              <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item expanded">
+            <a href="#" class="nav-link active">
+              <!-- Main Vessels link, can be # or admin-vessels.html -->
+              <i class="fas fa-ship"></i> <span>Vessels</span>
+            </a>
+            <ul class="nav-sub-menu" style="height: auto">
+              <li>
+                <a href="admin-vessels.html" class="nav-sub-link"
+                  ><i class="fas fa-list"></i> <span>View All Vessels</span></a
+                >
+              </li>
+              <li>
+                <a href="vessel-activity-log.html" class="nav-sub-link"
+                  ><i class="fas fa-history"></i> <span>Activity Log</span></a
+                >
+              </li>
+              <li>
+                <a href="assign-route.html" class="nav-sub-link"
+                  ><i class="fas fa-route"></i> <span>Assign Route</span></a
+                >
+              </li>
+              <li>
+                <a href="voyage-report.html" class="nav-sub-link active"
+                  ><i class="fas fa-file-alt"></i> <span>Voyage Report</span></a
+                >
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="admin-users.html" class="nav-link">
+              <i class="fas fa-users"></i> <span>Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="admin-manifests.html" class="nav-link">
+              <i class="fas fa-file-alt"></i> <span>Manifests</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="admin-reports.html" class="nav-link">
+              <i class="fas fa-chart-line"></i> <span>Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-cog"></i> <span>Settings</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">
+              <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="main-content">
+        <!-- Top Bar -->
+        <div class="topbar">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search reports..." />
+          </div>
+          <div class="user-menu">
+            <button class="notification-btn">
+              <i class="fas fa-bell"></i>
+              <span class="notification-badge">1</span>
+            </button>
+            <div class="user-profile">
+              <div class="user-avatar">AD</div>
+              <span class="user-name">Admin User</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-header">
+          <div class="page-title">
+            <h1>Voyage Reports</h1>
+            <p>Review detailed reports for completed vessel voyages.</p>
+          </div>
+        </div>
+
+        <!-- Voyage Reports List Section -->
+        <div
+          class="voyage-reports-list-container"
+          id="voyage-reports-list-section"
+        >
+          <div class="voyage-reports-header">
+            <!-- Add filter/sort options if needed -->
+            <div class="search-filter">
+              <select class="form-select">
+                <option value="all">All Vessel Types</option>
+                <option value="container">Container Ships</option>
+                <option value="bulk">Bulk Carriers</option>
+                <option value="tanker">Tankers</option>
+                <option value="roro">Ro-Ro</option>
+              </select>
+            </div>
+
+            <!-- Add filter/sort options if needed -->
+            <div class="search-filter">
+              <select class="form-select">
+                <option value="all">Origin Port</option>
+                <option value="container">Container Ships</option>
+                <option value="bulk">Bulk Carriers</option>
+                <option value="tanker">Tankers</option>
+                <option value="roro">Ro-Ro</option>
+              </select>
+            </div>
+            <!-- Add filter/sort options if needed -->
+            <div class="search-filter">
+              <select class="form-select">
+                <option value="all">Date</option>
+                <option value="container">Container Ships</option>
+                <option value="bulk">Bulk Carriers</option>
+                <option value="tanker">Tankers</option>
+                <option value="roro">Ro-Ro</option>
+              </select>
+            </div>
+          </div>
+          <div class="voyage-cards-container">
+            <!-- Sample Voyage Report Card 1 -->
+            <div class="voyage-report-card" data-report-id="1">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage VN2024-056</h3>
+                  <p>MV Pacific Navigator</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Hong Kong to Manila
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 20, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 2 days, 5 hours
+              </p>
+            </div>
+
+            <!-- Sample Voyage Report Card 2 -->
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <!-- Add more sample cards as needed -->
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+            <div class="voyage-report-card" data-report-id="2">
+              <div class="voyage-report-card-header">
+                <div class="voyage-report-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-report-card-title">
+                  <h3>Voyage ES2024-015</h3>
+                  <p>MV Eastern Star</p>
+                </div>
+              </div>
+              <p class="voyage-report-card-info">
+                <strong>Route:</strong> Singapore to Cebu
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Arrival:</strong> May 18, 2024
+              </p>
+              <p class="voyage-report-card-info">
+                <strong>Duration:</strong> 3 days, 10 hours
+              </p>
+            </div>
+          </div>
+          <div class="pagination-container">
+            <button class="pagination-btn" data-page="prev">«</button>
+            <button class="pagination-btn active" data-page="1">1</button>
+            <button class="pagination-btn" data-page="2">2</button>
+            <button class="pagination-btn" data-page="next">»</button>
+          </div>
+        </div>
+
+        <!-- Voyage Report Detail Section (hidden initially) -->
+        <div
+          class="voyage-report-detail-container"
+          id="voyageReportContent"
+          style="display: none"
+        >
+          <div class="back-button-container print-hidden">
+            <button class="btn btn-secondary" id="back-to-voyage-list">
+              <i class="fas fa-arrow-left"></i>
+              Back to Reports List
+            </button>
+          </div>
+
+          <h2 class="report-section-title" id="detail-voyage-number">
+            Voyage Report: VN2024-056
+          </h2>
+
+          <h3 class="report-section-title">1. Vessel Details</h3>
+          <table class="detail-table" id="vessel-details-table">
+            <tbody>
+              <tr>
+                <th>Vessel Name</th>
+                <td data-field="vesselName">MV Pacific Navigator</td>
+              </tr>
+              <tr>
+                <th>IMO Number</th>
+                <td data-field="imoNumber">9754321</td>
+              </tr>
+              <tr>
+                <th>Type of Vessel</th>
+                <td data-field="vesselType">Container Ship</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 class="report-section-title">2. Voyage Summary</h3>
+          <table class="detail-table" id="voyage-summary-table">
+            <tbody>
+              <tr>
+                <th>Voyage Number</th>
+                <td data-field="voyageNumber">VN2024-056</td>
+              </tr>
+              <tr>
+                <th>Departure Port</th>
+                <td data-field="departurePort">Hong Kong</td>
+              </tr>
+              <tr>
+                <th>Departure Date & Time</th>
+                <td data-field="departureDateTime">May 18, 2024 08:00</td>
+              </tr>
+              <tr>
+                <th>Arrival Port</th>
+                <td data-field="arrivalPort">Manila</td>
+              </tr>
+              <tr>
+                <th>Arrival Date & Time</th>
+                <td data-field="arrivalDateTime">May 20, 2024 13:00</td>
+              </tr>
+              <tr>
+                <th>Total Duration</th>
+                <td data-field="totalDuration">12 hours</td>
+              </tr>
+              <tr>
+                <th>Generated By</th>
+                <td data-field="generatedBy">
+                  Admin Name nga ni change sa status
+                </td>
+              </tr>
+              <tr>
+                <th>Status</th>
+                <td data-field="Status">Delayed</td>
+              </tr>
+              <tr>
+                <th>Delayed Reason</th>
+                <td data-field="delayReason">Weather Disturbance</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="action-buttons print-hidden">
+            <button class="btn btn-primary" id="printReport">
+              <i class="fas fa-print"></i> Print Report
+            </button>
+            <button class="btn btn-primary" id="exportPdf">
+              <i class="fas fa-download"></i> Export as PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOR PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script src="/static/ADMIN/voyage-report.js"></script>
+  </body>
+</html>
