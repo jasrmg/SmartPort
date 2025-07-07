@@ -13,7 +13,7 @@ urlpatterns = [
   path("all-vessels/", views.admin_all_vessels_view, name="all-vessels"),
   path("assign-route/", views.assign_route_view, name="assign-route"),
   path("manage-voyage/", views.manage_voyage_view, name="manage-voyage"),
-  path("voyage-report/", views.voyage_report_view, name="voyage-report"),
+  path("voyage-report/", views.voyage_report_view, name="voyage-report"), 
 
   path("user-management/", views.admin_users_view, name="user-management"),
 

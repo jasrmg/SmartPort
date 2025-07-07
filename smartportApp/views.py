@@ -73,7 +73,7 @@ def manage_voyage_view(request):
   return render(request, "smartportApp/admin/manage-voyage.html", context)
 
 def voyage_report_view(request):
-  return render(request, "smartpportApp/admin/voyage-report.html")
+  return render(request, "smartportApp/admin/voyage-report.html")
 
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
