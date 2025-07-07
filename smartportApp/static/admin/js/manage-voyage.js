@@ -48,33 +48,33 @@ document.addEventListener("DOMContentLoaded", () => {
       cell.innerHTML = "";
       cell.appendChild(select);
       select.focus();
+
+      select.addEventListener("change", () => {
+        const selectedValue = select.value;
+
+        if (selectedValue === originalStatus) {
+          cancelEdit();
+          return;
+        }
+
+        newStatus = selectedValue;
+
+        confirmMsg.innerHTML = `
+          Are you sure you want to update the voyage
+          <strong>${currentVoyageNumber}</strong> status to
+          <strong>${formatStatus(newStatus)}</strong>?
+        `;
+
+        confirmModal.style.display = "flex";
+      });
     });
   });
 
   // Detect outside click using mousedown to allow dropdown to render
   document.addEventListener("mousedown", (e) => {
-    setTimeout(() => {
-      if (!selectedCell || selectedCell.contains(e.target)) return;
+    if (!selectedCell || selectedCell.contains(e.target)) return;
 
-      const dropdown = selectedCell.querySelector("select");
-      if (!dropdown) return;
-
-      newStatus = dropdown.value;
-
-      if (newStatus === originalStatus) {
-        cancelEdit();
-        return;
-      }
-
-      // Update modal content
-      confirmMsg.innerHTML = `
-        Are you sure you want to update the voyage
-        <strong>${currentVoyageNumber}</strong> status to
-        <strong>${formatStatus(newStatus)}</strong>?
-      `;
-
-      confirmModal.style.display = "flex";
-    }, 10);
+    cancelEdit();
   });
 
   // CONFIRM MODAL - Update Button
@@ -121,9 +121,11 @@ const formatStatus = (status) =>
 // CANCEL EDIT
 const cancelEdit = () => {
   if (!selectedCell) return;
-  selectedCell.innerHTML = `<span class="status-badge ${originalStatus}">${formatStatus(
-    originalStatus
-  )}</span>`;
+
+  const displayText = formatStatus(originalStatus);
+  const className = originalStatus.toLowerCase().replace(/\s+/g, "_");
+
+  selectedCell.innerHTML = `<span class="status-badge ${className}">${displayText}</span>`;
   selectedCell = null;
 };
 
@@ -138,10 +140,13 @@ const closeModals = () => {
     const row = selectedCell.closest("tr");
     const tableBody = row.parentElement;
 
+    const displayText = formatStatus(newStatus);
+    const className = newStatus.toLowerCase();
+    selectedCell.innerHTML = `<span class="status-badge ${className}">${displayText}</span>`;
+
     if (newStatus === "arrived") {
       row.remove();
 
-      // 🔍 Check if table is now empty
       const remainingRows = tableBody.querySelectorAll("tr");
       if (remainingRows.length === 0) {
         const emptyRow = document.createElement("tr");
