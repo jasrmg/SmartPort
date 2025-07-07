@@ -1,11 +1,16 @@
 /**/
 .voyage-cards-container {
-  max-height: 56vh;
-  overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(274px, 1fr));
+  grid-auto-rows: auto;
   gap: 1.5rem;
   padding: 1rem;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  /* max-height: calc(5 * 307.81px + 4 * 1rem); */
+  max-height: 56vh;
 }
 .pagination-container {
   text-align: center;
@@ -71,7 +76,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 .voyage-reports-header h2 {
   font-size: 1.4rem;

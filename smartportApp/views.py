@@ -11,8 +11,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
 import json
-from smartportApp.models import Vessel
-
+from django.core.paginator import Paginator
 
 
 # Create your views here.
@@ -42,6 +41,43 @@ def auth_view(request):
 
 # def verify_view(request):
 #   return render(request, "smartportApp/verify.html")
+
+from datetime import timedelta
+
+# HELPER TO FORMAT THE DATE TIME TO BE DISPLAYED IN THE FRONTEND
+def format_duration_string(duration_str):
+  try:
+    if duration_str.startswith("-"):
+      return "—"
+
+    parts = duration_str.strip().split(", ")
+
+    # Case: "2 days, 5:10:00"
+    if len(parts) == 2:
+      days = int(parts[0].split()[0])
+      time_parts = list(map(int, parts[1].split(":")))
+    else:  # Case: "5:10:00"
+      days = 0
+      time_parts = list(map(int, parts[0].split(":")))
+
+    hours, minutes = time_parts[0], time_parts[1]
+    duration_display = ""
+
+    if days > 0:
+      duration_display += f"{days} day{'s' if days > 1 else ''}, "
+    if hours > 0:
+      duration_display += f"{hours} hour{'s' if hours > 1 else ''}"
+    if minutes > 0:
+      if hours > 0:
+        duration_display += f" {minutes} min{'s' if minutes > 1 else ''}"
+      else:
+        duration_display += f"{minutes} min{'s' if minutes > 1 else ''}"
+
+    return duration_display.strip(", ") or "—"
+
+  except Exception:
+    return "—"
+
 
 # --------------------------------- ADMIN ---------------------------------
 # -------------------- TEMPLATES --------------------
@@ -73,7 +109,34 @@ def manage_voyage_view(request):
   return render(request, "smartportApp/admin/manage-voyage.html", context)
 
 def voyage_report_view(request):
-  return render(request, "smartportApp/admin/voyage-report.html")
+  reports = VoyageReport.objects.select_related('voyage__vessel', 'created_by').order_by('-created_at')
+  paginator = Paginator(reports, 6)
+  page_number = request.GET.get('page')
+  if not str(page_number).isdigit():
+    page_number = 1
+  page_obj = paginator.get_page(page_number)
+
+  parsed_reports = []
+  for report in page_obj:
+    try:
+      data = json.loads(report.voyage_report or '{}')
+      raw_duration = data.get("voyage_summary", {}).get("duration", "")
+      data["voyage_summary"]["clean_duration"] = format_duration_string(raw_duration)
+    except Exception:
+      data = {}
+    parsed_reports.append({
+      "report": report,
+      "parsed": data
+    })
+
+  context = {
+    'page_obj': parsed_reports,
+    'paginator': paginator,
+    'current_page': page_obj.number,
+    'has_next': page_obj.has_next(),
+    'has_prev': page_obj.has_previous()
+  }
+  return render(request, "smartportApp/admin/voyage-report.html", context)
 
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
@@ -381,6 +444,8 @@ def get_active_voyages():
       status__in=['in_transit', 'delayed']
     ).order_by('-departure_date')
 
+
+
 # UPDATE VOYAGE STATUS
 # MANAGE VOYAGE
 @require_POST
@@ -418,6 +483,11 @@ def update_voyage_status(request):
     except UserProfile.DoesNotExist:
       return JsonResponse({"error": "Authenticated user not found."}, status=403)
 
+
+    # checks if the update of the status is earlier that the time of departure
+    if new_status == "arrived" and voyage.arrival_date and voyage.departure_date:
+      if voyage.arrival_date < voyage.departure_date:
+        return JsonResponse({"error": "Arrival cannot be earlier than departure"}, status=400)
     # Update voyage status
     voyage.status = new_status
     if new_status == "arrived":
