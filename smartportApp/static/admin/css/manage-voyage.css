@@ -299,3 +299,27 @@ td.editable:hover {
   gap: 10px; /* space between icon and text */
   padding: 1rem;
 }
+.status-message {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  gap: 1rem;
+}
+
+.status-message i {
+  margin-right: 8px;
+  font-size: 1.2rem;
+}
+
+.status-message.success {
+  background-color: var(--accent);
+  color: white;
+}
+
+.status-message.error {
+  background-color: var(--danger);
+  color: white;
+}

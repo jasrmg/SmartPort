@@ -6,11 +6,12 @@ let newStatus = null;
 let currentVoyageId = null;
 let currentVoyageNumber = null;
 
+const reasonModal = document.getElementById("delayedReasonModal");
+
 document.addEventListener("DOMContentLoaded", () => {
   const confirmModal = document.getElementById(
     "confirmVoyageStatusChangeModal"
   );
-  const reasonModal = document.getElementById("delayedReasonModal");
 
   const confirmMsg = document.getElementById("confirmStatusChangeMsg");
   const confirmUpdateBtn = confirmModal.querySelector(".btn-update");
@@ -81,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (newStatus === "delayed") {
       confirmModal.style.display = "none";
       reasonModal.style.display = "flex";
+      hideReasonMessage();
     } else {
       updateVoyageStatus(currentVoyageId, newStatus);
       closeModals();
@@ -91,9 +93,11 @@ document.addEventListener("DOMContentLoaded", () => {
   reasonSubmitBtn.addEventListener("click", () => {
     const reason = reasonInput.value.trim();
     if (!reason) {
-      alert("Please provide a reason for the delay.");
+      showReasonError("Please provide a reason for the delay.");
       return;
     }
+    hideReasonMessage();
+
     updateVoyageStatus(currentVoyageId, "delayed", reason);
     closeModals();
   });
@@ -204,4 +208,28 @@ const updateVoyageStatus = async (voyageId, status, reason = "") => {
   } finally {
     hideSpinner(button);
   }
+};
+
+const showReasonError = (message) => {
+  const statusBox = reasonModal.querySelector(".status-message");
+  const icon = statusBox.querySelector("i");
+  const text = statusBox.querySelector(".status-message-text");
+
+  statusBox.classList.add("error");
+  statusBox.style.display = "flex";
+  icon.classList.remove("fa-check-circle");
+  icon.classList.add("fa-exclamation-circle");
+  icon.style.color = "var(--white)";
+  text.innerText = message;
+};
+
+const hideReasonMessage = () => {
+  const statusBox = reasonModal.querySelector(".status-message");
+  const icon = statusBox.querySelector("i");
+  const text = statusBox.querySelector(".status-message-text");
+
+  statusBox.style.display = "none";
+  icon.className = "fas fa-check-circle";
+  icon.style.color = "var(--accent)";
+  text.innerText = "Vessel Creation Successful!";
 };
