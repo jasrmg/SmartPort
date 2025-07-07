@@ -131,12 +131,30 @@ const closeModals = () => {
   document.getElementById("delayed-reason-text").value = "";
 
   if (selectedCell) {
-    selectedCell.innerHTML = `<span class="status-badge ${newStatus}">${formatStatus(
-      newStatus
-    )}</span>`;
+    const row = selectedCell.closest("tr");
+    const tableBody = row.parentElement;
+
     if (newStatus === "arrived") {
-      selectedCell.dataset.locked = "true";
+      row.remove();
+
+      // 🔍 Check if table is now empty
+      const remainingRows = tableBody.querySelectorAll("tr");
+      if (remainingRows.length === 0) {
+        const emptyRow = document.createElement("tr");
+        emptyRow.innerHTML = `
+          <td colspan="7" style="text-align: center; color: var(--dark-gray); padding: 1.25rem;">
+            <i class="fas fa-info-circle" style="margin-right: 8px"></i>
+            No active voyages found in the database.
+          </td>
+        `;
+        tableBody.appendChild(emptyRow);
+      }
+    } else {
+      selectedCell.innerHTML = `<span class="status-badge ${newStatus}">${formatStatus(
+        newStatus
+      )}</span>`;
     }
+
     selectedCell = null;
   }
 };

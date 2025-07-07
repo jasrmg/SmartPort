@@ -418,7 +418,13 @@ def update_voyage_status(request):
     voyage.status = new_status
     if new_status == "arrived":
       voyage.arrival_date = now()
-    voyage.save()
+      voyage.save()
+
+      # set the vessel status to available
+      voyage.vessel.status = "available"
+      voyage.vessel.save()
+    else:
+      voyage.save()
 
     # Handle VoyageReport logic
     report, created = VoyageReport.objects.get_or_create(
