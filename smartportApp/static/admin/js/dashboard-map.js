@@ -50,18 +50,6 @@ const philTerritorialWaters = [
   [21.1, 119.0],
 ];
 
-// Philippine major ports with coordinates
-// const philippinePorts = {
-//   Manila: [14.5995, 120.9842],
-//   Cebu: [10.3157, 123.9054],
-//   Davao: [7.0727, 125.6127],
-//   Iloilo: [10.7202, 122.5621],
-//   Subic: [14.7824, 120.2817],
-//   Zamboanga: [6.9214, 122.079],
-//   "Cagayan de Oro": [8.4542, 124.6319],
-//   Batangas: [13.7565, 121.0583],
-// };
-
 // Add vessel markers for Philippine locations
 const vesselMarkers = [
   {
