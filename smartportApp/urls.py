@@ -7,7 +7,7 @@ urlpatterns = [
   # ROLE REDIRECT
   # path("role-redirect/", views.role_redirect_view, name="role-redirect"),
 
-  # ADMIN TEMPLATES LOAD
+  # -------------------------------- ADMIN TEMPLATES LOAD --------------------------------
   path("admin-dashboard/", views.admin_dashboard, name="admin-dashboard"),
 
   path("all-vessels/", views.admin_all_vessels_view, name="all-vessels"),
@@ -39,13 +39,15 @@ urlpatterns = [
   path("assign-route/submit/", views.assign_route, name="assign_route_ajax"),
   # UPDATE STATUS
   path('update-voyage-status/', views.update_voyage_status, name='update_voyage_status'),
+  # API ENDPOINT FOR THE VOYAGE REPORT PAGINATOR:
+  path("voyage-report/page/", views.voyage_report_paginated, name="voyage_report_paginated"),
 
-  # CUSTOM
+  # -------------------------------- CUSTOM --------------------------------
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),
 
-  # SHIPPER
+  # -------------------------------- SHIPPER --------------------------------
   path("shipper-dashboard/", views.shipper_dashboard, name="shipper-dashboard"),
 
-  # EMPLOYEE
+  # -------------------------------- EMPLOYEE --------------------------------
   path("employee-dashboard/", views.employee_dashboard, name="employee-dashboard"),
 ]

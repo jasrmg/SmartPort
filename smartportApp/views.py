@@ -110,7 +110,7 @@ def manage_voyage_view(request):
 
 def voyage_report_view(request):
   reports = VoyageReport.objects.select_related('voyage__vessel', 'created_by').order_by('-created_at')
-  paginator = Paginator(reports, 6)
+  paginator = Paginator(reports, 2)
   page_number = request.GET.get('page')
   if not str(page_number).isdigit():
     page_number = 1
@@ -550,6 +550,46 @@ def update_voyage_status(request):
   except Exception as e:
     print("🔥 Exception:", str(e)) 
     return JsonResponse({"error": str(e)}, status=500)
+  
+# ENDPOINT FOR THE PAGINATION OF VOYAGE REPORT
+def voyage_report_paginated(request):
+  page_number = request.GET.get('page', 1)
+
+  reports = VoyageReport.objects.select_related('voyage__vessel').order_by('-created_at')
+  paginator = Paginator(reports, 3)
+
+  try:
+    page_obj = paginator.page(page_number)
+  except:
+    return JsonResponse({"error": "Invalid page"}, status=400)
+  
+  results = []
+  for report in page_obj:
+    try:
+      parsed = json.loads(report.voyage_report or "{}")
+    except:
+      parsed = {}
+
+    summary = parsed.get("voyage_summary", {})
+    vessel = parsed.get("vessel", {})
+
+    results.append({
+      "id": report.voyage_report_id,
+      "voyage_number": summary.get("voyage_number", "-"),
+      "vessel_name": summary.get("name", "Unknown Vessel"),
+      "departure_port": summary.get("departure_port", "-"),
+      "arrival_port": summary.get("arrival_port", "-"),
+      "arrival_date": summary.get("arrival_date", "")[10],
+      "duration": summary.get("duration", "-"),
+    })
+
+    return JsonResponse({
+      "voyages": results,
+      "current_page": page_obj.number,
+      "num_pages": paginator.num_pages,
+      "has_next": page_obj.has_next(),
+      "has_prev": page_obj.has_previous(),
+    })
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

@@ -60,7 +60,7 @@
       </ul>
     </li>
     <li class="nav-item">
-      <a href="admin-users.html" class="nav-link">
+      <a href="{% url 'user-management' %}" class="nav-link">
         <i class="fas fa-users"></i> <span>Users</span>
       </a>
     </li>
@@ -146,69 +146,69 @@
         </select>
       </div>
     </div>
-    <div class="voyage-cards-container">
-      {% if page_obj %}
-      <!---->
-      {% for item in page_obj %}
-      <!---->
-      {% with parsed=item.parsed report=item.report %}
-      <div
-        class="voyage-report-card"
-        data-report-id="{{ report.voyage_report_id }}"
-      >
-        <div class="voyage-report-card-header">
-          <div class="voyage-report-card-icon">
-            <i class="fas fa-file-invoice"></i>
+    <div class="voyage-card-wrapper">
+      <div class="voyage-cards-container">
+        {% if page_obj %}
+        <!---->
+        {% for item in page_obj %}
+        <!---->
+        {% with parsed=item.parsed report=item.report %}
+        <div
+          class="voyage-report-card"
+          data-report-id="{{ report.voyage_report_id }}"
+        >
+          <div class="voyage-report-card-header">
+            <div class="voyage-report-card-icon">
+              <i class="fas fa-file-invoice"></i>
+            </div>
+            <div class="voyage-report-card-title">
+              <h3>{{ parsed.voyage_summary.voyage_number|default:"—" }}</h3>
+              <p>{{ parsed.vessel.name|default:"Unknown Vessel" }}</p>
+            </div>
           </div>
-          <div class="voyage-report-card-title">
-            <h3>{{ parsed.voyage_summary.voyage_number|default:"—" }}</h3>
-            <p>{{ parsed.vessel.name|default:"Unknown Vessel" }}</p>
-          </div>
+          {% with summary=parsed.voyage_summary %}
+          <p class="voyage-report-card-info">
+            <strong>Route:</strong> {{ summary.departure_port }} to
+            <!---->
+            {{ summary.arrival_port }}
+          </p>
+          <p class="voyage-report-card-info">
+            <strong>Arrival:</strong> {{ summary.arrival_date|slice:":10" }}
+          </p>
+          <p class="voyage-report-card-info">
+            <strong>Duration:</strong> {{ summary.clean_duration }}
+          </p>
+          {% endwith %}
         </div>
-        {% with summary=parsed.voyage_summary %}
-        <p class="voyage-report-card-info">
-          <strong>Route:</strong> {{ summary.departure_port }} to
-          <!---->
-          {{ summary.arrival_port }}
-        </p>
-        <p class="voyage-report-card-info">
-          <strong>Arrival:</strong> {{ summary.arrival_date|slice:":10" }}
-        </p>
-        <p class="voyage-report-card-info">
-          <strong>Duration:</strong> {{ summary.clean_duration }}
-        </p>
         {% endwith %}
+        <!---->
+        {% endfor %}
+        <!---->
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-info-circle"></i> No voyage reports found.
+        </div>
+        {% endif %}
       </div>
-      {% endwith %}
-      <!---->
-      {% endfor %}
-      <!---->
-      {% else %}
-      <div class="empty-state">
-        <i class="fas fa-info-circle"></i> No voyage reports found.
+      <!-- Spinner for Voyage Reports -->
+      <div id="voyageLoader" class="voyage-loader" style="display: none">
+        <div class="voyage-spinner"></div>
       </div>
-      {% endif %}
     </div>
     {% if paginator.num_pages > 1 %}
-    <div class="pagination-container">
-      {% if has_prev %}
-      <button class="pagination-btn" data-page="prev">«</button>
-      {% endif %}
-      <!---->
-      {% for i in paginator.page_range %}
+    <div
+      class="pagination-container"
+      id="pagination-container"
+      data-total-pages="{{ paginator.num_pages }}"
+      data-current-page="{{ current_page }}"
+    >
+      <button class="pagination-btn" id="prev-page-btn" disabled>«</button>
 
-      <button
-        class="pagination-btn {% if i == current_page %}active{% endif %}"
-        data-page="{{ i }}"
-      >
-        {{ i }}
-      </button>
-      {% endfor %}
-      <!---->
-      {% if has_next %}
-      <!-- <button class="pagination-btn" data-page="2">2</button> -->
-      <button class="pagination-btn" data-page="next">»</button>
-      {% endif %}
+      <div id="pagination-window">
+        <!---->
+      </div>
+
+      <button class="pagination-btn" id="next-page-btn">»</button>
     </div>
     {% endif %}
 
@@ -308,5 +308,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script src="{% static 'admin/js/voyage-report.js' %}"></script>
+  <script src="{% static 'admin/js/voyage-report-pagination.js' %}"></script>
   {% endblock %}
 </div>
