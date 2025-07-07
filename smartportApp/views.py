@@ -591,6 +591,30 @@ def voyage_report_paginated(request):
       "has_prev": page_obj.has_previous(),
     })
 
+# ENDPOINT TO SERVE VOYAGE REPORT DETAIL VIEW:
+def voyage_report_detail(request, report_id):
+  if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    try:
+      report = VoyageReport.objects.select_related("voyage__vessel").get(voyage_report_id=report_id)
+
+      parsed = json.loads(report.voyage_report)
+
+      # Update vessel type with display version
+      vessel = report.voyage.vessel
+      if vessel:
+        parsed["vessel"]["type"] = vessel.get_vessel_type_display()
+
+      # Update voyage status with display version (optional)
+      voyage = report.voyage
+      if voyage:
+        parsed["voyage_summary"]["status"] = voyage.get_status_display()
+
+      return JsonResponse({ "data": parsed })
+
+    except VoyageReport.DoesNotExist:
+      return JsonResponse({ "error": "Report not found" }, status=404)
+
+  return JsonResponse({ "error": "Invalid Request" }, status=400)
 # --------------------------------- CUSTOM ---------------------------------
 @login_required
 def customs_dashboard(request):

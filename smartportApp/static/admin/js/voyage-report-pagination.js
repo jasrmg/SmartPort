@@ -5,10 +5,10 @@ const spinner = document.getElementById("voyageLoader");
 const voyageCardsContainer = document.querySelector(".voyage-cards-container");
 
 let currentPage = parseInt(
-  document.getElementById("pagination-container").dataset.currentPage
+  document.getElementById("pagination-container")?.dataset.currentPage || 1
 );
 let totalPages = parseInt(
-  document.getElementById("pagination-container").dataset.totalPages
+  document.getElementById("pagination-container")?.dataset.totalPages || 1
 );
 
 const windowSize = 2;
@@ -58,7 +58,7 @@ const updatePaginationWindow = () => {
 
 const fetchPage = async (pageNum) => {
   showSpinner();
-  const delay = new Promise((resolve) => setTimeout(resolve, 200));
+  const delay = new Promise((resolve) => setTimeout(resolve, 1000)); // 1000ms visual loading
 
   try {
     const res = await fetch(`/voyage-report/?page=${pageNum}`, {
@@ -77,6 +77,8 @@ const fetchPage = async (pageNum) => {
 
     if (newContainer) {
       voyageCardsContainer.innerHTML = newContainer.innerHTML;
+      //rebind click listeners to the newly loaded report cards
+      if (window.rebindVoyageCardEvents) window.rebindVoyageCardEvents();
     }
 
     currentPage = pageNum;

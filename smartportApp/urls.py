@@ -41,6 +41,9 @@ urlpatterns = [
   path('update-voyage-status/', views.update_voyage_status, name='update_voyage_status'),
   # API ENDPOINT FOR THE VOYAGE REPORT PAGINATOR:
   path("voyage-report/page/", views.voyage_report_paginated, name="voyage_report_paginated"),
+  # ENDPOINT TO SERVE THE VOYAGE REPORT DETAIL:
+  path("voyage-report/detail/<int:report_id>", views.voyage_report_detail, name="voyage_report_detail"),
+
 
   # -------------------------------- CUSTOM --------------------------------
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),
