@@ -39,6 +39,7 @@ const hideSpinner = () => {
 };
 
 const updatePaginationWindow = () => {
+  if (!paginationWindow) return;
   paginationWindow.innerHTML = "";
 
   let windowStart = Math.floor((currentPage - 1) / windowSize) * windowSize + 1;
@@ -82,7 +83,7 @@ const fetchPage = async (pageNum) => {
     }
 
     currentPage = pageNum;
-    updatePaginationWindow();
+    if (paginationWindow) updatePaginationWindow();
   } catch (err) {
     console.error("❌ Pagination Fetch Error:", err);
   } finally {

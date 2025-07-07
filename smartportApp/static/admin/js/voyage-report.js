@@ -94,6 +94,8 @@ const populateVoyageDetail = (data) => {
   const summary = parsed.voyage_summary;
   const vessel = parsed.vessel;
 
+  document.querySelector("#detail-voyage-number").textContent =
+    summary.voyage_number;
   document.querySelector('[data-field="voyageNumber"]').textContent =
     summary.voyage_number;
   document.querySelector('[data-field="departurePort"]').textContent =

@@ -110,7 +110,7 @@ def manage_voyage_view(request):
 
 def voyage_report_view(request):
   reports = VoyageReport.objects.select_related('voyage__vessel', 'created_by').order_by('-created_at')
-  paginator = Paginator(reports, 2)
+  paginator = Paginator(reports, 20)
   page_number = request.GET.get('page')
   if not str(page_number).isdigit():
     page_number = 1
@@ -556,7 +556,7 @@ def voyage_report_paginated(request):
   page_number = request.GET.get('page', 1)
 
   reports = VoyageReport.objects.select_related('voyage__vessel').order_by('-created_at')
-  paginator = Paginator(reports, 3)
+  paginator = Paginator(reports, 20)
 
   try:
     page_obj = paginator.page(page_number)
