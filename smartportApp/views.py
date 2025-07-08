@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
-from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, Http404
 from firebase_admin import auth
 from accounts.models import UserProfile
 
@@ -143,7 +143,7 @@ def admin_users_view(request):
 
 # -------------------- TEMPLATES LOGIC --------------------
 
-from . models import Vessel, Voyage, Port, VoyageReport
+from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog
 
 # FUNCTION FOR GETTING PORT LOCATION TO FILL THE LEAFLET MAP
 def get_ports(request):
@@ -693,6 +693,74 @@ def filter_vessels_by_type(request):
 
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
+
+
+from collections import defaultdict
+from django.utils.timezone import localtime
+
+import logging
+logger = logging.getLogger(__name__)
+
+# ENDPOINT FOR THE DETAIL VIEW OF ACTIVITY LOG
+
+def vessel_detail_view(request, vessel_id):
+  try:
+    vessel = Vessel.objects.get(pk=vessel_id)
+  except Vessel.DoesNotExist:
+    raise Http404("Vessel not found")
+
+  # Get most recent voyage
+  last_voyage = vessel.voyages.order_by("-departure_date").first()
+
+  # Determine last port (departure of last voyage)
+  last_port = (
+    last_voyage.departure_port.port_name
+    if last_voyage and last_voyage.departure_port
+    else "N/A"
+  )
+
+  # Determine current port logic
+  if last_voyage:
+    if last_voyage.status == "arrived":
+      current_port = (
+        last_voyage.arrival_port.port_name
+        if last_voyage.arrival_port else "N/A"
+      )
+    elif last_voyage.status == "in_transit":
+      current_port = (
+        f"En route to {last_voyage.arrival_port.port_name}"
+        if last_voyage.arrival_port else "N/A"
+      )
+    else:
+      current_port = "N/A"
+  else:
+    current_port = "N/A"
+
+  # Fetch vessel activity logs (grouped by date if needed on frontend)
+  activity_logs = vessel.activity_logs.select_related("created_by").order_by("-created_at")
+
+  logs_data = []
+  for log in activity_logs:
+    logs_data.append({
+      "time": log.created_at.strftime("%H:%M"),
+      "date": log.created_at.strftime("%Y-%m-%d"),
+      "user": f"{log.created_by.first_name} {log.created_by.last_name}" if log.created_by else "System",
+      "action_type": log.get_action_type_display(),
+      "description": log.description
+    })
+
+  data = {
+    "name": vessel.name,
+    "imo": vessel.imo,
+    "vessel_type": vessel.get_vessel_type_display(),
+    "gross_tonnage": f"{vessel.capacity:,} GT",
+    "current_port": current_port,
+    "last_port": last_port,
+    "logs": logs_data
+  }
+
+  logger.info(f"Returning data for vessel {vessel_id}: {data}")
+  return JsonResponse(data)
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

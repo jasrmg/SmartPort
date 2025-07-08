@@ -46,6 +46,8 @@ urlpatterns = [
   path("voyage-report/filter/", views.voyage_report_filtered, name="voyage_report_filtered"),
   # ENDPOINT TO FILTER THE VESSELS (USED IN ACTIVITY LOG) 
   path("filter-vessels/", views.filter_vessels_by_type, name="filter-vessels"),
+  # VESSEL DETAIL VIEW:
+    path('vessel-detail/<int:vessel_id>/', views.vessel_detail_view, name='vessel-detail'),
 
 
   # -------------------------------- CUSTOM --------------------------------

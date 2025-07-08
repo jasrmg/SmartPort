@@ -147,7 +147,7 @@
         </select>
       </div>
     </div>
-    <div class="vessels-grid">
+    <div class="vessels-grid" id="vessel-grid">
       <!-- Spinner -->
       <div id="vesselLoader" class="vessel-loader" style="display: none">
         <div class="vessel-spinner"></div>
@@ -419,5 +419,6 @@
 {% block script %}
 
 <script src="{% static 'admin/js/vessel-activity-log.js' %}"></script>
+<script src="{% static 'admin/js/vessel-activity-log-detail.js' %}"></script>
 
 {% endblock %}

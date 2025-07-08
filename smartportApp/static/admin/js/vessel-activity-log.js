@@ -1,3 +1,4 @@
+/* -------------- VESSEL FILTER LOGIC -------------- */
 const vesselTypeFilter = document.getElementById("vesselTypeFilter");
 const vesselStatusFilter = document.getElementById("vesselStatusFilter");
 const vesselGrid = document.querySelector(".vessels-grid");
@@ -6,6 +7,7 @@ const loader = document.getElementById("vesselLoader");
 document.addEventListener("DOMContentLoaded", function () {
   vesselTypeFilter.addEventListener("change", fetchFilteredVessels);
   vesselStatusFilter.addEventListener("change", fetchFilteredVessels);
+  fetchFilteredVessels();
 });
 
 const fetchFilteredVessels = async () => {
@@ -37,7 +39,7 @@ const fetchFilteredVessels = async () => {
           </div>
           <div class="vessel-card-details">
             <h3 class="vessel-card-name">${v.name}</h3>
-            <p class="vessel-card-info">IMO ${v.imo} · ${v.vessel_type}</p>
+            <p class="vessel-card-info">${v.imo} · ${v.vessel_type}</p>
             <p class="vessel-card-status">
               <span class="status-indicator ${v.status}"></span>
               ${v.status_display}
@@ -46,6 +48,8 @@ const fetchFilteredVessels = async () => {
         `;
         vesselGrid.appendChild(card);
       });
+
+      attachVesselCardClickHandlers();
     }
   } catch (err) {
     console.error("Failed to fetch vessels:", err);

@@ -94,3 +94,25 @@ class VoyageReport(models.Model):
 
   def __str__(self):
     return f"Report for {self.voyage.voyage_number}"
+  
+
+class ActivityLog(models.Model):
+  class ActionType(models.TextChoices):
+    ASSIGNED = "assigned", "Assigned"
+    STATUS_UPDATE = "status_update", "Status Update"
+    DELAYED = "delayed", "Delayed"
+    ARRIVED = "arrived", "Arrived"
+    NOTE = "note", "Manual Note"
+
+  activity_log_id = models.AutoField(primary_key=True)
+  vessel = models.ForeignKey('Vessel', on_delete=models.CASCADE, related_name='activity_logs')
+  action_type = models.CharField(max_length=20, choices=ActionType.choices)
+  description = models.TextField()
+  created_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='activity_logs')
+  created_at = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    ordering = ['-created_at']
+
+  def __str__(self):
+    return f"[{self.created_at}] {self.vessel} - {self.action_type}"
