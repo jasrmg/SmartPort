@@ -133,99 +133,42 @@
     <div class="vessels-list-header">
       <h2>Select a Vessel to View Activity Log</h2>
       <div class="search-filter">
-        <select class="form-select">
+        <select class="form-select" id="vesselTypeFilter">
           <option value="all">All Vessel Types</option>
           <option value="container">Container Ships</option>
-          <option value="bulk">Bulk Carriers</option>
-          <option value="tanker">Tankers</option>
-          <option value="roro">Ro-Ro</option>
+          <option value="ro_ro">Ro-Ro</option>
+          <option value="general_cargo">General Cargo</option>
+        </select>
+        <select class="form-select" id="vesselStatusFilter">
+          <option value="all">All Statuses</option>
+          <option value="available">Available</option>
+          <option value="assigned">Assigned</option>
+          <option value="maintenance">Under Maintenance</option>
         </select>
       </div>
     </div>
     <div class="vessels-grid">
-      <div class="vessel-card" data-vessel-id="1">
+      <!-- Spinner -->
+      <div id="vesselLoader" class="vessel-loader" style="display: none">
+        <div class="vessel-spinner"></div>
+      </div>
+      {% for vessel in vessels %}
+      <div class="vessel-card" data-vessel-id="{{ vessel.vessel_id }}">
         <div class="vessel-card-icon">
           <i class="fas fa-ship"></i>
         </div>
         <div class="vessel-card-details">
-          <h3 class="vessel-card-name">MV Pacific Navigator</h3>
-          <p class="vessel-card-info">IMO 9754321 · Container Ship</p>
+          <h3 class="vessel-card-name">{{ vessel.name }}</h3>
+          <p class="vessel-card-info">
+            {{ vessel.imo }} · {{ vessel.get_vessel_type_display }}
+          </p>
           <p class="vessel-card-status">
-            <span class="status-indicator completed"></span>
-            Port Call Completed
+            <span class="status-indicator {{ vessel.status }}"></span>
+            {{ vessel.status|title }}
           </p>
         </div>
       </div>
-
-      <div class="vessel-card" data-vessel-id="2">
-        <div class="vessel-card-icon">
-          <i class="fas fa-ship"></i>
-        </div>
-        <div class="vessel-card-details">
-          <h3 class="vessel-card-name">MV Eastern Star</h3>
-          <p class="vessel-card-info">IMO 9854632 · Bulk Carrier</p>
-          <p class="vessel-card-status">
-            <span class="status-indicator active"></span>
-            Currently in Port
-          </p>
-        </div>
-      </div>
-
-      <div class="vessel-card" data-vessel-id="3">
-        <div class="vessel-card-icon">
-          <i class="fas fa-ship"></i>
-        </div>
-        <div class="vessel-card-details">
-          <h3 class="vessel-card-name">MT Ocean Voyager</h3>
-          <p class="vessel-card-info">IMO 9633541 · Tanker</p>
-          <p class="vessel-card-status">
-            <span class="status-indicator scheduled"></span>
-            Arriving Tomorrow
-          </p>
-        </div>
-      </div>
-
-      <div class="vessel-card" data-vessel-id="4">
-        <div class="vessel-card-icon">
-          <i class="fas fa-ship"></i>
-        </div>
-        <div class="vessel-card-details">
-          <h3 class="vessel-card-name">MV Manila Express</h3>
-          <p class="vessel-card-info">IMO 9785421 · Container Ship</p>
-          <p class="vessel-card-status">
-            <span class="status-indicator completed"></span>
-            Port Call Completed
-          </p>
-        </div>
-      </div>
-
-      <div class="vessel-card" data-vessel-id="5">
-        <div class="vessel-card-icon">
-          <i class="fas fa-ship"></i>
-        </div>
-        <div class="vessel-card-details">
-          <h3 class="vessel-card-name">MV Cebu Pearl</h3>
-          <p class="vessel-card-info">IMO 9823567 · Ro-Ro</p>
-          <p class="vessel-card-status">
-            <span class="status-indicator active"></span>
-            Currently in Port
-          </p>
-        </div>
-      </div>
-
-      <div class="vessel-card" data-vessel-id="6">
-        <div class="vessel-card-icon">
-          <i class="fas fa-ship"></i>
-        </div>
-        <div class="vessel-card-details">
-          <h3 class="vessel-card-name">MV Global Trader</h3>
-          <p class="vessel-card-info">IMO 9864253 · Container Ship</p>
-          <p class="vessel-card-status">
-            <span class="status-indicator scheduled"></span>
-            Arriving in 3 Days
-          </p>
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </div>
 

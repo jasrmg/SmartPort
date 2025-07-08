@@ -42,8 +42,10 @@ urlpatterns = [
   # path("voyage-report/page/", views.voyage_report_paginated, name="voyage_report_paginated"),
   # ENDPOINT TO SERVE THE VOYAGE REPORT DETAIL:
   path("voyage-report/detail/<int:report_id>", views.voyage_report_detail, name="voyage_report_detail"),
-  # ENDPOINT VESSEL TYPE FILTER
+  # ENDPOINT FOR FILTERING THE REPORTS
   path("voyage-report/filter/", views.voyage_report_filtered, name="voyage_report_filtered"),
+  # ENDPOINT TO FILTER THE VESSELS (USED IN ACTIVITY LOG) 
+  path("filter-vessels/", views.filter_vessels_by_type, name="filter-vessels"),
 
 
   # -------------------------------- CUSTOM --------------------------------

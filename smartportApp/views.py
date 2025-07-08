@@ -128,7 +128,12 @@ def voyage_report_view(request):
   return render(request, "smartportApp/admin/voyage-report.html", context)
 
 def activity_log_view(request):
-  return render(request, "smartportApp/admin/vessel-activity-log.html")
+  vessels = Vessel.objects.all()
+
+  context = {
+    "vessels": vessels,
+  }
+  return render(request, "smartportApp/admin/vessel-activity-log.html", context)
 
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
@@ -660,6 +665,35 @@ def parse_voyage_report_page(page_obj):
     })
 
   return parsed_reports
+
+# END POINT TO FILTER THE VESSELS USED IN ACTIVITY LOG
+def filter_vessels_by_type(request):
+  vessel_type = request.GET.get("type", "all")
+  vessel_status = request.GET.get("status", "all")
+
+  try:
+    vessels = Vessel.objects.all()
+
+    if vessel_type != "all":
+      vessels = vessels.filter(vessel_type=vessel_type)
+
+    if vessel_status != "all":
+      vessels = vessels.filter(status=vessel_status)
+
+    data = [{
+      "vessel_id": v.vessel_id,
+      "name": v.name,
+      "imo": v.imo,
+      "vessel_type": v.get_vessel_type_display(),
+      "status": v.status,
+      "status_display": v.get_status_display()
+    } for v in vessels]
+
+    return JsonResponse({"vessels": data}, status=200)
+
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
+
 # --------------------------------- CUSTOM ---------------------------------
 @login_required
 def customs_dashboard(request):

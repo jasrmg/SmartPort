@@ -128,140 +128,6 @@
   gap: 1rem;
   margin-top: 2rem;
 }
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.7rem 1.2rem;
-  border: none;
-  border-radius: 6px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-decoration: none;
-}
-
-.btn i {
-  margin-right: 0.5rem;
-}
-
-.btn-primary {
-  background-color: var(--secondary);
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #172f6e;
-  transform: translateY(-2px);
-}
-
-.btn-secondary {
-  background-color: var(--light);
-  color: var(--primary);
-  border: 1px solid var(--gray);
-}
-
-.btn-secondary:hover {
-  background-color: var(--gray);
-  transform: translateY(-2px);
-}
-
-/* Modal styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: none;
-  justify-content: center;
-  align-items: flex-start;
-  z-index: 1000;
-  padding-top: 80px;
-  overflow-y: auto;
-}
-
-.modal {
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-  position: relative;
-  animation: modalAppear 0.3s ease;
-}
-
-@keyframes modalAppear {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.2rem 1.5rem;
-  border-bottom: 1px solid var(--gray);
-}
-
-.modal-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--primary);
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  color: var(--dark-gray);
-  cursor: pointer;
-  opacity: 0.7;
-  transition: all 0.2s;
-}
-
-.modal-close:hover {
-  opacity: 1;
-  color: var(--danger);
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.modal-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--gray);
-  text-align: center;
-}
-
-.modal-footer a {
-  color: var(--light-blue);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-}
-
-.modal-footer a:hover {
-  color: var(--secondary);
-  text-decoration: underline;
-}
-
-.show-modal {
-  display: flex;
-}
-
 /* Responsive Styles */
 @media (max-width: 768px) {
   .vessel-info-grid {
@@ -283,76 +149,6 @@
     justify-content: center;
   }
 }
-
-/* Notification Modal Styles */
-.notification-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.notification-item {
-  display: flex;
-  align-items: flex-start;
-  padding: 1rem;
-  border-bottom: 1px solid var(--gray);
-}
-
-.notification-item:last-child {
-  border-bottom: none;
-}
-
-.notification-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 1rem;
-  flex-shrink: 0;
-}
-
-.notification-icon i {
-  font-size: 1rem;
-  color: white;
-}
-
-.notification-icon.danger {
-  background-color: var(--danger);
-}
-
-.notification-icon.warning {
-  background-color: var(--warning);
-}
-
-.notification-icon.info {
-  background-color: var(--light-blue);
-}
-
-.notification-content {
-  flex: 1;
-}
-
-.notification-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0 0 0.3rem;
-  color: var(--primary);
-}
-
-.notification-message {
-  font-size: 0.9rem;
-  color: var(--dark-gray);
-  margin: 0 0 0.5rem;
-}
-
-.notification-time {
-  font-size: 0.8rem;
-  color: var(--dark-gray);
-  opacity: 0.8;
-}
-
 /* Vessel Card Styles */
 .vessels-list-container {
   margin-bottom: 2rem;
@@ -370,9 +166,9 @@
   color: var(--primary);
   margin: 0;
 }
-
-.search-filter {
-  width: 250px;
+.filters {
+  display: flex;
+  gap: 20px;
 }
 /* CSS PARA SA VESSEL TYPES NA PANG SORT DAPAT MAO NI I DEFAULT STYLE SA MGA DROPDOWN */
 .form-select {
@@ -405,6 +201,39 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
+  position: relative;
+}
+/*SPINNER*/
+.vessel-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.6); /* Optional: semi-transparent white */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.vessel-spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid var(--gray);
+  border-top: 5px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .vessel-card {
@@ -469,16 +298,16 @@
   margin-right: 0.5rem;
 }
 
-.status-indicator.completed {
+.status-indicator.available {
   background-color: var(--accent);
 }
 
-.status-indicator.active {
+.status-indicator.maintenance {
   background-color: var(--light-blue);
 }
 
-.status-indicator.scheduled {
-  background-color: var(--warning);
+.status-indicator.assigned {
+  background-color: var(--highlight);
 }
 
 .back-button-container {
