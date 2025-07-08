@@ -51,7 +51,6 @@ class Vessel(models.Model):
   def __str__(self):
     return f"{self.name} (IMO {self.imo })"
   
-  
 class Voyage(models.Model):
 
   class VoyageStatus(models.TextChoices):

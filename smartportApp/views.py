@@ -110,34 +110,22 @@ def manage_voyage_view(request):
 
 def voyage_report_view(request):
   reports = VoyageReport.objects.select_related('voyage__vessel', 'created_by').order_by('-created_at')
-  paginator = Paginator(reports, 20)
+  paginator = Paginator(reports, 2)
   page_number = request.GET.get('page')
   if not str(page_number).isdigit():
     page_number = 1
-  page_obj = paginator.get_page(page_number)
 
-  parsed_reports = []
-  for report in page_obj:
-    try:
-      data = json.loads(report.voyage_report or '{}')
-      raw_duration = data.get("voyage_summary", {}).get("duration", "")
-      data["voyage_summary"]["clean_duration"] = format_duration_string(raw_duration)
-    except Exception:
-      data = {}
-    parsed_reports.append({
-      "report": report,
-      "parsed": data
-    })
+  page_obj = paginator.get_page(page_number)
+  parsed_reports = parse_voyage_report_page(page_obj)
 
   context = {
     'page_obj': parsed_reports,
     'paginator': paginator,
     'current_page': page_obj.number,
     'has_next': page_obj.has_next(),
-    'has_prev': page_obj.has_previous()
+    'has_prev': page_obj.has_previous(),
   }
   return render(request, "smartportApp/admin/voyage-report.html", context)
-
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
@@ -552,44 +540,78 @@ def update_voyage_status(request):
     return JsonResponse({"error": str(e)}, status=500)
   
 # ENDPOINT FOR THE PAGINATION OF VOYAGE REPORT
-def voyage_report_paginated(request):
-  page_number = request.GET.get('page', 1)
+# def voyage_report_paginated(request):
+#   page_number = request.GET.get('page', 1)
 
-  reports = VoyageReport.objects.select_related('voyage__vessel').order_by('-created_at')
-  paginator = Paginator(reports, 20)
+#   reports = VoyageReport.objects.select_related('voyage__vessel').order_by('-created_at')
+#   paginator = Paginator(reports, 20)
 
-  try:
-    page_obj = paginator.page(page_number)
-  except:
-    return JsonResponse({"error": "Invalid page"}, status=400)
+#   try:
+#     page_obj = paginator.page(page_number)
+#   except:
+#     return JsonResponse({"error": "Invalid page"}, status=400)
   
-  results = []
-  for report in page_obj:
-    try:
-      parsed = json.loads(report.voyage_report or "{}")
-    except:
-      parsed = {}
+#   results = []
+#   for report in page_obj:
+#     try:
+#       parsed = json.loads(report.voyage_report or "{}")
+#     except:
+#       parsed = {}
 
-    summary = parsed.get("voyage_summary", {})
-    vessel = parsed.get("vessel", {})
+#     summary = parsed.get("voyage_summary", {})
+#     vessel = parsed.get("vessel", {})
 
-    results.append({
-      "id": report.voyage_report_id,
-      "voyage_number": summary.get("voyage_number", "-"),
-      "vessel_name": summary.get("name", "Unknown Vessel"),
-      "departure_port": summary.get("departure_port", "-"),
-      "arrival_port": summary.get("arrival_port", "-"),
-      "arrival_date": summary.get("arrival_date", "")[10],
-      "duration": summary.get("duration", "-"),
-    })
+#     results.append({
+#       "id": report.voyage_report_id,
+#       "voyage_number": summary.get("voyage_number", "-"),
+#       "vessel_name": summary.get("name", "Unknown Vessel"),
+#       "departure_port": summary.get("departure_port", "-"),
+#       "arrival_port": summary.get("arrival_port", "-"),
+#       "arrival_date": summary.get("arrival_date", "")[10],
+#       "duration": summary.get("duration", "-"),
+#     })
 
-    return JsonResponse({
-      "voyages": results,
-      "current_page": page_obj.number,
-      "num_pages": paginator.num_pages,
+#     return JsonResponse({
+#       "voyages": results,
+#       "current_page": page_obj.number,
+#       "num_pages": paginator.num_pages,
+#       "has_next": page_obj.has_next(),
+#       "has_prev": page_obj.has_previous(),
+#     })
+
+# ENDPOINT FOR THE FILTER LOGIC IN VOYAGE REPORT:
+def voyage_report_filtered(request):
+  if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    vessel_type = request.GET.get("vessel_type", "all")
+    origin = request.GET.get("origin", "all")
+    destination = request.GET.get("destination", "all")
+    page = int(request.GET.get("page", 1))
+
+    reports = VoyageReport.objects.select_related("voyage__vessel")
+
+    if vessel_type != "all":
+      reports = reports.filter(voyage__vessel__vessel_type=vessel_type)
+
+    if origin != "all":
+      reports = reports.filter(voyage__departure_port_id=origin)
+
+    if destination != "all":
+      reports = reports.filter(voyage__arrival_port_id=destination)
+
+
+    paginator = Paginator(reports.order_by("-created_at"), 2)
+    page_obj = paginator.get_page(page)
+    parsed_reports = parse_voyage_report_page(page_obj)
+
+    return render(request, "smartportApp/admin/voyage-report.html", {
+      "page_obj": parsed_reports,
+      "paginator": paginator,
+      "current_page": page,
       "has_next": page_obj.has_next(),
       "has_prev": page_obj.has_previous(),
     })
+
+  return JsonResponse({ "error": "Invalid request" }, status=400)
 
 # ENDPOINT TO SERVE VOYAGE REPORT DETAIL VIEW:
 def voyage_report_detail(request, report_id):
@@ -615,6 +637,25 @@ def voyage_report_detail(request, report_id):
       return JsonResponse({ "error": "Report not found" }, status=404)
 
   return JsonResponse({ "error": "Invalid Request" }, status=400)
+
+# HELPER FOR VOYAGE REPORT
+def parse_voyage_report_page(page_obj):
+  parsed_reports = []
+
+  for report in page_obj:
+    try:
+      data = json.loads(report.voyage_report or '{}')
+      raw_duration = data.get("voyage_summary", {}).get("duration", "")
+      data["voyage_summary"]["clean_duration"] = format_duration_string(raw_duration)
+    except Exception:
+      data = {}
+
+    parsed_reports.append({
+      "report": report,
+      "parsed": data
+    })
+
+  return parsed_reports
 # --------------------------------- CUSTOM ---------------------------------
 @login_required
 def customs_dashboard(request):

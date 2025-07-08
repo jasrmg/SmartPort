@@ -1,4 +1,7 @@
 /**/
+.empty-state {
+  text-align: center;
+}
 .voyage-cards-container {
   position: relative;
   display: grid;

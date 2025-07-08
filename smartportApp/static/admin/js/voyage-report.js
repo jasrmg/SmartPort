@@ -1,4 +1,28 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async () => {
+  // PREFILLING THE PORTS OPTION
+  const originSelect = document.getElementById("filter-origin-port");
+  const destinationSelect = document.getElementById("filter-destination-port");
+
+  try {
+    const res = await fetch("/get-port-options/");
+    const { ports } = await res.json();
+
+    let i = 0;
+    ports.forEach((port) => {
+      const optionOrigin = document.createElement("option");
+      optionOrigin.value = port.id;
+      optionOrigin.textContent = port.name;
+      console.log(i + "=" + optionOrigin.value);
+      i++;
+      const optionDestination = optionOrigin.cloneNode(true);
+
+      originSelect.appendChild(optionOrigin);
+      destinationSelect.appendChild(optionDestination);
+    });
+  } catch (err) {
+    console.error("❌ Failed to load port options:", err);
+  }
+
   const listSection = document.getElementById("voyage-reports-list-section");
   const detailSection = document.getElementById("voyageReportContent");
   const backButton = document.getElementById("back-to-voyage-list");
@@ -51,42 +75,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ------------- PRINT BUTTON -------------
   const printBtn = document.getElementById("printReport");
-  printBtn.addEventListener("click", () => {
-    window.print();
-  });
+  if (printBtn) {
+    printBtn.addEventListener("click", () => window.print());
+  }
 
   // ------------- PDF BUTTON -------------
   const PDFBtn = document.getElementById("exportPdf");
-  PDFBtn.addEventListener("click", () => {
-    const reportElement = document.getElementById("voyageReportContent");
-    const voyageNumber =
-      document.querySelector('[data-field="voyageNumber"]')?.innerText ||
-      "voyage-report";
-    // hide the buttons:
-    hideButtons("hide");
-    const opt = {
-      margin: [1, 0, 0, 0],
-      filename: `${voyageNumber.trim().replace(/\s+/g, "-")}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        scrollY: 0,
-        windowWidth: document.body.scrollWidth,
-        windowHeight: document.body.scrollHeight,
-      },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-    };
+  if (PDFBtn) {
+    PDFBtn.addEventListener("click", () => {
+      const reportElement = document.getElementById("voyageReportContent");
+      const voyageNumber =
+        document.querySelector('[data-field="voyageNumber"]')?.innerText ||
+        "voyage-report";
+      // hide the buttons:
+      hideButtons("hide");
+      const opt = {
+        margin: [1, 0, 0, 0],
+        filename: `${voyageNumber.trim().replace(/\s+/g, "-")}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          scrollY: 0,
+          windowWidth: document.body.scrollWidth,
+          windowHeight: document.body.scrollHeight,
+        },
+        jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+      };
 
-    html2pdf()
-      .set(opt)
-      .from(reportElement)
-      .save()
-      .then(() => {
-        // return the button
-        hideButtons("show");
-      });
-  });
+      html2pdf()
+        .set(opt)
+        .from(reportElement)
+        .save()
+        .then(() => {
+          // return the button
+          hideButtons("show");
+        });
+    });
+  }
 });
 
 const populateVoyageDetail = (data) => {
@@ -107,7 +133,7 @@ const populateVoyageDetail = (data) => {
   document.querySelector('[data-field="arrivalDateTime"]').textContent =
     formatDate(summary.arrival_date);
   document.querySelector('[data-field="totalDuration"]').textContent =
-    summary.duration.startsWith("-") ? "—" : summary.duration;
+    summary.duration.startsWith("-") ? "—" : summary.duration || "-";
   document.querySelector('[data-field="generatedBy"]').textContent =
     summary.generated_by;
   document.querySelector('[data-field="Status"]').textContent = summary.status;
@@ -120,6 +146,7 @@ const populateVoyageDetail = (data) => {
 };
 
 const formatReadable = (str) => {
+  if (str) return "-";
   return str
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

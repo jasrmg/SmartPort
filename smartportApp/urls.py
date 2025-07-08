@@ -19,7 +19,7 @@ urlpatterns = [
 
   # PORTS ENDPOINT FOR THE LEAFLET MAP COMPLETE PORT DETAILS
   path('get-ports/', views.get_ports, name='get_ports'),
-  # PORTS ENDPOINT FOR NAME AND ID ONLY
+  # PORTS ENDPOINT FOR NAME AND ID ONLY (assign route)
   path('get-port-options/', views.get_port_options, name="get_port_options"),
   # VESSEL LIST
   path("get-vessels/", views.get_vessels, name="get_vessels"),
@@ -27,8 +27,6 @@ urlpatterns = [
   # ADD VESSEL
   path("api/vessels/add/", views.add_vessel, name="add-vessel"),
 
-  # API ENDPOINT FOR GETTING THE PORT LIST FOR DROPDOWNS
-  path("api/ports/", views.get_port_options, name="get_port_options"),
   
   # API ENDPOINT FOR UPDATING THE TABLE IN THE VIEW ALL VESSELS
   path("update-vessel-status/", views.update_vessel_status, name="update_vessel_status"),
@@ -40,9 +38,11 @@ urlpatterns = [
   # UPDATE STATUS
   path('update-voyage-status/', views.update_voyage_status, name='update_voyage_status'),
   # API ENDPOINT FOR THE VOYAGE REPORT PAGINATOR:
-  path("voyage-report/page/", views.voyage_report_paginated, name="voyage_report_paginated"),
+  # path("voyage-report/page/", views.voyage_report_paginated, name="voyage_report_paginated"),
   # ENDPOINT TO SERVE THE VOYAGE REPORT DETAIL:
   path("voyage-report/detail/<int:report_id>", views.voyage_report_detail, name="voyage_report_detail"),
+  # ENDPOINT VESSEL TYPE FILTER
+  path("voyage-report/filter/", views.voyage_report_filtered, name="voyage_report_filtered"),
 
 
   # -------------------------------- CUSTOM --------------------------------

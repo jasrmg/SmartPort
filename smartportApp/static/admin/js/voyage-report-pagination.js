@@ -14,6 +14,19 @@ let totalPages = parseInt(
 const windowSize = 2;
 
 document.addEventListener("DOMContentLoaded", () => {
+  [
+    "filter-vessel-type",
+    "filter-origin-port",
+    "filter-destination-port",
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("change", () => {
+        currentPage = 1;
+        fetchPage(1); // Reset to first page when filter is changed
+      });
+    }
+  });
   document.addEventListener("click", (e) => {
     if (e.target.matches(".pagination-btn")) {
       const page = parseInt(e.target.dataset.page);
@@ -27,8 +40,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Attach filter dropdown listeners
+  initFilterListeners();
+
   updatePaginationWindow();
 });
+
+const initFilterListeners = () => {
+  [
+    "filter-vessel-type",
+    "filter-origin-port",
+    "filter-destination-port",
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("change", () => {
+        currentPage = 1;
+        fetchPage(1);
+      });
+    }
+  });
+};
 
 const showSpinner = () => {
   spinner.style.display = "flex";
@@ -57,12 +89,29 @@ const updatePaginationWindow = () => {
   nextBtn.disabled = currentPage >= totalPages;
 };
 
-const fetchPage = async (pageNum) => {
+const fetchPage = async (pageNum = 1) => {
   showSpinner();
-  const delay = new Promise((resolve) => setTimeout(resolve, 1000)); // 1000ms visual loading
+  const delay = new Promise((resolve) => setTimeout(resolve, 1000));
+
+  const vesselType =
+    document.getElementById("filter-vessel-type")?.value || "all";
+
+  const originEl = document.getElementById("filter-origin-port");
+  const destEl = document.getElementById("filter-destination-port");
+
+  const originPort =
+    originEl && originEl.value !== "undefined" ? originEl.value : "all";
+  const destPort =
+    destEl && destEl.value !== "undefined" ? destEl.value : "all";
+  const query = new URLSearchParams({
+    page: pageNum,
+    vessel_type: vesselType,
+    origin: originPort,
+    destination: destPort,
+  }).toString();
 
   try {
-    const res = await fetch(`/voyage-report/?page=${pageNum}`, {
+    const res = await fetch(`/voyage-report/filter/?${query}`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
         "X-CSRFToken": csrftoken,
@@ -83,6 +132,9 @@ const fetchPage = async (pageNum) => {
     }
 
     currentPage = pageNum;
+    totalPages = parseInt(
+      doc.querySelector("#pagination-container")?.dataset.totalPages || "1"
+    );
     if (paginationWindow) updatePaginationWindow();
   } catch (err) {
     console.error("❌ Pagination Fetch Error:", err);
