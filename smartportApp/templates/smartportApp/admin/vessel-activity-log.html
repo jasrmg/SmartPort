@@ -1,495 +1,480 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>Vessel Activity Log | Smart Port</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="/static/ADMIN/vessel-activity-log.css" />
-  </head>
-  <body>
-    <div class="container">
-      <!-- Sidebar Navigation -->
-      <div class="sidebar">
-        <div class="sidebar-header">
-          <div class="logo">
-            <i class="fas fa-anchor logo-icon"></i>
-            <span class="logo-text">SMART PORT</span>
-            <button class="collapse-btn">
-              <i class="fas fa-bars"></i>
-            </button>
-          </div>
+{% extends "smartportApp/admin/admin-base.html" %}
+<!---->
+{% load static %}
+<!---->
+{% block title %} Activity Log {% endblock %}
+<!---->
+{% block head %}
+<link
+  rel="stylesheet"
+  href="{% static 'admin/css/vessel-activity-log.css' %}"
+/>
+{% endblock %}
+<!--BODY-->
+
+<!-- START OF SIDEBAR -->
+{% block sidebar %}
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-anchor logo-icon"></i>
+      <span class="logo-text">SMART PORT</span>
+      <button class="collapse-btn">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+  <ul class="nav-menu">
+    <li class="nav-item">
+      <a href="{% url 'admin-dashboard' %}" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li class="nav-item expanded">
+      <a href="" class="nav-link active">
+        <i class="fas fa-ship"></i>
+        <span>Vessels</span>
+      </a>
+      <ul class="nav-sub-menu" style="height: auto">
+        <li>
+          <a href="{% url 'all-vessels' %}" class="nav-sub-link">
+            <i class="fas fa-list"></i>
+            <span>View All Vessels</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'assign-route' %}" class="nav-sub-link">
+            <i class="fas fa-route"></i>
+            <span>Assign Route</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'manage-voyage' %}" class="nav-sub-link">
+            <i class="fas fa-compass"></i>
+            <span>Manage Voyage</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'voyage-report' %}" class="nav-sub-link">
+            <i class="fas fa-file-alt"></i>
+            <span>Voyage Report</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'activity-log' %}" class="nav-sub-link active">
+            <i class="fas fa-history"></i>
+            <span>Activity Log</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a href="admin-users.html" class="nav-link">
+        <i class="fas fa-users"></i>
+        <span>Users</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="admin-manifests.html" class="nav-link">
+        <i class="fas fa-file-alt"></i>
+        <span>Manifests</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a href="admin-reports.html" class="nav-link">
+        <i class="fas fa-chart-line"></i>
+        <span>Reports</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+<!-- MAIN CONTENT -->
+{% block content %}
+<div class="main-section">
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Vessel Activity Log</h1>
+      <p>Detailed chronological record of vessel activities</p>
+    </div>
+  </div>
+
+  <!-- Vessel List Section -->
+  <div class="vessels-list-container" id="vessels-list-section">
+    <div class="vessels-list-header">
+      <h2>Select a Vessel to View Activity Log</h2>
+      <div class="search-filter">
+        <select class="form-select">
+          <option value="all">All Vessel Types</option>
+          <option value="container">Container Ships</option>
+          <option value="bulk">Bulk Carriers</option>
+          <option value="tanker">Tankers</option>
+          <option value="roro">Ro-Ro</option>
+        </select>
+      </div>
+    </div>
+    <div class="vessels-grid">
+      <div class="vessel-card" data-vessel-id="1">
+        <div class="vessel-card-icon">
+          <i class="fas fa-ship"></i>
         </div>
-
-        <ul class="nav-menu">
-          <li class="nav-item">
-            <a href="dashboard.html" class="nav-link">
-              <i class="fas fa-tachometer-alt"></i>
-              <span>Dashboard</span>
-            </a>
-          </li>
-          <li class="nav-item expanded">
-            <a href="#" class="nav-link active">
-              <i class="fas fa-ship"></i>
-              <span>Vessels</span>
-            </a>
-            <ul class="nav-sub-menu" style="height: auto">
-              <li>
-                <a href="admin-vessels.html" class="nav-sub-link">
-                  <i class="fas fa-list"></i>
-                  <span>View All Vessels</span>
-                </a>
-              </li>
-              <li></li>
-              <li>
-                <a href="vessel-activity-log.html" class="nav-sub-link active">
-                  <i class="fas fa-history"></i>
-                  <span>Activity Log</span>
-                </a>
-              </li>
-              <li>
-                <a href="assign-route.html" class="nav-sub-link">
-                  <i class="fas fa-route"></i>
-                  <span>Assign Route</span>
-                </a>
-              </li>
-              <li>
-                <a href="voyage-report.html" class="nav-sub-link">
-                  <i class="fas fa-file-alt"></i>
-                  <span>Voyage Report</span>
-                </a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-item">
-            <a href="admin-users.html" class="nav-link">
-              <i class="fas fa-users"></i>
-              <span>Users</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="admin-manifests.html" class="nav-link">
-              <i class="fas fa-file-alt"></i>
-              <span>Manifests</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a href="admin-reports.html" class="nav-link">
-              <i class="fas fa-chart-line"></i>
-              <span>Reports</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="fas fa-cog"></i>
-              <span>Settings</span>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="index.html" class="nav-link">
-              <i class="fas fa-sign-out-alt"></i>
-              <span>Logout</span>
-            </a>
-          </li>
-        </ul>
+        <div class="vessel-card-details">
+          <h3 class="vessel-card-name">MV Pacific Navigator</h3>
+          <p class="vessel-card-info">IMO 9754321 · Container Ship</p>
+          <p class="vessel-card-status">
+            <span class="status-indicator completed"></span>
+            Port Call Completed
+          </p>
+        </div>
       </div>
 
-      <!-- Main Content Area -->
-      <div class="main-content">
-        <!-- Top Bar -->
-        <div class="topbar">
-          <div class="search-bar">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Search vessels..." />
-          </div>
-
-          <div class="user-menu">
-            <button class="notification-btn">
-              <i class="fas fa-bell"></i>
-              <span class="notification-badge">3</span>
-            </button>
-
-            <div class="user-profile">
-              <div class="user-avatar">AD</div>
-              <span class="user-name">Admin User</span>
-              <i class="fas fa-chevron-down"></i>
-            </div>
-          </div>
+      <div class="vessel-card" data-vessel-id="2">
+        <div class="vessel-card-icon">
+          <i class="fas fa-ship"></i>
         </div>
-
-        <div class="page-header">
-          <div class="page-title">
-            <h1>Vessel Activity Log</h1>
-            <p>Detailed chronological record of vessel activities</p>
-          </div>
+        <div class="vessel-card-details">
+          <h3 class="vessel-card-name">MV Eastern Star</h3>
+          <p class="vessel-card-info">IMO 9854632 · Bulk Carrier</p>
+          <p class="vessel-card-status">
+            <span class="status-indicator active"></span>
+            Currently in Port
+          </p>
         </div>
+      </div>
 
-        <!-- Vessel List Section -->
-        <div class="vessels-list-container" id="vessels-list-section">
-          <div class="vessels-list-header">
-            <h2>Select a Vessel to View Activity Log</h2>
-            <div class="search-filter">
-              <select class="form-select">
-                <option value="all">All Vessel Types</option>
-                <option value="container">Container Ships</option>
-                <option value="bulk">Bulk Carriers</option>
-                <option value="tanker">Tankers</option>
-                <option value="roro">Ro-Ro</option>
-              </select>
-            </div>
-          </div>
-          <div class="vessels-grid">
-            <div class="vessel-card" data-vessel-id="1">
-              <div class="vessel-card-icon">
-                <i class="fas fa-ship"></i>
-              </div>
-              <div class="vessel-card-details">
-                <h3 class="vessel-card-name">MV Pacific Navigator</h3>
-                <p class="vessel-card-info">IMO 9754321 · Container Ship</p>
-                <p class="vessel-card-status">
-                  <span class="status-indicator completed"></span>
-                  Port Call Completed
-                </p>
-              </div>
-            </div>
-
-            <div class="vessel-card" data-vessel-id="2">
-              <div class="vessel-card-icon">
-                <i class="fas fa-ship"></i>
-              </div>
-              <div class="vessel-card-details">
-                <h3 class="vessel-card-name">MV Eastern Star</h3>
-                <p class="vessel-card-info">IMO 9854632 · Bulk Carrier</p>
-                <p class="vessel-card-status">
-                  <span class="status-indicator active"></span>
-                  Currently in Port
-                </p>
-              </div>
-            </div>
-
-            <div class="vessel-card" data-vessel-id="3">
-              <div class="vessel-card-icon">
-                <i class="fas fa-ship"></i>
-              </div>
-              <div class="vessel-card-details">
-                <h3 class="vessel-card-name">MT Ocean Voyager</h3>
-                <p class="vessel-card-info">IMO 9633541 · Tanker</p>
-                <p class="vessel-card-status">
-                  <span class="status-indicator scheduled"></span>
-                  Arriving Tomorrow
-                </p>
-              </div>
-            </div>
-
-            <div class="vessel-card" data-vessel-id="4">
-              <div class="vessel-card-icon">
-                <i class="fas fa-ship"></i>
-              </div>
-              <div class="vessel-card-details">
-                <h3 class="vessel-card-name">MV Manila Express</h3>
-                <p class="vessel-card-info">IMO 9785421 · Container Ship</p>
-                <p class="vessel-card-status">
-                  <span class="status-indicator completed"></span>
-                  Port Call Completed
-                </p>
-              </div>
-            </div>
-
-            <div class="vessel-card" data-vessel-id="5">
-              <div class="vessel-card-icon">
-                <i class="fas fa-ship"></i>
-              </div>
-              <div class="vessel-card-details">
-                <h3 class="vessel-card-name">MV Cebu Pearl</h3>
-                <p class="vessel-card-info">IMO 9823567 · Ro-Ro</p>
-                <p class="vessel-card-status">
-                  <span class="status-indicator active"></span>
-                  Currently in Port
-                </p>
-              </div>
-            </div>
-
-            <div class="vessel-card" data-vessel-id="6">
-              <div class="vessel-card-icon">
-                <i class="fas fa-ship"></i>
-              </div>
-              <div class="vessel-card-details">
-                <h3 class="vessel-card-name">MV Global Trader</h3>
-                <p class="vessel-card-info">IMO 9864253 · Container Ship</p>
-                <p class="vessel-card-status">
-                  <span class="status-indicator scheduled"></span>
-                  Arriving in 3 Days
-                </p>
-              </div>
-            </div>
-          </div>
+      <div class="vessel-card" data-vessel-id="3">
+        <div class="vessel-card-icon">
+          <i class="fas fa-ship"></i>
         </div>
+        <div class="vessel-card-details">
+          <h3 class="vessel-card-name">MT Ocean Voyager</h3>
+          <p class="vessel-card-info">IMO 9633541 · Tanker</p>
+          <p class="vessel-card-status">
+            <span class="status-indicator scheduled"></span>
+            Arriving Tomorrow
+          </p>
+        </div>
+      </div>
 
-        <!-- Vessel Detail Section (hidden initially) -->
-        <div
-          class="vessel-detail-section"
-          id="vessel-detail-section"
-          style="display: none"
-        >
-          <!-- Back Button -->
-          <div class="back-button-container">
-            <button class="btn btn-secondary back-button" id="back-to-list">
-              <i class="fas fa-arrow-left"></i>
-              Back to Vessel List
-            </button>
-          </div>
+      <div class="vessel-card" data-vessel-id="4">
+        <div class="vessel-card-icon">
+          <i class="fas fa-ship"></i>
+        </div>
+        <div class="vessel-card-details">
+          <h3 class="vessel-card-name">MV Manila Express</h3>
+          <p class="vessel-card-info">IMO 9785421 · Container Ship</p>
+          <p class="vessel-card-status">
+            <span class="status-indicator completed"></span>
+            Port Call Completed
+          </p>
+        </div>
+      </div>
 
-          <!-- Vessel Information Section -->
-          <div class="vessel-info">
-            <h2 class="vessel-info-title">
-              <span class="vessel-emoji">🚢</span>Vessel Information
-            </h2>
-            <div class="vessel-info-grid">
-              <div class="vessel-info-item">
-                <span class="vessel-info-label">Vessel Name:</span>
-                <span class="vessel-info-value">MV Pacific Navigator</span>
-              </div>
-              <div class="vessel-info-item">
-                <span class="vessel-info-label">IMO Number:</span>
-                <span class="vessel-info-value">IMO 9754321</span>
-              </div>
-              <div class="vessel-info-item">
-                <span class="vessel-info-label">Vessel Type:</span>
-                <span class="vessel-info-value">Container Ship</span>
-              </div>
-              <!--LAHI2 NI DIRI DEPENDE SA TYPE OF VESSEL-->
-              <div class="vessel-info-item">
-                <span class="vessel-info-label">Gross Tonnage:</span>
-                <span class="vessel-info-value">42,567 GT</span>
-              </div>
-              <div class="vessel-info-item">
-                <span class="vessel-info-label">Current Port:</span>
-                <span class="vessel-info-value">Port of Manila</span>
-              </div>
-              <div class="vessel-info-item">
-                <span class="vessel-info-label">Last Port:</span>
-                <span class="vessel-info-value">Hong Kong</span>
-              </div>
-            </div>
-          </div>
+      <div class="vessel-card" data-vessel-id="5">
+        <div class="vessel-card-icon">
+          <i class="fas fa-ship"></i>
+        </div>
+        <div class="vessel-card-details">
+          <h3 class="vessel-card-name">MV Cebu Pearl</h3>
+          <p class="vessel-card-info">IMO 9823567 · Ro-Ro</p>
+          <p class="vessel-card-status">
+            <span class="status-indicator active"></span>
+            Currently in Port
+          </p>
+        </div>
+      </div>
 
-          <!-- Activity Log Table -->
-          <div class="activity-log-container">
-            <div class="log-date-group">
-              <h3 class="log-date">June 14, 2025</h3>
-              <table class="activity-log-table">
-                <thead class="sticky">
-                  <tr>
-                    <th class="time-column">Time</th>
-                    <th class="user-column">Created By</th>
-                    <th class="type-column">Action Type</th>
-                    <th class="description-column">Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="time-column">03:30</td>
-                    <td class="user-column">Admin Juan</td>
-                    <td class="type-column">Notification</td>
-                    <td class="description-column">Sample Description</td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">04:00</td>
-                    <td class="user-column">Shipper Neto</td>
-                    <td class="type-column">Upload Document</td>
-                    <td class="description-column">
-                      Uploaded shipping manifest
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">04:15</td>
-                    <td class="user-column">Custom</td>
-                    <td class="type-column">Clearance</td>
-                    <td class="description-column">Approved SUBMAN20-10-11</td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">04:45</td>
-                    <td class="user-column">System</td>
-                    <td class="type-column">Anchor</td>
-                    <td class="description-column">Anchor dropped</td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">06:00</td>
-                    <td class="user-column">Port Authority</td>
-                    <td class="type-column">Inspection</td>
-                    <td class="description-column">
-                      Port State Control: Docs and safety check
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">07:15</td>
-                    <td class="user-column">Port Authority</td>
-                    <td class="type-column">Berthing</td>
-                    <td class="description-column">Berth 4 North assigned</td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">07:45</td>
-                    <td class="user-column">Crew</td>
-                    <td class="type-column">Navigation</td>
-                    <td class="description-column">Anchor heaved up</td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">08:30</td>
-                    <td class="user-column">Harbor Pilot</td>
-                    <td class="type-column">Tug Assistance</td>
-                    <td class="description-column">
-                      MT Manila 1, MT Manila 3 assisting
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">09:00</td>
-                    <td class="user-column">Berth Officer</td>
-                    <td class="type-column">Docking</td>
-                    <td class="description-column">
-                      All fast at berth, 6/2/2 mooring
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">09:30</td>
-                    <td class="user-column">Customs</td>
-                    <td class="type-column">Clearance</td>
-                    <td class="description-column">Cleared for cargo ops</td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">10:00</td>
-                    <td class="user-column">Terminal Safety Officer</td>
-                    <td class="type-column">Briefing</td>
-                    <td class="description-column">
-                      Safety procedures reviewed
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">10:15</td>
-                    <td class="user-column">Terminal Ops</td>
-                    <td class="type-column">Cargo Start</td>
-                    <td class="description-column">
-                      Discharge: 150, Load: 200 containers
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">12:00</td>
-                    <td class="user-column">Bunkering Officer</td>
-                    <td class="type-column">Bunkering</td>
-                    <td class="description-column">
-                      500MT VLSFO from Shell Marine
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">15:30</td>
-                    <td class="user-column">Crew Manager</td>
-                    <td class="type-column">Crew Change</td>
-                    <td class="description-column">
-                      3 on-signers, 2 off-signers
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">18:00</td>
-                    <td class="user-column">Terminal Ops</td>
-                    <td class="type-column">Discharge Complete</td>
-                    <td class="description-column">
-                      150 containers discharged
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">18:30</td>
-                    <td class="user-column">Terminal Ops</td>
-                    <td class="type-column">Loading Start</td>
-                    <td class="description-column">
-                      Bay plan confirmed by Chief Officer
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">22:00</td>
-                    <td class="user-column">Terminal Ops</td>
-                    <td class="type-column">Loading Complete</td>
-                    <td class="description-column">
-                      200 containers loaded and secured
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">22:30</td>
-                    <td class="user-column">Documentation Officer</td>
-                    <td class="type-column">Docs Finalized</td>
-                    <td class="description-column">
-                      BoL signed, manifest updated
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">23:00</td>
-                    <td class="user-column">Pilot</td>
-                    <td class="type-column">Departure Prep</td>
-                    <td class="description-column">
-                      Pilot boarded: Capt. M. Cruz (#P178)
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="time-column">23:30</td>
-                    <td class="user-column">System</td>
-                    <td class="type-column">Departure</td>
-                    <td class="description-column">
-                      Vessel departed, ETA: Singapore May 24, 2024
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+      <div class="vessel-card" data-vessel-id="6">
+        <div class="vessel-card-icon">
+          <i class="fas fa-ship"></i>
+        </div>
+        <div class="vessel-card-details">
+          <h3 class="vessel-card-name">MV Global Trader</h3>
+          <p class="vessel-card-info">IMO 9864253 · Container Ship</p>
+          <p class="vessel-card-status">
+            <span class="status-indicator scheduled"></span>
+            Arriving in 3 Days
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-              <!-- June 13 Logs -->
-              <div class="log-date-group">
-                <h3 class="log-date">June 13, 2025</h3>
-                <table class="activity-log-table">
-                  <thead>
-                    <tr>
-                      <th class="time-column">Time</th>
-                      <th class="user-column">Created By</th>
-                      <th class="type-column">Action Type</th>
-                      <th class="description-column">Description</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="time-column">02:00</td>
-                      <td class="user-column">System</td>
-                      <td class="type-column">System Check</td>
-                      <td class="description-column">
-                        Routine diagnostics completed
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="time-column">03:15</td>
-                      <td class="user-column">Shipper Neto</td>
-                      <td class="type-column">Upload Document</td>
-                      <td class="description-column">
-                        Uploaded Certificate of Origin
-                      </td>
-                    </tr>
-                    <!-- Add more rows as needed -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+  <!-- Vessel Detail Section (hidden initially) -->
+  <div
+    class="vessel-detail-section"
+    id="vessel-detail-section"
+    style="display: none"
+  >
+    <!-- Back Button -->
+    <div class="back-button-container">
+      <button class="btn btn-secondary back-button" id="back-to-list">
+        <i class="fas fa-arrow-left"></i>
+        Back to Vessel List
+      </button>
+    </div>
 
-          <!-- Action Buttons -->
+    <!-- Vessel Information Section -->
+    <div class="vessel-info">
+      <h2 class="vessel-info-title">
+        <span class="vessel-emoji">🚢</span>Vessel Information
+      </h2>
+      <div class="vessel-info-grid">
+        <div class="vessel-info-item">
+          <span class="vessel-info-label">Vessel Name:</span>
+          <span class="vessel-info-value">MV Pacific Navigator</span>
+        </div>
+        <div class="vessel-info-item">
+          <span class="vessel-info-label">IMO Number:</span>
+          <span class="vessel-info-value">IMO 9754321</span>
+        </div>
+        <div class="vessel-info-item">
+          <span class="vessel-info-label">Vessel Type:</span>
+          <span class="vessel-info-value">Container Ship</span>
+        </div>
+        <!--LAHI2 NI DIRI DEPENDE SA TYPE OF VESSEL-->
+        <div class="vessel-info-item">
+          <span class="vessel-info-label">Gross Tonnage:</span>
+          <span class="vessel-info-value">42,567 GT</span>
+        </div>
+        <div class="vessel-info-item">
+          <span class="vessel-info-label">Current Port:</span>
+          <span class="vessel-info-value">Port of Manila</span>
+        </div>
+        <div class="vessel-info-item">
+          <span class="vessel-info-label">Last Port:</span>
+          <span class="vessel-info-value">Hong Kong</span>
         </div>
       </div>
     </div>
 
-    <script src="/static/ADMIN/vessel-activity-log.js"></script>
-  </body>
-</html>
+    <!-- Activity Log Table -->
+    <div class="activity-log-container">
+      <div class="log-date-group">
+        <h3 class="log-date">June 14, 2025</h3>
+        <table class="activity-log-table">
+          <thead class="sticky">
+            <tr>
+              <th class="time-column">Time</th>
+              <th class="user-column">Created By</th>
+              <th class="type-column">Action Type</th>
+              <th class="description-column">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="time-column">03:30</td>
+              <td class="user-column">Admin Juan</td>
+              <td class="type-column">Notification</td>
+              <td class="description-column">Sample Description</td>
+            </tr>
+            <tr>
+              <td class="time-column">04:00</td>
+              <td class="user-column">Shipper Neto</td>
+              <td class="type-column">Upload Document</td>
+              <td class="description-column">Uploaded shipping manifest</td>
+            </tr>
+            <tr>
+              <td class="time-column">04:15</td>
+              <td class="user-column">Custom</td>
+              <td class="type-column">Clearance</td>
+              <td class="description-column">Approved SUBMAN20-10-11</td>
+            </tr>
+            <tr>
+              <td class="time-column">04:45</td>
+              <td class="user-column">System</td>
+              <td class="type-column">Anchor</td>
+              <td class="description-column">Anchor dropped</td>
+            </tr>
+            <tr>
+              <td class="time-column">06:00</td>
+              <td class="user-column">Port Authority</td>
+              <td class="type-column">Inspection</td>
+              <td class="description-column">
+                Port State Control: Docs and safety check
+              </td>
+            </tr>
+            <tr>
+              <td class="time-column">07:15</td>
+              <td class="user-column">Port Authority</td>
+              <td class="type-column">Berthing</td>
+              <td class="description-column">Berth 4 North assigned</td>
+            </tr>
+            <tr>
+              <td class="time-column">07:45</td>
+              <td class="user-column">Crew</td>
+              <td class="type-column">Navigation</td>
+              <td class="description-column">Anchor heaved up</td>
+            </tr>
+            <tr>
+              <td class="time-column">08:30</td>
+              <td class="user-column">Harbor Pilot</td>
+              <td class="type-column">Tug Assistance</td>
+              <td class="description-column">
+                MT Manila 1, MT Manila 3 assisting
+              </td>
+            </tr>
+            <tr>
+              <td class="time-column">09:00</td>
+              <td class="user-column">Berth Officer</td>
+              <td class="type-column">Docking</td>
+              <td class="description-column">
+                All fast at berth, 6/2/2 mooring
+              </td>
+            </tr>
+            <tr>
+              <td class="time-column">09:30</td>
+              <td class="user-column">Customs</td>
+              <td class="type-column">Clearance</td>
+              <td class="description-column">Cleared for cargo ops</td>
+            </tr>
+            <tr>
+              <td class="time-column">10:00</td>
+              <td class="user-column">Terminal Safety Officer</td>
+              <td class="type-column">Briefing</td>
+              <td class="description-column">Safety procedures reviewed</td>
+            </tr>
+            <tr>
+              <td class="time-column">10:15</td>
+              <td class="user-column">Terminal Ops</td>
+              <td class="type-column">Cargo Start</td>
+              <td class="description-column">
+                Discharge: 150, Load: 200 containers
+              </td>
+            </tr>
+            <tr>
+              <td class="time-column">12:00</td>
+              <td class="user-column">Bunkering Officer</td>
+              <td class="type-column">Bunkering</td>
+              <td class="description-column">500MT VLSFO from Shell Marine</td>
+            </tr>
+            <tr>
+              <td class="time-column">15:30</td>
+              <td class="user-column">Crew Manager</td>
+              <td class="type-column">Crew Change</td>
+              <td class="description-column">3 on-signers, 2 off-signers</td>
+            </tr>
+            <tr>
+              <td class="time-column">18:00</td>
+              <td class="user-column">Terminal Ops</td>
+              <td class="type-column">Discharge Complete</td>
+              <td class="description-column">150 containers discharged</td>
+            </tr>
+            <tr>
+              <td class="time-column">18:30</td>
+              <td class="user-column">Terminal Ops</td>
+              <td class="type-column">Loading Start</td>
+              <td class="description-column">
+                Bay plan confirmed by Chief Officer
+              </td>
+            </tr>
+            <tr>
+              <td class="time-column">22:00</td>
+              <td class="user-column">Terminal Ops</td>
+              <td class="type-column">Loading Complete</td>
+              <td class="description-column">
+                200 containers loaded and secured
+              </td>
+            </tr>
+            <tr>
+              <td class="time-column">22:30</td>
+              <td class="user-column">Documentation Officer</td>
+              <td class="type-column">Docs Finalized</td>
+              <td class="description-column">BoL signed, manifest updated</td>
+            </tr>
+            <tr>
+              <td class="time-column">23:00</td>
+              <td class="user-column">Pilot</td>
+              <td class="type-column">Departure Prep</td>
+              <td class="description-column">
+                Pilot boarded: Capt. M. Cruz (#P178)
+              </td>
+            </tr>
+            <tr>
+              <td class="time-column">23:30</td>
+              <td class="user-column">System</td>
+              <td class="type-column">Departure</td>
+              <td class="description-column">
+                Vessel departed, ETA: Singapore May 24, 2024
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- June 13 Logs -->
+        <div class="log-date-group">
+          <h3 class="log-date">June 13, 2025</h3>
+          <table class="activity-log-table">
+            <thead>
+              <tr>
+                <th class="time-column">Time</th>
+                <th class="user-column">Created By</th>
+                <th class="type-column">Action Type</th>
+                <th class="description-column">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="time-column">02:00</td>
+                <td class="user-column">System</td>
+                <td class="type-column">System Check</td>
+                <td class="description-column">
+                  Routine diagnostics completed
+                </td>
+              </tr>
+              <tr>
+                <td class="time-column">03:15</td>
+                <td class="user-column">Shipper Neto</td>
+                <td class="type-column">Upload Document</td>
+                <td class="description-column">
+                  Uploaded Certificate of Origin
+                </td>
+              </tr>
+              <!-- Add more rows as needed -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+  </div>
+</div>
+{% endblock %}
+<!---->
+{% block modal %} {% endblock %}
+<!---->
+{% block script %}
+
+<script src="{% static 'admin/js/vessel-activity-log.js' %}"></script>
+
+{% endblock %}

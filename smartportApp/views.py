@@ -126,6 +126,10 @@ def voyage_report_view(request):
     'has_prev': page_obj.has_previous(),
   }
   return render(request, "smartportApp/admin/voyage-report.html", context)
+
+def activity_log_view(request):
+  return render(request, "smartportApp/admin/vessel-activity-log.html")
+
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
