@@ -121,6 +121,10 @@
 .remarks-column {
   color: var(--dark-gray);
 }
+.buttons {
+  display: flex;
+  justify-content: space-between;
+}
 .btn {
   display: inline-flex;
   align-items: center;
@@ -341,11 +345,60 @@
 .back-button-container {
   margin-bottom: 1.5rem;
 }
+.add-button-container {
+  margin-bottom: 1.5rem;
+}
 
 .back-button {
   padding: 0.6rem 1rem;
 }
+.add-button {
+  padding: 0.6rem 1rem;
+}
 
+/*TOAST*/
+.toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--success);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: none;
+  z-index: 9999;
+  transition: all 0.3s ease;
+}
+
+.toast.show {
+  display: block;
+}
+#logDescription {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--gray);
+  border-radius: 4px;
+  resize: none;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+}
+.new-log-highlight {
+  animation: fadeHighlight 2s ease-out;
+  background-color: var(--accent);
+}
+@keyframes fadeHighlight {
+  0% {
+    background-color: #d4edda;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
 @media (max-width: 768px) {
   .vessels-grid {
     grid-template-columns: 1fr;

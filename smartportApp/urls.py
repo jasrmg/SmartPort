@@ -47,8 +47,8 @@ urlpatterns = [
   # ENDPOINT TO FILTER THE VESSELS (USED IN ACTIVITY LOG) 
   path("filter-vessels/", views.filter_vessels_by_type, name="filter-vessels"),
   # VESSEL DETAIL VIEW:
-    path('vessel-detail/<int:vessel_id>/', views.vessel_detail_view, name='vessel-detail'),
-
+  path('vessel-detail/<int:vessel_id>/', views.vessel_detail_view, name='vessel-detail'),
+  path("vessel-log/add/<int:vessel_id>/", views.add_vessel_log_entry, name="add_vessel_log_entry"),
 
   # -------------------------------- CUSTOM --------------------------------
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),

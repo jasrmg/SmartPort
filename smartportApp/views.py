@@ -762,6 +762,49 @@ def vessel_detail_view(request, vessel_id):
   logger.info(f"Returning data for vessel {vessel_id}: {data}")
   return JsonResponse(data)
 
+# ADD VESSEL LOG IN ACTIVITY LOG
+# @csrf_exempt
+# @login_required
+@require_POST
+def add_vessel_log_entry(request, vessel_id):
+  user = request.user
+  try:
+    profile = user.userprofile
+  except:
+    return JsonResponse({"success": False, "error": "Unauthorized."}, status=401)
+
+  try:
+    payload = json.loads(request.body)
+    description = payload.get("description", "").strip()
+
+    if not description:
+      return JsonResponse({"success": False, "error": "Description required."}, status=400)
+
+    vessel = Vessel.objects.get(pk=vessel_id)
+    log = ActivityLog.objects.create(
+      vessel=vessel,
+      action_type=ActivityLog.ActionType.NOTE,
+      description=description,
+      created_by=profile,
+    )
+
+    created_at = log.created_at
+    return JsonResponse({
+      "success": True,
+      "log": {
+        "time": created_at.strftime("%H:%M"),
+        "date": created_at.strftime("%Y-%m-%d"),
+        "user": f"{profile.first_name} {profile.last_name}",
+        "action_type": "Manual Note",
+        "description": log.description,
+      }
+    })
+
+  except Vessel.DoesNotExist:
+    return JsonResponse({"success": False, "error": "Vessel not found."}, status=404)
+  except Exception as e:
+    return JsonResponse({"success": False, "error": str(e)}, status=500)
+
 # --------------------------------- CUSTOM ---------------------------------
 @login_required
 def customs_dashboard(request):

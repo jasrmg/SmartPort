@@ -179,11 +179,19 @@
     style="display: none"
   >
     <!-- Back Button -->
-    <div class="back-button-container">
-      <button class="btn btn-secondary back-button" id="back-to-list">
-        <i class="fas fa-arrow-left"></i>
-        Back to Vessel List
-      </button>
+    <div class="buttons">
+      <div class="back-button-container">
+        <button class="btn btn-secondary back-button" id="back-to-list">
+          <i class="fas fa-arrow-left"></i>
+          Back to Vessel List
+        </button>
+      </div>
+      <div class="add-button-container">
+        <button class="btn btn-secondary add-button" id="openAddLogBtn">
+          <i class="fas fa-add"></i>
+          Add Log Entry
+        </button>
+      </div>
     </div>
 
     <!-- Vessel Information Section -->
@@ -240,140 +248,9 @@
               <td class="type-column">Notification</td>
               <td class="description-column">Sample Description</td>
             </tr>
-            <tr>
-              <td class="time-column">04:00</td>
-              <td class="user-column">Shipper Neto</td>
-              <td class="type-column">Upload Document</td>
-              <td class="description-column">Uploaded shipping manifest</td>
-            </tr>
-            <tr>
-              <td class="time-column">04:15</td>
-              <td class="user-column">Custom</td>
-              <td class="type-column">Clearance</td>
-              <td class="description-column">Approved SUBMAN20-10-11</td>
-            </tr>
-            <tr>
-              <td class="time-column">04:45</td>
-              <td class="user-column">System</td>
-              <td class="type-column">Anchor</td>
-              <td class="description-column">Anchor dropped</td>
-            </tr>
-            <tr>
-              <td class="time-column">06:00</td>
-              <td class="user-column">Port Authority</td>
-              <td class="type-column">Inspection</td>
-              <td class="description-column">
-                Port State Control: Docs and safety check
-              </td>
-            </tr>
-            <tr>
-              <td class="time-column">07:15</td>
-              <td class="user-column">Port Authority</td>
-              <td class="type-column">Berthing</td>
-              <td class="description-column">Berth 4 North assigned</td>
-            </tr>
-            <tr>
-              <td class="time-column">07:45</td>
-              <td class="user-column">Crew</td>
-              <td class="type-column">Navigation</td>
-              <td class="description-column">Anchor heaved up</td>
-            </tr>
-            <tr>
-              <td class="time-column">08:30</td>
-              <td class="user-column">Harbor Pilot</td>
-              <td class="type-column">Tug Assistance</td>
-              <td class="description-column">
-                MT Manila 1, MT Manila 3 assisting
-              </td>
-            </tr>
-            <tr>
-              <td class="time-column">09:00</td>
-              <td class="user-column">Berth Officer</td>
-              <td class="type-column">Docking</td>
-              <td class="description-column">
-                All fast at berth, 6/2/2 mooring
-              </td>
-            </tr>
-            <tr>
-              <td class="time-column">09:30</td>
-              <td class="user-column">Customs</td>
-              <td class="type-column">Clearance</td>
-              <td class="description-column">Cleared for cargo ops</td>
-            </tr>
-            <tr>
-              <td class="time-column">10:00</td>
-              <td class="user-column">Terminal Safety Officer</td>
-              <td class="type-column">Briefing</td>
-              <td class="description-column">Safety procedures reviewed</td>
-            </tr>
-            <tr>
-              <td class="time-column">10:15</td>
-              <td class="user-column">Terminal Ops</td>
-              <td class="type-column">Cargo Start</td>
-              <td class="description-column">
-                Discharge: 150, Load: 200 containers
-              </td>
-            </tr>
-            <tr>
-              <td class="time-column">12:00</td>
-              <td class="user-column">Bunkering Officer</td>
-              <td class="type-column">Bunkering</td>
-              <td class="description-column">500MT VLSFO from Shell Marine</td>
-            </tr>
-            <tr>
-              <td class="time-column">15:30</td>
-              <td class="user-column">Crew Manager</td>
-              <td class="type-column">Crew Change</td>
-              <td class="description-column">3 on-signers, 2 off-signers</td>
-            </tr>
-            <tr>
-              <td class="time-column">18:00</td>
-              <td class="user-column">Terminal Ops</td>
-              <td class="type-column">Discharge Complete</td>
-              <td class="description-column">150 containers discharged</td>
-            </tr>
-            <tr>
-              <td class="time-column">18:30</td>
-              <td class="user-column">Terminal Ops</td>
-              <td class="type-column">Loading Start</td>
-              <td class="description-column">
-                Bay plan confirmed by Chief Officer
-              </td>
-            </tr>
-            <tr>
-              <td class="time-column">22:00</td>
-              <td class="user-column">Terminal Ops</td>
-              <td class="type-column">Loading Complete</td>
-              <td class="description-column">
-                200 containers loaded and secured
-              </td>
-            </tr>
-            <tr>
-              <td class="time-column">22:30</td>
-              <td class="user-column">Documentation Officer</td>
-              <td class="type-column">Docs Finalized</td>
-              <td class="description-column">BoL signed, manifest updated</td>
-            </tr>
-            <tr>
-              <td class="time-column">23:00</td>
-              <td class="user-column">Pilot</td>
-              <td class="type-column">Departure Prep</td>
-              <td class="description-column">
-                Pilot boarded: Capt. M. Cruz (#P178)
-              </td>
-            </tr>
-            <tr>
-              <td class="time-column">23:30</td>
-              <td class="user-column">System</td>
-              <td class="type-column">Departure</td>
-              <td class="description-column">
-                Vessel departed, ETA: Singapore May 24, 2024
-              </td>
-            </tr>
           </tbody>
         </table>
 
-        <!-- June 13 Logs -->
         <div class="log-date-group">
           <h3 class="log-date">June 13, 2025</h3>
           <table class="activity-log-table">
@@ -414,7 +291,44 @@
 </div>
 {% endblock %}
 <!---->
-{% block modal %} {% endblock %}
+{% block modal %}
+<div id="addLogModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Log Entry</span>
+      <button class="modal-close" id="addLogCloseBtn">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div id="add-log-status" class="form-status" style="display: none">
+        <i id="add-log-status-icon" class="fas"></i>
+        <span id="add-log-status-msg"></span>
+      </div>
+
+      <form id="addLogForm">
+        <div class="form-group">
+          <label for="logDescription">Description</label>
+          <textarea id="logDescription" rows="4" required></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="cancelAddLogBtn">
+            Cancel
+          </button>
+          <button type="submit" class="btn-update">
+            <span class="btn-text">Add</span>
+            <span class="spinner" style="display: none"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!--TOAST MESSAGE-->
+<div id="log-toast" class="toast"></div>
+
+{% endblock %}
 <!---->
 {% block script %}
 
