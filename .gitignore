@@ -18,3 +18,5 @@ firebase_config.js
 /static/
 /local_settings.py
 .env
+
+db.sqlite3
