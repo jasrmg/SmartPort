@@ -120,9 +120,40 @@ class ActivityLog(models.Model):
     return f"[{self.created_at}] {self.vessel} - {self.action_type}"
 
 
+class IncidentReport(models.Model):
+  class ImpactLevel(models.TextChoices):
+    LOW = 'low', 'Low'
+    MEDIUM = 'medium', 'Medium'
+    HIGH = 'high', 'High'
+
+  class Status(models.TextChoices):
+    PENDING = 'pending', 'Pending'
+    RESOLVED = 'resolved', 'Resolved'
+
+  class IncidentTypeChoices(models.TextChoices):
+    COLLISION = 'collision', 'Collision'
+    FIRE = 'fire', 'Fire'
+    OTHER = 'other', 'Other (Specify)'
+
+  incident_id = models.AutoField(primary_key=True)
+  description = models.TextField()
+  location = models.CharField(max_length=255)
+  incident_datetime = models.DateTimeField()
+  impact_level = models.CharField(max_length=10, choices=ImpactLevel.choices)
+  status = models.CharField(max_length=15, choices=Status.choices, default=Status.PENDING)
+  incident_type = models.CharField(max_length=20, choices=IncidentTypeChoices.choices)
+  other_incident_type = models.CharField(max_length=100, null=True, blank=True)
+  reporter = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+  vessel = models.ForeignKey(Vessel, on_delete=models.SET_NULL, null=True, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+
 class IncidentImage(models.Model):
   image_id = models.AutoField(primary_key=True)
   incident = models.ForeignKey('IncidentReport', on_delete=models.CASCADE, related_name='images')
   image = models.ImageField(upload_to='incident_images/')
   uploaded_at = models.DateTimeField(auto_now_add=True)
   uploaded_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
+
+  
