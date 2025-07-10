@@ -489,7 +489,7 @@ def get_active_voyages():
     'departure_port', 
     'arrival_port'
     ).filter(
-      status__in=['in_transit', 'delayed']
+      status__in=['in_transit', 'delayed', 'assigned']
     ).order_by('-departure_date')
 
 

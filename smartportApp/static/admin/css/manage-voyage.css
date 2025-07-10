@@ -256,8 +256,13 @@ td.editable:hover {
   font-weight: 500;
 }
 
-.status-badge.in_transit {
+.status-badge.assigned {
   background-color: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
+.status-badge.in_transit {
+  background-color: rgba(255, 152, 0, 0.15);
   color: #ff9800;
 }
 

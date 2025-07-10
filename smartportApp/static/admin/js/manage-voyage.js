@@ -1,4 +1,4 @@
-const voyageStatusChoices = ["in_transit", "delayed", "arrived"];
+const voyageStatusChoices = ["in_transit", "delayed", "arrived", "assigned"];
 
 let selectedCell = null;
 let originalStatus = null;
@@ -85,7 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
       hideReasonMessage();
     } else {
       updateVoyageStatus(currentVoyageId, newStatus);
-      closeModals();
     }
   });
 
@@ -99,17 +98,27 @@ document.addEventListener("DOMContentLoaded", () => {
     hideReasonMessage();
 
     updateVoyageStatus(currentVoyageId, "delayed", reason);
+  });
+
+  confirmCancelBtn.addEventListener("click", () => {
+    cancelEdit();
     closeModals();
   });
 
-  // CANCEL/Close Buttons for both modals
-  [confirmCancelBtn, confirmCloseBtn, reasonCancelBtn, reasonCloseBtn].forEach(
-    (btn) =>
-      btn.addEventListener("click", () => {
-        cancelEdit();
-        closeModals();
-      })
-  );
+  confirmCloseBtn.addEventListener("click", () => {
+    cancelEdit();
+    closeModals();
+  });
+
+  reasonCancelBtn.addEventListener("click", () => {
+    cancelEdit();
+    closeModals();
+  });
+
+  reasonCloseBtn.addEventListener("click", () => {
+    cancelEdit();
+    closeModals();
+  });
 });
 
 // OUTSIDE DOM
@@ -135,37 +144,6 @@ const closeModals = () => {
     "none";
   document.getElementById("delayedReasonModal").style.display = "none";
   document.getElementById("delayed-reason-text").value = "";
-
-  if (selectedCell) {
-    const row = selectedCell.closest("tr");
-    const tableBody = row.parentElement;
-
-    const displayText = formatStatus(newStatus);
-    const className = newStatus.toLowerCase();
-    selectedCell.innerHTML = `<span class="status-badge ${className}">${displayText}</span>`;
-
-    if (newStatus === "arrived") {
-      row.remove();
-
-      const remainingRows = tableBody.querySelectorAll("tr");
-      if (remainingRows.length === 0) {
-        const emptyRow = document.createElement("tr");
-        emptyRow.innerHTML = `
-          <td colspan="7" style="text-align: center; color: var(--dark-gray); padding: 1.25rem;">
-            <i class="fas fa-info-circle" style="margin-right: 8px"></i>
-            No active voyages found in the database.
-          </td>
-        `;
-        tableBody.appendChild(emptyRow);
-      }
-    } else {
-      selectedCell.innerHTML = `<span class="status-badge ${newStatus}">${formatStatus(
-        newStatus
-      )}</span>`;
-    }
-
-    selectedCell = null;
-  }
 };
 
 const showSpinner = (button) => {
@@ -186,6 +164,8 @@ const showSuccessModal = () => {
 
 // BACKEND CALL
 const updateVoyageStatus = async (voyageId, status, reason = "") => {
+  console.log("🔁 Updating status to:", status);
+
   const button =
     status === "delayed"
       ? document.getElementById("submitDelayReason")
@@ -204,6 +184,40 @@ const updateVoyageStatus = async (voyageId, status, reason = "") => {
     });
 
     if (!response.ok) throw new Error("Status update failed.");
+
+    if (!selectedCell) {
+      selectedCell = document.querySelector(
+        `.status-column[data-id="${voyageId}"]`
+      );
+    }
+
+    // update table ui after success response
+    if (selectedCell) {
+      const row = selectedCell.closest("tr");
+      const tableBody = row.parentElement;
+
+      if (status === "arrived") {
+        row.remove();
+
+        const remainingRows = tableBody.querySelectorAll("tr");
+        if (remainingRows.length === 0) {
+          const emptyRow = document.createElement("tr");
+          emptyRow.innerHTML = `
+          <td colspan="7" style="text-align: center; color: var(--dark-gray); padding: 1.25rem;">
+            <i class="fas fa-info-circle" style="margin-right: 8px"></i>
+            No active voyages found in the database.
+          </td>
+          `;
+          tableBody.appendChild(emptyRow);
+        }
+      } else {
+        const displayText = formatStatus(status);
+        const className = status.toLowerCase();
+        selectedCell.innerHTML = `<span class="status-badge ${className}">${displayText}</span>`;
+      }
+
+      selectedCell = null;
+    }
 
     closeModals();
     showSuccessModal();
