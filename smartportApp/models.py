@@ -157,3 +157,9 @@ class IncidentImage(models.Model):
   uploaded_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
 
   
+class IncidentResolution(models.Model):
+  resolution_id = models.AutoField(primary_key=True)
+  incident = models.OneToOneField(IncidentReport, on_delete=models.CASCADE, related_name='resolution')
+  resolution_report = models.TextField()
+  resolution_date = models.DateTimeField()
+  resolved_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
