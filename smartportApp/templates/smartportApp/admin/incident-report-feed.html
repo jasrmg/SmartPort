@@ -319,15 +319,15 @@
       <button class="modal-close" id="closeIncidentModal">&times;</button>
     </div>
     <div class="modal-body">
+      <div class="status-message" style="display: none">
+        <i class="fas fa-check-circle"></i>
+        <span class="status-message-text">Vessel Creation Successful!</span>
+      </div>
       <!-- Vessel (optional) -->
       <div class="form-group">
         <label for="incidentVessel">Related Vessel (Optional)</label>
         <select id="incidentVessel" class="form-input">
           <option value="">-- Select Vessel --</option>
-          <option value="MV Pacific Explorer">MV Pacific Explorer</option>
-          <option value="MV Liberty Queen">MV Liberty Queen</option>
-          <option value="MV Eastern Star">MV Eastern Star</option>
-          <!-- Populate dynamically from your vessel list in production -->
         </select>
       </div>
 
@@ -347,11 +347,14 @@
         <label for="incidentType">Incident Type</label>
         <select id="incidentType" class="form-input" required>
           <option value="">-- Select Incident Type --</option>
-          <option value="Oil Spill">Oil Spill</option>
-          <option value="Equipment Failure">Equipment Failure</option>
-          <option value="Injury">Injury</option>
-          <option value="Unauthorized Access">Unauthorized Access</option>
-          <option value="others">Others</option>
+          <option value="oil_spill">Oil Spill</option>
+          <option value="collision">Collision</option>
+          <option value="grounding">Grounding</option>
+          <option value="fire">Fire</option>
+          <option value="capsizing">Capsizing</option>
+          <option value="slip_trip_fall">Slip, Trip, or Fall</option>
+          <option value="human_error">Human Error</option>
+          <option value="other">Other</option>
         </select>
       </div>
 
@@ -391,7 +394,10 @@
       <div id="imagePreviewContainer" class="image-preview-container"></div>
       <div class="modal-footer">
         <button class="btn btn-cancel" id="cancelIncidentBtn">Cancel</button>
-        <button class="btn btn-create" id="submitIncidentBtn">Report</button>
+        <button class="btn btn-create" id="submitIncidentBtn">
+          <span class="btn-text">Report</span>
+          <span class="spinner" style="display: none"></span>
+        </button>
       </div>
     </div>
   </div>

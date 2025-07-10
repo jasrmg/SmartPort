@@ -146,7 +146,7 @@ def report_feed_view(request):
 
 # -------------------- TEMPLATES LOGIC --------------------
 
-from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog
+from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution
 
 # FUNCTION FOR GETTING PORT LOCATION TO FILL THE LEAFLET MAP
 def get_ports(request):
@@ -868,6 +868,65 @@ def log_vessel_activity(vessel, action_type, description, user_profile):
     description=description,
     created_by=user_profile
   )
+
+# UPLOAD INCIDENT REPORT
+def submit_incident_report(request):
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid method"}, status=405)
+  
+  user = request.user.userprofile
+  try:
+    # === FORM DATA ===
+    location = request.POST.get('location', '').strip()
+    incident_type = request.POST.get('incident_type', '').strip()
+    other_type = request.POST.get('other_incident_type', '').strip()
+    description = request.POST.get('description', '').strip()
+    vessel_name = request.POST.get('vessel_name', '').strip()
+
+    # === VALIDATION ===
+    if not location or not incident_type or not description:
+      return JsonResponse({'error': 'Required fields are missing.'}, status=400)
+
+    if incident_type == 'other' and not other_type:
+      return JsonResponse({'error': 'Please specify the incident type.'}, status=400)
+
+    # === VESSEL (optional) ===
+    vessel = Vessel.objects.filter(name=vessel_name).first() if vessel_name else None
+
+    # === AUTO APPROVE if Admin ===
+    is_admin = user.role == 'admin'
+
+    incident = IncidentReport.objects.create(
+      location=location,
+      description=description,
+      incident_datetime=now(),
+      impact_level='low',  # or make this dynamic later
+      status='pending',
+      incident_type=incident_type,
+      other_incident_type=other_type if incident_type == 'other' else '',
+      vessel=vessel,
+      reporter=user,
+      is_approved=is_admin
+    )
+
+    # === HANDLE MULTIPLE IMAGES ===
+    images = request.FILES.getlist('images')
+    for img in images:
+      IncidentImage.objects.create(
+        incident=incident,
+        image=img,
+        uploaded_by=user
+      )
+
+    return JsonResponse({
+      'success': True,
+      'message': 'Incident report submitted successfully.',
+      'approved': is_admin
+    })
+
+  except Exception as e:
+    return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

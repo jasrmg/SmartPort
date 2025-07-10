@@ -131,9 +131,14 @@ class IncidentReport(models.Model):
     RESOLVED = 'resolved', 'Resolved'
 
   class IncidentTypeChoices(models.TextChoices):
+    OIL_SPILL = 'oil_spill', 'Oil Spill'
     COLLISION = 'collision', 'Collision'
+    GROUNDING = 'grounding', 'Grounding'
     FIRE = 'fire', 'Fire'
-    OTHER = 'other', 'Other (Specify)'
+    CAPSIZING = 'capsizing', 'Capsizing'
+    SLIP_TRIP_FALL = 'slip_trip_fall', 'Slip, Trip, or Fall'
+    HUMAN_ERROR = 'human_error', 'Human Error'
+    OTHER = 'other', 'Other'
 
   incident_id = models.AutoField(primary_key=True)
   description = models.TextField()
@@ -141,7 +146,7 @@ class IncidentReport(models.Model):
   incident_datetime = models.DateTimeField()
   impact_level = models.CharField(max_length=10, choices=ImpactLevel.choices)
   status = models.CharField(max_length=15, choices=Status.choices, default=Status.PENDING)
-  incident_type = models.CharField(max_length=20, choices=IncidentTypeChoices.choices)
+  incident_type = models.CharField(max_length=30, choices=IncidentTypeChoices.choices)
   other_incident_type = models.CharField(max_length=100, null=True, blank=True)
   reporter = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
   vessel = models.ForeignKey(Vessel, on_delete=models.SET_NULL, null=True, blank=True)

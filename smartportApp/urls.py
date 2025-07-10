@@ -50,6 +50,7 @@ urlpatterns = [
   # VESSEL DETAIL VIEW:
   path('vessel-detail/<int:vessel_id>/', views.vessel_detail_view, name='vessel-detail'),
   path("vessel-log/add/<int:vessel_id>/", views.add_vessel_log_entry, name="add_vessel_log_entry"),
+  path('submit-incident/', views.submit_incident_report, name='submit_incident_report'),
 
   # -------------------------------- CUSTOM --------------------------------
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),

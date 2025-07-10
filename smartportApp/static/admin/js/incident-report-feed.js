@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // OPEN THE MODAL
   reportModalBtn.addEventListener("click", () => {
     reportModal.style.display = "flex";
+    populateVesselDropdown();
   });
   // CLOSE THE MODAL
   const closeReportModalBtns = [closeReportModal, cancelReportModal];
@@ -28,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("incidentType")
     .addEventListener("change", function () {
       const otherGroup = document.getElementById("otherIncidentTypeGroup");
-      if (this.value === "others") {
+      if (this.value === "other") {
         otherGroup.style.display = "block";
       } else {
         otherGroup.style.display = "none";
@@ -97,27 +98,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const relatedCardId =
       document.getElementById("resolutionModal").dataset.cardId;
 
-    // Process resolution logic here...
-
     document.getElementById("resolutionModal").style.display = "none";
   });
-
-  // CAROUSEL FOR IMAGE:
-  const images = document.querySelectorAll(".incident-image");
-  const leftBtn = document.querySelector(".left-btn");
-  const rightBtn = document.querySelector(".right-btn");
-  let currentImage = 0;
-
-  function updateCarousel(index) {
-    images.forEach((img, i) => {
-      img.classList.toggle("active", i === index);
-    });
-
-    // Show/hide buttons based on current index
-    leftBtn.style.display = index === 0 ? "none" : "flex";
-    rightBtn.style.display = index === 3 - 1 ? "none" : "flex";
-    console.log(images.length);
-  }
 
   // Initial call
   updateCarousel(currentImage);
@@ -162,4 +144,142 @@ document.addEventListener("DOMContentLoaded", function () {
       fullscreenImg.src = "";
     }
   });
+
+  // SUBMIT LOGIC:
+  submitReportBtn.addEventListener("click", async () => {
+    const statusMessage = document.querySelector(".status-message");
+    const statusText = document.querySelector(".status-message-text");
+    const spinner = submitReportBtn.querySelector(".spinner");
+    spinner.style.display = "inline-block";
+    submitReportBtn.disabled = true;
+    // gather form data:
+    const location = document.getElementById("incidentLocation").value.trim();
+    const type = document.getElementById("incidentType").value;
+    const otherType = document.getElementById("otherIncidentType").value.trim();
+    const description = document
+      .getElementById("incidentDescription")
+      .value.trim();
+    const vessel = document.getElementById("incidentVessel").value;
+
+    if (!location || !type || !description) {
+      showStatus("Please fill in all required fields.", false);
+      return;
+    }
+
+    if (type === "other" && !otherType) {
+      showStatus("Please specify the incident type.", false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("location", location);
+    formData.append("incident_type", type);
+    formData.append("other_incident_type", otherType);
+    formData.append("description", description);
+    formData.append("vessel_name", vessel);
+
+    const files = imageInput.files;
+    for (let i = 0; i < files.length; i++) {
+      formData.append("images", files[i]);
+    }
+
+    try {
+      const response = await fetch("/submit-incident/", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showStatus("Incident Report submitted successfully!", true);
+        resetIncidentModal();
+        spinner.style.display = "none";
+        // to do: insert in feed
+      } else {
+        showStatus(result.error || "Submission failed", false);
+      }
+    } catch (error) {
+      console.error("Error submitting incident: ", error);
+      showStatus("Server error occured.", false);
+      submitReportBtn.disabled = false;
+    } finally {
+      submitReportBtn.disabled = false;
+    }
+  });
+
+  const resetIncidentModal = () => {
+    // Clear form
+    document.getElementById("incidentType").selectedIndex = 0;
+    document.getElementById("incidentLocation").value = "";
+    document.getElementById("otherIncidentType").value = "";
+    document.getElementById("incidentDescription").value = "";
+    document.getElementById("incidentVessel").value = "";
+    document.getElementById("incidentImage").value = "";
+
+    // Hide conditional fields and image previews
+    document.getElementById("otherIncidentTypeGroup").style.display = "none";
+    previewContainer.innerHTML = "";
+
+    // Close modal
+    reportModal.style.display = "none";
+  };
 });
+
+// OUTSIDE DOM
+const populateVesselDropdown = async () => {
+  const dropdown = document.getElementById("incidentVessel");
+
+  // Clear previous options except default
+  dropdown.innerHTML = `<option value="">-- Select Vessel --</option>`;
+
+  try {
+    const response = await fetch("/get-vessels/");
+    const result = await response.json();
+
+    if (result.vessels && Array.isArray(result.vessels)) {
+      result.vessels.forEach((vessel) => {
+        const option = document.createElement("option");
+        option.value = vessel.name;
+        option.textContent = vessel.name;
+        dropdown.appendChild(option);
+      });
+    } else {
+      console.warn("Unexpected response:", result);
+    }
+  } catch (err) {
+    console.error("Failed to fetch vessels:", err);
+  }
+};
+
+// CAROUSEL FOR IMAGE:
+const images = document.querySelectorAll(".incident-image");
+const leftBtn = document.querySelector(".left-btn");
+const rightBtn = document.querySelector(".right-btn");
+let currentImage = 0;
+const updateCarousel = (index) => {
+  images.forEach((img, i) => {
+    img.classList.toggle("active", i === index);
+  });
+
+  // Show/hide buttons based on current index
+  leftBtn.style.display = index === 0 ? "none" : "flex";
+  rightBtn.style.display = index === images.length - 1 ? "none" : "flex";
+  console.log(images.length);
+};
+
+const showStatus = (message, isSuccess = true) => {
+  const statusMessage = document.querySelector(".status-message");
+  const statusText = document.querySelector(".status-message-text");
+
+  statusText.textContent = message;
+  statusMessage.style.backgroundColor = isSuccess ? "#10b981" : "#d14343";
+  statusMessage.style.display = "flex";
+
+  setTimeout(() => {
+    statusMessage.style.display = "none";
+  }, 2500);
+};
