@@ -147,7 +147,7 @@ class IncidentReport(models.Model):
   vessel = models.ForeignKey(Vessel, on_delete=models.SET_NULL, null=True, blank=True)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
-
+  is_approved = models.BooleanField(default=False)
 
 class IncidentImage(models.Model):
   image_id = models.AutoField(primary_key=True)
