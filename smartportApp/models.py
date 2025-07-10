@@ -56,6 +56,7 @@ class Voyage(models.Model):
   class VoyageStatus(models.TextChoices):
     ARRIVED = "arrived", "Arrived" 
     IN_TRANSIT = "in_transit", "In Transit"
+    ASSIGNED = "assigned", "Assigned"
     DELAYED = "delayed", "Delayed"
 
   voyage_id = models.AutoField(primary_key=True)
@@ -71,7 +72,7 @@ class Voyage(models.Model):
   status = models.CharField(
     max_length=20,
     choices=VoyageStatus.choices,
-    default=VoyageStatus.IN_TRANSIT
+    default=VoyageStatus.ASSIGNED
   )
 
   voyage_number = models.CharField(max_length=50, unique=True)
@@ -103,6 +104,7 @@ class ActivityLog(models.Model):
     DELAYED = "delayed", "Delayed"
     ARRIVED = "arrived", "Arrived"
     NOTE = "note", "Manual Note"
+    CREATED = "created", "Created"
 
   activity_log_id = models.AutoField(primary_key=True)
   vessel = models.ForeignKey('Vessel', on_delete=models.CASCADE, related_name='activity_logs')

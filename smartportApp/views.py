@@ -226,8 +226,25 @@ def update_vessel_status(request):
       return JsonResponse({'success': False, 'message': 'Missing fields'}, status=400)
 
     vessel = Vessel.objects.get(imo=imo)
+
+    if vessel.status == new_status:
+      return JsonResponse({"success": False, "message": "No change detected"})
+    
     vessel.status = new_status
     vessel.save()
+
+    # log to the activity log
+    user_profile = getattr(request.user,'userprofile', None);
+    print("USER IN UPDATE VESSEL STATUS: ", user_profile)
+    if not user_profile:
+      return JsonResponse({"success": False, "message": "Unauthorized"}, status=401)  
+    
+    log_vessel_activity(
+      vessel=vessel,
+      action_type=ActivityLog.ActionType.STATUS_UPDATE,
+      description=f"Vessel status updated to {new_status}.",
+      user_profile=user_profile
+    )
 
     return JsonResponse({'success': True})
   except Vessel.DoesNotExist:
@@ -250,8 +267,25 @@ def update_vessel_name(request):
       return JsonResponse({"success": False, "message": "Missing data"}, status=400)
 
     vessel = Vessel.objects.get(imo=imo)
+
+    if vessel.name == new_name:
+      return JsonResponse({"success": True, "message": "No change detected."})
+
+    old_name = vessel.name
     vessel.name = new_name
     vessel.save()
+
+    # log to the activity log
+    user_profile = getattr(request.user, "userprofile", None)
+    if not user_profile:
+      return JsonResponse({"success": False, "message": "Unauthorized"}, status=401)
+
+    log_vessel_activity(
+      vessel=vessel,
+      action_type=ActivityLog.ActionType.NOTE, 
+      description=f"Vessel renamed from '{old_name}' to '{new_name}'.",
+      user_profile=user_profile
+    )
 
     return JsonResponse({"success": True, "message": "Vessel name updated"})
 
@@ -282,6 +316,7 @@ def delete_vessel(request):
     return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 from django.views.decorators.csrf import csrf_exempt
+
 # ADD VESSEL 
 @csrf_exempt
 def add_vessel(request):
@@ -310,6 +345,14 @@ def add_vessel(request):
       vessel_type=vessel_type,
       capacity=capacity,
       created_by=request.user_profile
+    )
+    print("USER IN ADD VESSEL: ", request.user_profile)
+    # Log creation as a NOTE (or create a new action type like CREATED)
+    log_vessel_activity(
+      vessel=vessel,
+      action_type=ActivityLog.ActionType.CREATED,
+      description=f"Vessel '{vessel.name}' (IMO {vessel.imo}) was added to the fleet by {request.user_profile}.",
+      user_profile=request.user_profile
     )
 
     return JsonResponse({
@@ -392,17 +435,6 @@ def assign_route(request):
     # Generate voyage number
     voyage_number = generate_voyage_number(vessel_id)
 
-
-    print("✅ assign_route view reached")
-    print("Departure:", departure_str)
-    print("ETA:", eta_str)
-    print("Parsed departure:", departure_dt)
-    print("Parsed eta:", eta_dt)
-    print("Vessel ID:", vessel_id)
-    print("Origin ID:", origin_id)
-    print("Destination ID:", destination_id)
-
-
     # Create voyage
     voyage = Voyage.objects.create(
       vessel=vessel,
@@ -413,12 +445,22 @@ def assign_route(request):
       voyage_number=voyage_number
     )
 
-    print(f"✅ Voyage #{voyage_number} assigned successfully to vessel ID {vessel_id}")
+    # print(f"✅ Voyage #{voyage_number} assigned successfully to vessel ID {vessel_id}")
 
     # Update vessel status
     vessel.status = Vessel.VesselStatus.ASSIGNED
     vessel.save()
-    print(f"✅ VESSEL ID {vessel_id} UPDATED TO ASSIGNED")
+    # print(f"✅ VESSEL ID {vessel_id} UPDATED TO ASSIGNED")
+
+    # CREATE AN ACTIVITY LOG INSTANCE
+    user_profile = getattr(request.user, "userprofile", None)
+    print("USER: ", user_profile)
+    log_vessel_activity(
+      vessel=vessel,
+      action_type=ActivityLog.ActionType.ASSIGNED,
+      description=f"Voyage #{voyage_number} assigned successfully: departing from {origin.port_name} to {destination.port_name}.",
+      user_profile=user_profile
+    )
 
     return JsonResponse({"message": "Voyage assigned successfully.", "voyage_number": voyage_number})
 
@@ -509,8 +551,17 @@ def update_voyage_status(request):
     if new_status == "delayed":
       if not reason:
         return JsonResponse({"error": "Reason is required for delayed status."}, status=400)
+      
       report.delayed_reason = reason
       report.save()
+
+      # activity log instance if the voyage is delayed
+      log_vessel_activity(
+        vessel=voyage.vessel,
+        action_type=ActivityLog.ActionType.DELAYED,
+        description=f"Voyage {voyage.voyage_number} was marked as delayed. Reason: {reason}",
+        user_profile=user
+      )
 
     elif new_status == "arrived":
       # Compose report summary (you'll display this in frontend, so save data only)
@@ -539,6 +590,23 @@ def update_voyage_status(request):
       })
       report.save()
 
+      # activity log entry if arrived:
+      log_vessel_activity(
+        vessel=voyage.vessel,
+        action_type=ActivityLog.ActionType.ARRIVED,
+        description=f"Voyage {voyage.voyage_number} successfully completed. Vessel arrived at {voyage.arrival_port.port_name}.",
+        user_profile=user
+      )
+    
+    else:
+      # activity log entry if the status is changed. (ex. assigned -> in transit)
+      log_vessel_activity(
+        vessel=voyage.vessel,
+        action_type=ActivityLog.ActionType.STATUS_UPDATE,
+        description=f"Voyage {voyage.voyage_number} status changed to {new_status}.",
+        user_profile=user
+      )
+
     return JsonResponse({"message": f"Voyage status updated to {new_status}."})
 
   except json.JSONDecodeError:
@@ -548,46 +616,7 @@ def update_voyage_status(request):
     print("🔥 Exception:", str(e)) 
     return JsonResponse({"error": str(e)}, status=500)
   
-# ENDPOINT FOR THE PAGINATION OF VOYAGE REPORT
-# def voyage_report_paginated(request):
-#   page_number = request.GET.get('page', 1)
-
-#   reports = VoyageReport.objects.select_related('voyage__vessel').order_by('-created_at')
-#   paginator = Paginator(reports, 20)
-
-#   try:
-#     page_obj = paginator.page(page_number)
-#   except:
-#     return JsonResponse({"error": "Invalid page"}, status=400)
   
-#   results = []
-#   for report in page_obj:
-#     try:
-#       parsed = json.loads(report.voyage_report or "{}")
-#     except:
-#       parsed = {}
-
-#     summary = parsed.get("voyage_summary", {})
-#     vessel = parsed.get("vessel", {})
-
-#     results.append({
-#       "id": report.voyage_report_id,
-#       "voyage_number": summary.get("voyage_number", "-"),
-#       "vessel_name": summary.get("name", "Unknown Vessel"),
-#       "departure_port": summary.get("departure_port", "-"),
-#       "arrival_port": summary.get("arrival_port", "-"),
-#       "arrival_date": summary.get("arrival_date", "")[10],
-#       "duration": summary.get("duration", "-"),
-#     })
-
-#     return JsonResponse({
-#       "voyages": results,
-#       "current_page": page_obj.number,
-#       "num_pages": paginator.num_pages,
-#       "has_next": page_obj.has_next(),
-#       "has_prev": page_obj.has_previous(),
-#     })
-
 # ENDPOINT FOR THE FILTER LOGIC IN VOYAGE REPORT:
 def voyage_report_filtered(request):
   if request.headers.get("x-requested-with") == "XMLHttpRequest":
@@ -804,6 +833,28 @@ def add_vessel_log_entry(request, vessel_id):
     return JsonResponse({"success": False, "error": "Vessel not found."}, status=404)
   except Exception as e:
     return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+# HELPER FUNCTION TO CALL TO CREATE ACTIVITY LOG:
+def log_vessel_activity(vessel, action_type, description, user_profile):
+  """
+  creates an activity log for a vessel
+  args:
+    vessel: the vessel instance
+    action_type (str): the action type choice from the model
+    description (str): log message to display
+    user (UserProfile): to log who performed the action(admin)
+  """
+
+  if not all([vessel, action_type, description, user_profile]):
+    raise ValueError("Missing required fields for logging the activity")
+  
+  ActivityLog.objects.create(
+    vessel=vessel,
+    action_type=action_type,
+    description=description,
+    created_by=user_profile
+  )
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required
