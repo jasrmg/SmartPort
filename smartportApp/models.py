@@ -118,3 +118,11 @@ class ActivityLog(models.Model):
 
   def __str__(self):
     return f"[{self.created_at}] {self.vessel} - {self.action_type}"
+
+
+class IncidentImage(models.Model):
+  image_id = models.AutoField(primary_key=True)
+  incident = models.ForeignKey('IncidentReport', on_delete=models.CASCADE, related_name='images')
+  image = models.ImageField(upload_to='incident_images/')
+  uploaded_at = models.DateTimeField(auto_now_add=True)
+  uploaded_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
