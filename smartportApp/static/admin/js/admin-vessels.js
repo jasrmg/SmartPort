@@ -388,6 +388,9 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("Error: ", error);
     } finally {
       setTimeout(() => {
+        btnText.textContent = "Add Vessel";
+        spinner.style.display = "none";
+        submitBtn.disabled = false;
         closeAddVesselModal();
       }, 1500);
     }
