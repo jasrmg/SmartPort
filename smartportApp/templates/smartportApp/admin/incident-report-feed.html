@@ -1,473 +1,430 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>Incident Report Feed | Smart Port</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
+{% extends "smartportApp/admin/admin-base.html" %}
+<!---->
+{% load static %}
+<!---->
+{% block title %} Incident Report Feed {% endblock %}
+<!---->
+{% block head %}
 
-    <link rel="stylesheet" href="/static/ADMIN/incident-report-feed.css" />
-  </head>
-  <body>
-    <div class="container">
-      <!-- Sidebar Navigation -->
-      <div class="sidebar">
-        <div class="sidebar-header">
-          <div class="logo">
-            <i class="fas fa-anchor logo-icon"></i>
-            <span class="logo-text">SMART PORT</span>
-          </div>
-          <button class="collapse-btn">
-            <i class="fas fa-bars"></i>
-          </button>
+<link
+  rel="stylesheet"
+  href="{% static 'admin/css/incident-report-feed.css' %}"
+/>
+{% endblock %}
+<!--BODY-->
+
+<!-- START OF SIDERBAR -->
+{% block sidebar %}
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-anchor logo-icon"></i>
+      <span class="logo-text">SMART PORT</span>
+    </div>
+    <button class="collapse-btn">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+
+  <ul class="nav-menu">
+    <li class="nav-item">
+      <a href="{% url 'admin-dashboard' %}" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a href="{% url 'all-vessels' %}" class="nav-link">
+        <i class="fas fa-ship"></i>
+        <span>Vessels</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a href="{% url 'user-management' %}" class="nav-link">
+        <i class="fas fa-users"></i>
+        <span>Users</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a href="" class="nav-link">
+        <i class="fas fa-clipboard-list"></i>
+        <span>Manifests</span>
+      </a>
+    </li>
+
+    <li class="nav-item expanded">
+      <a href="{% url 'report-feed' %}" class="nav-link active">
+        <i class="fas fa-chart-line"></i>
+        <span>Reports</span>
+      </a>
+    </li>
+
+    <li class="nav-item">
+      <a href="" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+<!--MAIN CONTENT-->
+{% block content %}
+<div class="incident-content">
+  <div class="page-content">
+    <div class="page-header">
+      <div class="report-prompt" id="reportPrompt">
+        <span
+          >Noticed something wrong, Admin?
+          <strong>Report it here.</strong></span
+        >
+      </div>
+      <!-- Filter Section -->
+      <div class="filters">
+        <div class="filter-group">
+          <label class="filter-label">Sort By:</label>
+          <select class="filter-select">
+            <option value="newest">Date: Newest First</option>
+            <option value="oldest">Date: Oldest First</option>
+            <option value="vessel">Vessel Name (A-Z)</option>
+            <option value="impact">Impact Level (High - Low)</option>
+          </select>
         </div>
+      </div>
+    </div>
 
-        <ul class="nav-menu">
-          <li class="nav-item">
-            <a href="dashboard.html" class="nav-link">
-              <i class="fas fa-tachometer-alt"></i>
-              <span>Dashboard</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a href="admin-vessels.html" class="nav-link">
-              <i class="fas fa-ship"></i>
-              <span>Vessels</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a href="admin-users.html" class="nav-link">
-              <i class="fas fa-users"></i>
-              <span>Users</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a href="admin-manifests.html" class="nav-link">
-              <i class="fas fa-clipboard-list"></i>
-              <span>Manifests</span>
-            </a>
-          </li>
-
-          <li class="nav-item expanded">
-            <a href="admin-reports.html" class="nav-link active">
-              <i class="fas fa-chart-line"></i>
-              <span>Reports</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="fas fa-cog"></i>
-              <span>Settings</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a href="/index.html" class="nav-link">
-              <i class="fas fa-sign-out-alt"></i>
-              <span>Logout</span>
-            </a>
-          </li>
-        </ul>
+    <div class="incident-card" data-card-id="1">
+      <div class="incident-header">
+        <div><strong>Incident Type:</strong> Oil Spill</div>
+        <div>
+          <strong>Impact Level:</strong>
+          <span class="impact-badge high">High</span>
+        </div>
       </div>
 
-      <!-- Main Content Area -->
-      <div class="main-content">
-        <!-- Top Bar -->
-        <div class="topbar">
-          <div class="search-bar">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Search incidents..." />
-          </div>
-
-          <div class="user-menu">
-            <button class="notification-btn">
-              <i class="fas fa-bell"></i>
-              <span class="notification-badge">3</span>
-            </button>
-
-            <div class="user-profile">
-              <div class="user-avatar">AD</div>
-              <span class="user-name">Admin User</span>
-              <i class="fas fa-chevron-down"></i>
-            </div>
-          </div>
-        </div>
-
-        <!-- Page Content -->
-        <div class="page-content">
-          <div class="page-header">
-            <div class="report-prompt" id="reportPrompt">
-              <span
-                >Noticed something wrong, Admin?
-                <strong>Report it here.</strong></span
-              >
-            </div>
-            <!-- Filter Section -->
-            <div class="filters">
-              <div class="filter-group">
-                <label class="filter-label">Sort By:</label>
-                <select class="filter-select">
-                  <option value="newest">Date: Newest First</option>
-                  <option value="oldest">Date: Oldest First</option>
-                  <option value="vessel">Vessel Name (A-Z)</option>
-                  <option value="impact">Impact Level (High - Low)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="incident-card" data-card-id="1">
-            <div class="incident-header">
-              <div><strong>Incident Type:</strong> Oil Spill</div>
-              <div>
-                <strong>Impact Level:</strong>
-                <span class="impact-badge high">High</span>
-              </div>
-            </div>
-
-            <!-- Image section -->
-            <!-- <div class="incident-image">
+      <!-- Image section -->
+      <!-- <div class="incident-image">
               <img src="/static/nagi.jpg" alt="Oil Spill Incident" />
             </div> -->
-            <!-- Image Carousel -->
-            <div class="incident-image-carousel">
-              <button class="carousel-btn left-btn">
-                <i class="fas fa-chevron-left"></i>
-              </button>
+      <!-- Image Carousel -->
+      <div class="incident-image-carousel">
+        <button class="carousel-btn left-btn">
+          <i class="fas fa-chevron-left"></i>
+        </button>
 
-              <div class="incident-image-container">
-                <img
-                  src="/static/nagi.jpg"
-                  alt="Incident Image 1"
-                  class="incident-image active"
-                />
+        <div class="incident-image-container">
+          <img
+            src="/static/nagi.jpg"
+            alt="Incident Image 1"
+            class="incident-image active"
+          />
 
-                <img
-                  src="/static/775cb4c0a64ca1d7740d91781bd4e9b2.jpg"
-                  alt="Incident Image 1"
-                  class="incident-image"
-                />
+          <img
+            src="/static/775cb4c0a64ca1d7740d91781bd4e9b2.jpg"
+            alt="Incident Image 1"
+            class="incident-image"
+          />
 
-                <img
-                  src="/static/3-robot.jpg"
-                  alt="Incident Image 1"
-                  class="incident-image"
-                />
-              </div>
-
-              <button class="carousel-btn right-btn">
-                <i class="fas fa-chevron-right"></i>
-              </button>
-            </div>
-
-            <div class="incident-meta">
-              <p><strong>Date:</strong> June 20, 2025</p>
-              <p><strong>Reporter:</strong> John Doe</p>
-              <p><strong>Vessel:</strong> MV Pacific Explorer</p>
-              <p><strong>Location:</strong> Bisag Asa</p>
-            </div>
-
-            <div class="incident-description">
-              <p>
-                <strong>Description:</strong> During refueling at Berth 3,
-                approximately 50 liters of low-sulfur fuel spilled due to a
-                faulty valve. Immediate containment procedures were followed. No
-                injuries reported.
-              </p>
-            </div>
-
-            <div class="incident-actions">
-              <select class="status-dropdown">
-                <option>Under Review</option>
-                <option>Escalated</option>
-                <option>Resolved</option>
-              </select>
-              <a class="btn btn-approve">
-                <i class="fas fa-check"></i>Approve
-              </a>
-              <a class="btn btn-decline">
-                <i class="fa-solid fa-xmark"></i> Decline
-              </a>
-            </div>
-          </div>
-
-          <!-- Incidents Feed -->
-          <div class="incident-card">
-            <div class="incident-header">
-              <div><strong>Incident Type:</strong> Injury</div>
-              <div>
-                <strong>Impact Level:</strong>
-                <span class="impact-badge high">High</span>
-              </div>
-            </div>
-
-            <div class="incident-image">
-              <img src="/static/injury.jpg" alt="Crew Injury" />
-            </div>
-
-            <div class="incident-meta">
-              <p><strong>Date:</strong> June 15, 2025</p>
-              <p><strong>Reporter:</strong> Robert Johnson</p>
-              <p><strong>Vessel:</strong> MV Eastern Star</p>
-            </div>
-
-            <div class="incident-description">
-              <p>
-                <strong>Description:</strong> A deck crew member slipped on wet
-                surface while performing cargo securing duties. Minor fracture
-                confirmed. Immediate first aid and medical evacuation executed.
-              </p>
-            </div>
-
-            <div class="incident-actions">
-              <select class="status-dropdown">
-                <option>Under Review</option>
-                <option>Escalated</option>
-                <option>Resolved</option>
-              </select>
-              <a class="btn btn-approve"
-                ><i class="fas fa-check"></i> Approve</a
-              >
-              <a class="btn btn-decline"
-                ><i class="fa-solid fa-xmark"></i> Decline</a
-              >
-            </div>
-          </div>
-          <div class="incident-card">
-            <div class="incident-header">
-              <div><strong>Incident Type:</strong> Unauthorized Access</div>
-              <div>
-                <strong>Impact Level:</strong>
-                <span class="impact-badge low">Low</span>
-              </div>
-            </div>
-
-            <div class="incident-image">
-              <img src="/static/security.jpg" alt="Unauthorized Access" />
-            </div>
-
-            <div class="incident-meta">
-              <p><strong>Date:</strong> June 17, 2025</p>
-              <p><strong>Reporter:</strong> Maria Perez</p>
-              <p><strong>Vessel:</strong> —</p>
-            </div>
-
-            <div class="incident-description">
-              <p>
-                <strong>Description:</strong> An unauthorized individual entered
-                the restricted dock area without proper ID. Security intercepted
-                within 3 minutes. No damages or loss reported.
-              </p>
-            </div>
-
-            <div class="incident-actions">
-              <select class="status-dropdown">
-                <option>Under Review</option>
-                <option>Escalated</option>
-                <option>Resolved</option>
-              </select>
-              <a class="btn btn-approve"
-                ><i class="fas fa-check"></i> Approve</a
-              >
-              <a class="btn btn-decline"
-                ><i class="fa-solid fa-xmark"></i> Decline</a
-              >
-            </div>
-          </div>
-          <div class="incident-card">
-            <div class="incident-header">
-              <div><strong>Incident Type:</strong> Equipment Failure</div>
-              <div>
-                <strong>Impact Level:</strong>
-                <span class="impact-badge medium">Medium</span>
-              </div>
-            </div>
-
-            <div class="incident-image">
-              <img src="/static/equipment.jpg" alt="Crane Malfunction" />
-            </div>
-
-            <div class="incident-meta">
-              <p><strong>Date:</strong> June 18, 2025</p>
-              <p><strong>Reporter:</strong> Alice Smith</p>
-              <p><strong>Vessel:</strong> MV Liberty Queen</p>
-            </div>
-
-            <div class="incident-description">
-              <p>
-                <strong>Description:</strong> The container crane malfunctioned
-                during offloading, halting operations for 45 minutes. Engineers
-                responded immediately and replaced the faulty hydraulic part.
-              </p>
-            </div>
-
-            <div class="incident-actions">
-              <select class="status-dropdown">
-                <option>Under Review</option>
-                <option>Escalated</option>
-                <option>Resolved</option>
-              </select>
-              <a class="btn btn-approve"
-                ><i class="fas fa-check"></i> Approve</a
-              >
-              <a class="btn btn-decline"
-                ><i class="fa-solid fa-xmark"></i> Decline</a
-              >
-            </div>
-          </div>
+          <img
+            src="/static/3-robot.jpg"
+            alt="Incident Image 1"
+            class="incident-image"
+          />
         </div>
+
+        <button class="carousel-btn right-btn">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <div class="incident-meta">
+        <p><strong>Date:</strong> June 20, 2025</p>
+        <p><strong>Reporter:</strong> John Doe</p>
+        <p><strong>Vessel:</strong> MV Pacific Explorer</p>
+        <p><strong>Location:</strong> Bisag Asa</p>
+      </div>
+
+      <div class="incident-description">
+        <p>
+          <strong>Description:</strong> During refueling at Berth 3,
+          approximately 50 liters of low-sulfur fuel spilled due to a faulty
+          valve. Immediate containment procedures were followed. No injuries
+          reported.
+        </p>
+      </div>
+
+      <div class="incident-actions">
+        <select class="status-dropdown">
+          <option>Under Review</option>
+          <option>Escalated</option>
+          <option>Resolved</option>
+        </select>
+        <a class="btn btn-approve"> <i class="fas fa-check"></i>Approve </a>
+        <a class="btn btn-decline">
+          <i class="fa-solid fa-xmark"></i> Decline
+        </a>
       </div>
     </div>
 
-    <!-- REPORT INCIDENT MODAL -->
-    <div class="modal-overlay" id="incidentReportModal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">Report Incident</h2>
-          <button class="modal-close" id="closeIncidentModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <!-- Vessel (optional) -->
-          <div class="form-group">
-            <label for="incidentVessel">Related Vessel (Optional)</label>
-            <select id="incidentVessel" class="form-input">
-              <option value="">-- Select Vessel --</option>
-              <option value="MV Pacific Explorer">MV Pacific Explorer</option>
-              <option value="MV Liberty Queen">MV Liberty Queen</option>
-              <option value="MV Eastern Star">MV Eastern Star</option>
-              <!-- Populate dynamically from your vessel list in production -->
-            </select>
-          </div>
-
-          <!-- Location -->
-          <div class="form-group">
-            <label for="incidentLocation">Location</label>
-            <input
-              type="text"
-              id="incidentLocation"
-              class="form-input"
-              placeholder="e.g., Dock 3, Pier 4, Cebu Terminal"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="incidentType">Incident Type</label>
-            <select id="incidentType" class="form-input" required>
-              <option value="">-- Select Incident Type --</option>
-              <option value="Oil Spill">Oil Spill</option>
-              <option value="Equipment Failure">Equipment Failure</option>
-              <option value="Injury">Injury</option>
-              <option value="Unauthorized Access">Unauthorized Access</option>
-              <option value="others">Others</option>
-            </select>
-          </div>
-
-          <!-- Conditional field for custom type -->
-          <div
-            class="form-group"
-            id="otherIncidentTypeGroup"
-            style="display: none"
-          >
-            <label for="otherIncidentType">Specify Other Incident Type</label>
-            <input
-              type="text"
-              id="otherIncidentType"
-              class="form-input"
-              placeholder="e.g Title Case"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="incidentDescription">Description</label>
-            <textarea
-              id="incidentDescription"
-              class="form-input"
-              rows="4"
-              placeholder="Provide detailed description..."
-              required
-            ></textarea>
-          </div>
-          <!-- Image Upload -->
-          <div class="form-group">
-            <label for="incidentImage">Upload Photo (Optional)</label>
-            <input
-              type="file"
-              id="incidentImage"
-              class="form-input"
-              accept="image/*"
-              multiple
-            />
-          </div>
-          <!-- Preview container -->
-          <div id="imagePreviewContainer" class="image-preview-container"></div>
-          <div class="modal-footer">
-            <button class="btn btn-cancel" id="cancelIncidentBtn">
-              Cancel
-            </button>
-            <button class="btn btn-create" id="submitIncidentBtn">
-              Report
-            </button>
-          </div>
+    <!-- Incidents Feed -->
+    <div class="incident-card">
+      <div class="incident-header">
+        <div><strong>Incident Type:</strong> Injury</div>
+        <div>
+          <strong>Impact Level:</strong>
+          <span class="impact-badge high">High</span>
         </div>
       </div>
-    </div>
 
-    <!-- RESOLUTION MODAL -->
-    <div class="modal-overlay" id="resolutionModal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">Resolution Details</h2>
-          <button class="modal-close" id="closeResolutionModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="resolutionDescription"
-              >Describe how the issue was resolved</label
-            >
-            <textarea
-              id="resolutionDescription"
-              class="form-input"
-              rows="5"
-              placeholder="Provide a clear and detailed explanation..."
-              required
-            ></textarea>
-          </div>
+      <div class="incident-image">
+        <img src="/static/injury.jpg" alt="Crew Injury" />
+      </div>
 
-          <div class="modal-footer">
-            <button class="btn btn-cancel" id="cancelResolutionBtn">
-              Cancel
-            </button>
-            <button class="btn btn-create" id="saveResolutionBtn">Save</button>
-          </div>
-        </div>
+      <div class="incident-meta">
+        <p><strong>Date:</strong> June 15, 2025</p>
+        <p><strong>Reporter:</strong> Robert Johnson</p>
+        <p><strong>Vessel:</strong> MV Eastern Star</p>
+      </div>
+
+      <div class="incident-description">
+        <p>
+          <strong>Description:</strong> A deck crew member slipped on wet
+          surface while performing cargo securing duties. Minor fracture
+          confirmed. Immediate first aid and medical evacuation executed.
+        </p>
+      </div>
+
+      <div class="incident-actions">
+        <select class="status-dropdown">
+          <option>Under Review</option>
+          <option>Escalated</option>
+          <option>Resolved</option>
+        </select>
+        <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
+        <a class="btn btn-decline"><i class="fa-solid fa-xmark"></i> Decline</a>
       </div>
     </div>
+    <div class="incident-card">
+      <div class="incident-header">
+        <div><strong>Incident Type:</strong> Unauthorized Access</div>
+        <div>
+          <strong>Impact Level:</strong>
+          <span class="impact-badge low">Low</span>
+        </div>
+      </div>
 
-    <!-- FULL SCREEN IMAGE VIEW -->
-    <div
-      id="fullscreenImageWrapper"
-      class="fullscreen-image"
-      style="display: none"
-    >
-      <img id="fullscreenImage" src="" alt="Fullscreen Incident Image" />
-      <button class="close-fullscreen">&times;</button>
+      <div class="incident-image">
+        <img src="/static/security.jpg" alt="Unauthorized Access" />
+      </div>
+
+      <div class="incident-meta">
+        <p><strong>Date:</strong> June 17, 2025</p>
+        <p><strong>Reporter:</strong> Maria Perez</p>
+        <p><strong>Vessel:</strong> —</p>
+      </div>
+
+      <div class="incident-description">
+        <p>
+          <strong>Description:</strong> An unauthorized individual entered the
+          restricted dock area without proper ID. Security intercepted within 3
+          minutes. No damages or loss reported.
+        </p>
+      </div>
+
+      <div class="incident-actions">
+        <select class="status-dropdown">
+          <option>Under Review</option>
+          <option>Escalated</option>
+          <option>Resolved</option>
+        </select>
+        <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
+        <a class="btn btn-decline"><i class="fa-solid fa-xmark"></i> Decline</a>
+      </div>
     </div>
+    <div class="incident-card">
+      <div class="incident-header">
+        <div><strong>Incident Type:</strong> Equipment Failure</div>
+        <div>
+          <strong>Impact Level:</strong>
+          <span class="impact-badge medium">Medium</span>
+        </div>
+      </div>
 
-    <script src="/static/ADMIN/incident-report-feed.js"></script>
-  </body>
-</html>
+      <div class="incident-image">
+        <img src="/static/equipment.jpg" alt="Crane Malfunction" />
+      </div>
+
+      <div class="incident-meta">
+        <p><strong>Date:</strong> June 18, 2025</p>
+        <p><strong>Reporter:</strong> Alice Smith</p>
+        <p><strong>Vessel:</strong> MV Liberty Queen</p>
+      </div>
+
+      <div class="incident-description">
+        <p>
+          <strong>Description:</strong> The container crane malfunctioned during
+          offloading, halting operations for 45 minutes. Engineers responded
+          immediately and replaced the faulty hydraulic part.
+        </p>
+      </div>
+
+      <div class="incident-actions">
+        <select class="status-dropdown">
+          <option>Under Review</option>
+          <option>Escalated</option>
+          <option>Resolved</option>
+        </select>
+        <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
+        <a class="btn btn-decline"><i class="fa-solid fa-xmark"></i> Decline</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- FULL SCREEN IMAGE VIEW -->
+<div id="fullscreenImageWrapper" class="fullscreen-image" style="display: none">
+  <img id="fullscreenImage" src="" alt="Fullscreen Incident Image" />
+  <button class="close-fullscreen">&times;</button>
+</div>
+{% endblock %}
+<!---->
+{% block modal %}
+<div class="modal-overlay" id="incidentReportModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Report Incident</h2>
+      <button class="modal-close" id="closeIncidentModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Vessel (optional) -->
+      <div class="form-group">
+        <label for="incidentVessel">Related Vessel (Optional)</label>
+        <select id="incidentVessel" class="form-input">
+          <option value="">-- Select Vessel --</option>
+          <option value="MV Pacific Explorer">MV Pacific Explorer</option>
+          <option value="MV Liberty Queen">MV Liberty Queen</option>
+          <option value="MV Eastern Star">MV Eastern Star</option>
+          <!-- Populate dynamically from your vessel list in production -->
+        </select>
+      </div>
+
+      <!-- Location -->
+      <div class="form-group">
+        <label for="incidentLocation">Location</label>
+        <input
+          type="text"
+          id="incidentLocation"
+          class="form-input"
+          placeholder="e.g., Dock 3, Pier 4, Cebu Terminal"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="incidentType">Incident Type</label>
+        <select id="incidentType" class="form-input" required>
+          <option value="">-- Select Incident Type --</option>
+          <option value="Oil Spill">Oil Spill</option>
+          <option value="Equipment Failure">Equipment Failure</option>
+          <option value="Injury">Injury</option>
+          <option value="Unauthorized Access">Unauthorized Access</option>
+          <option value="others">Others</option>
+        </select>
+      </div>
+
+      <!-- Conditional field for custom type -->
+      <div class="form-group" id="otherIncidentTypeGroup" style="display: none">
+        <label for="otherIncidentType">Specify Other Incident Type</label>
+        <input
+          type="text"
+          id="otherIncidentType"
+          class="form-input"
+          placeholder="e.g Title Case"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="incidentDescription">Description</label>
+        <textarea
+          id="incidentDescription"
+          class="form-input"
+          rows="4"
+          placeholder="Provide detailed description..."
+          required
+        ></textarea>
+      </div>
+      <!-- Image Upload -->
+      <div class="form-group">
+        <label for="incidentImage">Upload Photo (Optional)</label>
+        <input
+          type="file"
+          id="incidentImage"
+          class="form-input"
+          accept="image/*"
+          multiple
+        />
+      </div>
+      <!-- Preview container -->
+      <div id="imagePreviewContainer" class="image-preview-container"></div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" id="cancelIncidentBtn">Cancel</button>
+        <button class="btn btn-create" id="submitIncidentBtn">Report</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESOLUTION MODAL -->
+<div class="modal-overlay" id="resolutionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Resolution Details</h2>
+      <button class="modal-close" id="closeResolutionModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="resolutionDescription"
+          >Describe how the issue was resolved</label
+        >
+        <textarea
+          id="resolutionDescription"
+          class="form-input"
+          rows="5"
+          placeholder="Provide a clear and detailed explanation..."
+          required
+        ></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-cancel" id="cancelResolutionBtn">Cancel</button>
+        <button class="btn btn-create" id="saveResolutionBtn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block script %}
+<script src="{% static 'admin/js/incident-report-feed.js' %}"></script>
+{% endblock %}

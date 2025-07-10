@@ -139,6 +139,9 @@ def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
 
+def report_feed_view(request):
+  return render(request, "smartportApp/admin/incident-report-feed.html")
+
 # -------------------- END OF ADMIN TEMPLATES --------------------
 
 # -------------------- TEMPLATES LOGIC --------------------

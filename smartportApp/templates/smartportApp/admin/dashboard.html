@@ -64,15 +64,9 @@
       </a>
       <ul class="nav-sub-menu" style="display: none">
         <li>
-          <a href="admin-vessels.html" class="nav-sub-link">
+          <a href="{% url 'all-vessels' %}" class="nav-sub-link">
             <i class="fas fa-list"></i>
             <span>View All Vessels</span>
-          </a>
-        </li>
-        <li>
-          <a href="vessel-activity-log.html" class="nav-sub-link">
-            <i class="fas fa-history"></i>
-            <span>Activity Logs</span>
           </a>
         </li>
         <li>
@@ -82,9 +76,21 @@
           </a>
         </li>
         <li>
-          <a href="voyage-report.html" class="nav-sub-link">
+          <a href="{% url 'manage-voyage' %}" class="nav-sub-link">
+            <i class="fas fa-compass"></i>
+            <span>Manage Voyage</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'voyage-report' %}" class="nav-sub-link">
             <i class="fas fa-file-alt"></i>
             <span>Voyage Report</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'activity-log' %}" class="nav-sub-link">
+            <i class="fas fa-history"></i>
+            <span>Activity Logs</span>
           </a>
         </li>
       </ul>
@@ -102,33 +108,13 @@
       </a>
     </li>
     <li class="nav-item">
-      <a href="incident-report-feed.html" class="nav-link">
+      <a href="{% url 'reports-feed' %}" class="nav-link">
         <i class="fas fa-chart-line"></i>
         <span>Reports</span>
       </a>
-      <ul class="nav-sub-menu">
-        <li>
-          <a href="incident-report-feed.html" class="nav-sub-link">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>Incident Reports</span>
-          </a>
-        </li>
-        <li>
-          <a href="#maintenance" class="nav-sub-link">
-            <i class="fas fa-tools"></i>
-            <span>Maintenance Reports</span>
-          </a>
-        </li>
-        <li>
-          <a href="#customs" class="nav-sub-link">
-            <i class="fas fa-file-contract"></i>
-            <span>Customs Reports</span>
-          </a>
-        </li>
-      </ul>
     </li>
     <li class="nav-item">
-      <a href="#" class="nav-link">
+      <a href="" class="nav-link">
         <i class="fas fa-cog"></i>
         <span>Settings</span>
       </a>
