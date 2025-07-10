@@ -339,20 +339,29 @@ def add_vessel(request):
     if Vessel.objects.filter(imo=imo).exists():
       return JsonResponse({"error": "Vessel with this IMO already exists."}, status=409)
     
+    user_email = request.user.email
+    print("👤 User Email:", user_email)
+    
+    try:
+      user = UserProfile.objects.get(email=user_email)
+    except UserProfile.DoesNotExist:
+      return JsonResponse({"error": "Authenticated user not found."}, status=403)
+
+
     vessel = Vessel.objects.create(
       name=name,
       imo=imo,
       vessel_type=vessel_type,
       capacity=capacity,
-      created_by=request.user_profile
+      created_by=user
     )
-    print("USER IN ADD VESSEL: ", request.user_profile)
-    # Log creation as a NOTE (or create a new action type like CREATED)
+    print("USER IN ADD VESSEL: ", user)
+    
     log_vessel_activity(
       vessel=vessel,
       action_type=ActivityLog.ActionType.CREATED,
-      description=f"Vessel '{vessel.name}' (IMO {vessel.imo}) was added to the fleet by {request.user_profile}.",
-      user_profile=request.user_profile
+      description=f"Vessel '{vessel.name}' (IMO {vessel.imo}) was added to the fleet by {user.first_name} {user.last_name}.",
+      user_profile=user
     )
 
     return JsonResponse({
@@ -527,6 +536,7 @@ def update_voyage_status(request):
     if new_status == "arrived" and voyage.arrival_date and voyage.departure_date:
       if voyage.arrival_date < voyage.departure_date:
         return JsonResponse({"error": "Arrival cannot be earlier than departure"}, status=400)
+    
     # Update voyage status
     voyage.status = new_status
     if new_status == "arrived":
@@ -771,7 +781,7 @@ def vessel_detail_view(request, vessel_id):
   logs_data = []
   for log in activity_logs:
     logs_data.append({
-      "time": log.created_at.strftime("%H:%M"),
+      "time": timezone.localtime(log.created_at).strftime("%H:%M"),
       "date": log.created_at.strftime("%Y-%m-%d"),
       "user": f"{log.created_by.first_name} {log.created_by.last_name}" if log.created_by else "System",
       "action_type": log.get_action_type_display(),
