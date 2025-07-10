@@ -152,7 +152,7 @@
       <div id="vesselLoader" class="vessel-loader" style="display: none">
         <div class="vessel-spinner"></div>
       </div>
-      {% for vessel in vessels %}
+      {% if vessels %} {% for vessel in vessels %}
       <div class="vessel-card" data-vessel-id="{{ vessel.vessel_id }}">
         <div class="vessel-card-icon">
           <i class="fas fa-ship"></i>
@@ -168,7 +168,24 @@
           </p>
         </div>
       </div>
-      {% endfor %}
+      {% endfor %} {% else %}
+      <div
+        class="no-vessels-message"
+        style="
+          text-align: center;
+          width: 80vw;
+          padding: 2rem;
+          color: var(--dark-gray);
+          font-size: 1.1rem;
+          border: 1px dashed var(--gray);
+          border-radius: 8px;
+          background-color: var(--light);
+        "
+      >
+        <i class="fas fa-info-circle" style="margin-right: 0.5rem"></i>
+        No vessels found matching the selected filters.
+      </div>
+      {% endif %}
     </div>
   </div>
 

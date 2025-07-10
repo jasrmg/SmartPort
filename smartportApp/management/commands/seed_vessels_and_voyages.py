@@ -38,23 +38,23 @@ class Command(BaseCommand):
     self.stdout.write(self.style.SUCCESS("✅ 10 vessels created."))
 
     # CREATE VOYAGES
-    for i in range(8):
-      vessel = vessels[i]
-      departure_id, arrival_id = random.sample(port_ids, 2)
+    # for i in range(8):
+    #   vessel = vessels[i]
+    #   departure_id, arrival_id = random.sample(port_ids, 2)
 
-      departure_date = timezone.now() - timezone.timedelta(days=random.randint(2, 6))
-      eta = departure_date + timezone.timedelta(hours=random.randint(24, 72))
-      arrival_date = eta + timezone.timedelta(hours=random.randint(-4, 6))  # simulate delays/early arrivals
+    #   departure_date = timezone.now() - timezone.timedelta(days=random.randint(2, 6))
+    #   eta = departure_date + timezone.timedelta(hours=random.randint(24, 72))
+    #   arrival_date = eta + timezone.timedelta(hours=random.randint(-4, 6))  # simulate delays/early arrivals
 
-      Voyage.objects.create(
-        vessel=vessel,
-        departure_port_id=departure_id,
-        arrival_port_id=arrival_id,
-        departure_date=departure_date,
-        eta=eta,
-        arrival_date=arrival_date,
-        status=random.choice(voyage_statuses),
-        voyage_number=f"VOY-{1000 + i}"
-      )
+    #   Voyage.objects.create(
+    #     vessel=vessel,
+    #     departure_port_id=departure_id,
+    #     arrival_port_id=arrival_id,
+    #     departure_date=departure_date,
+    #     eta=eta,
+    #     arrival_date=arrival_date,
+    #     status=random.choice(voyage_statuses),
+    #     voyage_number=f"VOY-{1000 + i}"
+    #   )
 
-    self.stdout.write(self.style.SUCCESS("✅ 8 voyages created with ETA and updated statuses."))
+    # self.stdout.write(self.style.SUCCESS("✅ 8 voyages created with ETA and updated statuses."))

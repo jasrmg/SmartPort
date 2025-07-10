@@ -246,6 +246,19 @@ document.addEventListener("DOMContentLoaded", function () {
       // Successfully deleted — remove row from DOM
       targetRowToDelete.remove();
 
+      // CHECK IF TABLE IS NOW EMPTY
+      const remainingRows = tableBody.querySelectorAll("tr");
+      if (remainingRows.length === 0) {
+        const emptyRow = document.createElement("tr");
+        emptyRow.innerHTML = `
+          <td colspan="5" style="text-align: center; color: var(--dark-gray); padding: 1.25rem;">
+            <i class="fas fa-info-circle" style="margin-right: 8px"></i>
+            No vessels found in the database.
+          </td>
+        `;
+        tableBody.appendChild(emptyRow);
+      }
+
       // SUCCESS MESSAGE
       statusText.textContent = "Vessel deleted successfully!";
       statusBox.classList.remove("error");
