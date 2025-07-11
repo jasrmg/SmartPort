@@ -169,6 +169,26 @@
   background-color: var(--secondary); /* or use #1e3a8a */
 }
 
+.incident-image-carousel.no-image .incident-image-container {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.no-image-placeholder {
+  text-align: center;
+  color: var(--dark-gray);
+  font-size: 1rem;
+}
+
+.no-image-placeholder i {
+  font-size: 2rem;
+  margin-bottom: 4px;
+  display: block;
+}
+
 .impact-badge {
   display: inline-block;
   padding: 2px 8px;

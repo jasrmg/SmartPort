@@ -61,29 +61,52 @@ document.addEventListener("DOMContentLoaded", () => {
       )
       .join("");
 
-    const carouselHTML =
-      incident.images.length > 1
-        ? `
-        <div class="incident-image-carousel">
-          <button class="carousel-btn left-btn"><i class="fas fa-chevron-left"></i></button>
-          <div class="incident-image-container">${imagesHTML}</div>
-          <button class="carousel-btn right-btn"><i class="fas fa-chevron-right"></i></button>
-        </div>`
-        : `
-        <div class="incident-image-carousel">
-          <div class="incident-image-container">${imagesHTML}</div>
-        </div>`;
+    let carouselHTML = "";
+    let dotsHTML = "";
 
-    const dotsHTML =
-      incident.images.length > 1
-        ? `
+    if (incident.images.length === 0) {
+      carouselHTML = `
+    <div class="incident-image-carousel no-image">
+      <div class="incident-image-container">
+        <div class="no-image-placeholder">
+          <i class="fas fa-image"></i>
+          <span>No image available</span>
+        </div>
+      </div>
+    </div>`;
+    } else {
+      const imagesHTML = incident.images
+        .map(
+          (img, i) => `
+        <img 
+          src="${img.url}" 
+          class="incident-image ${i === 0 ? "active" : ""}" 
+          alt="Incident Image"
+          loading="lazy"
+        >`
+        )
+        .join("");
+
+      carouselHTML =
+        incident.images.length > 1
+          ? `
+      <div class="incident-image-carousel">
+        <button class="carousel-btn left-btn"><i class="fas fa-chevron-left"></i></button>
+        <div class="incident-image-container">${imagesHTML}</div>
+        <button class="carousel-btn right-btn"><i class="fas fa-chevron-right"></i></button>
+      </div>`
+          : `
+      <div class="incident-image-carousel">
+        <div class="incident-image-container">${imagesHTML}</div>
+      </div>`;
+
+      dotsHTML = `
     <div class="carousel-dots">
       ${incident.images
         .map((_, i) => `<span class="dot ${i === 0 ? "active" : ""}"></span>`)
         .join("")}
-    </div>
-  `
-        : "";
+    </div>`;
+    }
 
     const actionsHTML = !incident.is_approved
       ? `
