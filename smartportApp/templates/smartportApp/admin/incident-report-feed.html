@@ -138,10 +138,6 @@
           </div>
         </div>
 
-        <!-- Image section -->
-        <!-- <div class="incident-image">
-              <img src="/static/nagi.jpg" alt="Oil Spill Incident" />
-            </div> -->
         <!-- Image Carousel -->
         {% if incident.images.all %}
         <div class="incident-image-carousel">
@@ -159,10 +155,19 @@
             {% endfor %}
           </div>
 
+          {% if incident.images.count > 1 %}
           <button class="carousel-btn right-btn">
             <i class="fas fa-chevron-right"></i>
           </button>
+          {% endif %}
         </div>
+        {% if incident.images.count > 1 %}
+        <div class="carousel-dots">
+          {% for _ in incident.images.all %}
+          <span class="dot {% if forloop.first %}active{% endif %}"></span>
+          {% endfor %}
+        </div>
+        {% endif %}
         {% endif %}
         <div class="incident-meta">
           <p><strong>Date:</strong>{{ incident.created_at|date:"F d, Y" }}</p>

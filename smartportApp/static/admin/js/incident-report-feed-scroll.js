@@ -27,8 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const cardHTML = buildIncidentCard(incident);
         feed.insertAdjacentHTML("beforeend", cardHTML);
       });
-      const card = feed.lastElementChild;
-      updateCarouselControls(card);
+
+      const newCards = feed.querySelectorAll(".incident-card");
+      newCards.forEach(updateCarouselControls);
       attachImagePreviewListeners();
 
       page++;
@@ -60,24 +61,29 @@ document.addEventListener("DOMContentLoaded", () => {
       )
       .join("");
 
-    const carouselHTML = incident.images.length
-      ? `
+    const carouselHTML =
+      incident.images.length > 1
+        ? `
         <div class="incident-image-carousel">
           <button class="carousel-btn left-btn"><i class="fas fa-chevron-left"></i></button>
           <div class="incident-image-container">${imagesHTML}</div>
           <button class="carousel-btn right-btn"><i class="fas fa-chevron-right"></i></button>
         </div>`
-      : "";
+        : `
+        <div class="incident-image-carousel">
+          <div class="incident-image-container">${imagesHTML}</div>
+        </div>`;
 
-    const dotsHTML = incident.images.length
-      ? `
+    const dotsHTML =
+      incident.images.length > 1
+        ? `
     <div class="carousel-dots">
       ${incident.images
         .map((_, i) => `<span class="dot ${i === 0 ? "active" : ""}"></span>`)
         .join("")}
     </div>
   `
-      : "";
+        : "";
 
     const actionsHTML = !incident.is_approved
       ? `
@@ -222,4 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initial attach for first page
   attachImagePreviewListeners();
+
+  // Fix first two preloaded cards
+  document.querySelectorAll(".incident-card").forEach(updateCarouselControls);
 });
