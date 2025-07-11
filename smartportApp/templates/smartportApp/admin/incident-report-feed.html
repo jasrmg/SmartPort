@@ -119,6 +119,10 @@
     </div>
 
     <div class="incident-feed-container" id="incidentFeed">
+      <div id="feedLoader" class="loader" style="display: none;">
+        <div class="spinner"></div>
+      </div>
+
       {% for incident in page_obj %}
       <div class="incident-card" data-card-id="{{ incident.incident_id }}">
         <div class="incident-header">
@@ -353,6 +357,6 @@
   </div>
 </div>
 {% endblock %} {% block script %}
-<script src="{% static 'admin/js/incident-report-feed-scroll.js' %}"></script>
+<!-- <script src="{% static 'admin/js/incident-report-feed-scroll.js' %}"></script> -->
 <script src="{% static 'admin/js/incident-report-feed.js' %}"></script>
 {% endblock %}

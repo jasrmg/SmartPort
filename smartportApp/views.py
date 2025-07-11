@@ -138,19 +138,35 @@ def activity_log_view(request):
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
-
+from django.db.models import F
 def report_feed_view(request):
-  # prioritize not approve first by the admin
-  incidents = IncidentReport.objects.annotate(
-  approval_priority=Case(
-    When(is_approved=False, then=0),
-    default=1,
-    output_field=IntegerField()
-  )
-).order_by('approval_priority', '-created_at')
+  sort = request.GET.get("sort", "newest")
+  incidents = IncidentReport.objects.all()
 
-  paginator = Paginator(incidents, 2) # (2) to change for testing purposes only (5)
+  # prioritize not approve first by the admin
+  if sort == "newest":
+    incidents = with_approval_priority(incidents).order_by('approval_priority', '-incident_datetime')
+  elif sort == "oldest":
+    incidents = with_approval_priority(incidents).order_by('approval_priority', 'incident_datetime')
+  elif sort == "vessel":
+    # Only incidents that are linked to a vessel
+    incidents = with_approval_priority(
+        incidents.filter(vessel__isnull=False)
+      ).order_by('approval_priority', 'vessel__name')
+  elif sort == "impact":
+    impact_order = Case(
+      When(impact_level="high", then=0),
+      When(impact_level="medium", then=1),
+      When(impact_level="low", then=2),
+      default=3,
+      output_field=IntegerField()
+    )
+    incidents = with_approval_priority(incidents).annotate(
+      impact_order=impact_order
+    ).order_by('approval_priority', 'impact_order')
+  paginator = Paginator(incidents, 2)  # ilisanan ug 5 ig deploy
   page_number = int(request.GET.get("page", 1))
+
   try:
     page_obj = paginator.page(page_number)
 
@@ -166,6 +182,17 @@ def report_feed_view(request):
     return JsonResponse({"incidents": data, "has_more": page_obj.has_next()})
   
   return render(request, "smartportApp/admin/incident-report-feed.html", {"page_obj": page_obj})
+
+
+# helper for the filter annotation:
+def with_approval_priority(queryset):
+  return queryset.annotate(
+    approval_priority=Case(
+      When(is_approved=False, then=0),
+      default=1,
+      output_field=IntegerField()
+    )
+  )
 
 # -------------------- END OF ADMIN TEMPLATES --------------------
 
@@ -925,7 +952,7 @@ def submit_incident_report(request):
       location=location,
       description=description,
       incident_datetime=now(),
-      impact_level='low',  # or make this dynamic later
+      impact_level= determine_impact_level(incident_type, description),  
       status='pending',
       incident_type=incident_type,
       other_incident_type=other_type if incident_type == 'other' else '',
@@ -1006,6 +1033,16 @@ def serialize_incident(incident):
     "images": [{"url": img.image.url} for img in incident.images.all()],
   }
 
+# HELPER FUNCTION FOR THE SYSTEM GENERATED IMPACT LEVEL:
+def determine_impact_level(incident_type, description=""):
+  high_impact = {"collision", "fire", "capsizing", "grounding", "oil_spill"}
+  medium_impact = {"human_error", "slip_trip_fall"}
+
+  if incident_type in high_impact:
+    return "high"
+  elif incident_type in medium_impact:
+    return "medium"
+  return "low"
 
 
 

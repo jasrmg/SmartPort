@@ -1,227 +1,269 @@
-document.addEventListener("DOMContentLoaded", function () {
-  // ---------------- REPORT INCIDENT MODAL ----------------
-  const reportModalBtn = document.getElementById("reportPrompt");
-  if (!reportModalBtn) return;
-  const reportModal = document.getElementById("incidentReportModal");
-  const closeReportModal = document.getElementById("closeIncidentModal");
-  const cancelReportModal = document.getElementById("cancelIncidentBtn");
-  const submitReportBtn = document.getElementById("submitIncidentBtn");
+let currentSort = "newest";
+let page = 2;
+let isLoading = false;
+let hasMore = true;
 
-  // OPEN THE MODAL
-  reportModalBtn.addEventListener("click", () => {
-    resetIncidentModal();
-    reportModal.style.display = "flex";
-    populateVesselDropdown();
-  });
-  // CLOSE THE MODAL
-  const closeReportModalBtns = [closeReportModal, cancelReportModal];
-  closeReportModalBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      reportModal.style.display = "none";
-    });
-  });
-  cancelReportModal.addEventListener("click", () => {
-    const confirmCancel = confirm(
-      "Are you sure you want to discard this report?"
-    );
-    if (confirmCancel) {
-      reportModal.style.display = "none";
-    }
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  const feed = document.getElementById("incidentFeed");
+  const filterSelect = document.querySelector(".filter-select");
+  const fullscreenWrapper = document.getElementById("fullscreenImageWrapper");
+  const fullscreenImg = document.getElementById("fullscreenImage");
+  const closeFullscreenBtn = document.querySelector(".close-fullscreen");
 
-  window.addEventListener("click", (e) => {
-    if (e.target === reportModal) {
-      reportModal.style.display = "none";
-    }
-  });
-
-  // SHOW THE INPUT FIELD IF THE INCIDENT TYPE IS OTHERS:
-  document
-    .getElementById("incidentType")
-    .addEventListener("change", function () {
-      const otherGroup = document.getElementById("otherIncidentTypeGroup");
-      if (this.value === "other") {
-        otherGroup.style.display = "block";
-      } else {
-        otherGroup.style.display = "none";
-      }
-    });
-  // SHOW IMAGE PREVIEW WHEN UPLOADING:
-  const imageInput = document.getElementById("incidentImage");
-  const previewContainer = document.getElementById("imagePreviewContainer");
-
-  imageInput.addEventListener("change", function () {
-    previewContainer.innerHTML = ""; // clear previous previews
-
-    const files = Array.from(this.files);
-    files.forEach((file) => {
-      if (!file.type.startsWith("image/")) return;
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const img = document.createElement("img");
-        img.src = e.target.result;
-        previewContainer.appendChild(img);
-      };
-      reader.readAsDataURL(file);
-    });
-  });
-
-  // SUBMIT LOGIC:
-  submitReportBtn.addEventListener("click", async () => {
-    const statusMessage = document.querySelector(".status-message");
-    const statusText = document.querySelector(".status-message-text");
-    const spinner = submitReportBtn.querySelector(".spinner");
-
-    // gather form data:
-    const location = document.getElementById("incidentLocation").value.trim();
-    const type = document.getElementById("incidentType").value;
-    const otherType = document.getElementById("otherIncidentType").value.trim();
-    const description = document
-      .getElementById("incidentDescription")
-      .value.trim();
-    const vessel = document.getElementById("incidentVessel").value;
-
-    if (!location || !type || !description) {
-      showStatus("Please fill in all required fields.", false);
-      return;
-    }
-
-    if (type === "other" && !otherType) {
-      showStatus("Please specify the incident type.", false);
-      return;
-    }
-
-    spinner.style.display = "inline-block";
-    submitReportBtn.disabled = true;
-
-    const formData = new FormData();
-    formData.append("location", location);
-    formData.append("incident_type", type);
-    formData.append("other_incident_type", otherType);
-    formData.append("description", description);
-    formData.append("vessel_name", vessel);
-
-    const files = imageInput.files;
-    for (let i = 0; i < files.length; i++) {
-      formData.append("images", files[i]);
-    }
+  // ----------------------- FILTER SELECT -----------------------
+  filterSelect.addEventListener("change", async (e) => {
+    currentSort = e.target.value;
+    page = 1;
+    hasMore = true;
+    isLoading = false;
+    feed.innerHTML = `<div class="loader"></div>`;
 
     try {
-      const response = await fetch("/submit-incident/", {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": csrftoken,
-        },
-        body: formData,
+      const response = await fetch(`?sort=${currentSort}&page=1`, {
+        headers: { "X-Requested-With": "XMLHttpRequest" },
       });
 
       const result = await response.json();
-      const feed = document.getElementById("incidentFeed");
+      feed.innerHTML = "";
 
-      if (result.success) {
-        if (!result.incident) {
-          console.error("Missing incident in response:", result);
-          showStatus("Server returned an invalid incident report.", false);
-          return;
-        }
-
-        showStatus("Incident Report submitted successfully!", true);
-        resetIncidentModal();
-        spinner.style.display = "none";
-
-        const cardHTML = buildIncidentCard(result.incident);
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = cardHTML;
-        const newCard = tempDiv.firstElementChild;
-
-        const approvedCards = feed.querySelectorAll(".incident-card");
-        let inserted = false;
-
-        for (let card of approvedCards) {
-          const isApproved = card.querySelector(".btn-approve") === null; // if there's no approve btn, it's approved
-          if (isApproved) {
-            card.before(newCard);
-            inserted = true;
-            break;
-          }
-        }
-
-        if (!inserted) {
-          feed.appendChild(newCard);
-        }
-
-        updateCarouselControls(newCard);
-        attachImagePreviewListeners(
-          document.getElementById("fullscreenImageWrapper"),
-          document.getElementById("fullscreenImage")
-        );
-      } else {
-        showStatus(result.error || "Submission failed", false);
+      if (result.incidents.length === 0) {
+        feed.innerHTML = `<p class="no-results">No incident reports to show.</p>`;
+        return;
       }
-    } catch (error) {
-      console.error("Error submitting incident: ", error);
-      showStatus("Server error occured.", false);
-      submitReportBtn.disabled = false;
-    } finally {
-      submitReportBtn.disabled = false;
-      spinner.style.display = "none";
+
+      result.incidents.forEach((incident) => {
+        const cardHTML = buildIncidentCard(incident);
+        feed.insertAdjacentHTML("beforeend", cardHTML);
+        const cardEl = feed.lastElementChild;
+        updateCarouselControls(cardEl);
+      });
+
+      attachImagePreviewListeners();
+      page++;
+      hasMore = result.has_more;
+    } catch (err) {
+      console.error("Failed to fetch sorted incidents:", err);
+      feed.innerHTML = `<p class="error-msg">Something went wrong while loading incidents.</p>`;
     }
   });
 
-  const resetIncidentModal = () => {
-    // Clear form
-    document.getElementById("incidentType").selectedIndex = 0;
-    document.getElementById("incidentLocation").value = "";
-    document.getElementById("otherIncidentType").value = "";
-    document.getElementById("incidentDescription").value = "";
-    document.getElementById("incidentVessel").value = "";
-    document.getElementById("incidentImage").value = "";
+  // ----------------------- INFINITE SCROLL -----------------------
+  window.addEventListener("scroll", () => {
+    const cards = feed.querySelectorAll(".incident-card");
+    const secondLast = cards[cards.length - 2];
+    if (!secondLast) return;
 
-    // Hide conditional fields and image previews
-    document.getElementById("otherIncidentTypeGroup").style.display = "none";
-    previewContainer.innerHTML = "";
-
-    // Close modal
-    reportModal.style.display = "none";
-  };
-});
-
-// OUTSIDE DOM
-const populateVesselDropdown = async () => {
-  const dropdown = document.getElementById("incidentVessel");
-
-  // Clear previous options except default
-  dropdown.innerHTML = `<option value="">-- Select Vessel --</option>`;
-
-  try {
-    const response = await fetch("/get-vessels/");
-    const result = await response.json();
-
-    if (result.vessels && Array.isArray(result.vessels)) {
-      result.vessels.forEach((vessel) => {
-        const option = document.createElement("option");
-        option.value = vessel.name;
-        option.textContent = vessel.name;
-        dropdown.appendChild(option);
-      });
-    } else {
-      console.warn("Unexpected response:", result);
+    const rect = secondLast.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 100) {
+      loadNextPage();
     }
-  } catch (err) {
-    console.error("Failed to fetch vessels:", err);
-  }
-};
+  });
 
-const showStatus = (message, isSuccess = true) => {
-  const statusMessage = document.querySelector(".status-message");
-  const statusText = document.querySelector(".status-message-text");
+  const loadNextPage = async () => {
+    if (isLoading || !hasMore) return;
+    isLoading = true;
 
-  statusText.textContent = message;
-  statusMessage.style.backgroundColor = isSuccess ? "#10b981" : "#d14343";
-  statusMessage.style.display = "flex";
+    try {
+      const response = await fetch(`?sort=${currentSort}&page=${page}`, {
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      });
 
-  setTimeout(() => {
-    statusMessage.style.display = "none";
-  }, 2500);
-};
+      const data = await response.json();
+
+      data.incidents.forEach((incident) => {
+        const cardHTML = buildIncidentCard(incident);
+        feed.insertAdjacentHTML("beforeend", cardHTML);
+        const cardEl = feed.lastElementChild;
+        updateCarouselControls(cardEl);
+      });
+
+      attachImagePreviewListeners();
+      page++;
+      if (!data.has_more) {
+        hasMore = false;
+        showEndNotice();
+      }
+    } catch (err) {
+      console.error("Error loading more incidents:", err);
+    } finally {
+      isLoading = false;
+    }
+  };
+
+  const showEndNotice = () => {
+    if (!document.getElementById("feedEndNotice")) {
+      const endDiv = document.createElement("div");
+      endDiv.id = "feedEndNotice";
+      endDiv.className = "feed-end-notice";
+      endDiv.innerHTML = `
+        <i class="fas fa-info-circle"></i>
+        <span>Nothing more to show.</span>`;
+      feed.appendChild(endDiv);
+    }
+  };
+
+  // ----------------------- FULLSCREEN IMAGE -----------------------
+  const attachImagePreviewListeners = () => {
+    document.querySelectorAll(".incident-image").forEach((img) => {
+      img.addEventListener("click", () => {
+        fullscreenImg.src = img.src;
+        fullscreenWrapper.style.display = "flex";
+      });
+    });
+  };
+
+  closeFullscreenBtn.addEventListener("click", () => {
+    fullscreenWrapper.style.display = "none";
+    fullscreenImg.src = "";
+  });
+
+  fullscreenWrapper.addEventListener("click", (e) => {
+    if (e.target === fullscreenWrapper) {
+      fullscreenWrapper.style.display = "none";
+      fullscreenImg.src = "";
+    }
+  });
+
+  // ----------------------- CAROUSEL CONTROLS -----------------------
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".carousel-btn");
+    if (!btn) return;
+
+    const card = btn.closest(".incident-card");
+    const images = card.querySelectorAll(".incident-image");
+    let activeIndex = [...images].findIndex((img) =>
+      img.classList.contains("active")
+    );
+
+    if (btn.classList.contains("left-btn") && activeIndex > 0) {
+      images[activeIndex].classList.remove("active");
+      images[--activeIndex].classList.add("active");
+    }
+
+    if (
+      btn.classList.contains("right-btn") &&
+      activeIndex < images.length - 1
+    ) {
+      images[activeIndex].classList.remove("active");
+      images[++activeIndex].classList.add("active");
+    }
+
+    updateCarouselControls(card);
+  });
+
+  const updateCarouselControls = (card) => {
+    const images = card.querySelectorAll(".incident-image");
+    const leftBtn = card.querySelector(".left-btn");
+    const rightBtn = card.querySelector(".right-btn");
+    const dots = card.querySelectorAll(".dot");
+
+    const activeIndex = [...images].findIndex((img) =>
+      img.classList.contains("active")
+    );
+
+    if (leftBtn) leftBtn.style.display = activeIndex > 0 ? "block" : "none";
+    if (rightBtn)
+      rightBtn.style.display =
+        activeIndex < images.length - 1 ? "block" : "none";
+    dots.forEach((dot, i) => dot.classList.toggle("active", i === activeIndex));
+  };
+
+  // ----------------------- CARD BUILDER -----------------------
+  const buildIncidentCard = (incident) => {
+    const images = Array.isArray(incident?.images) ? incident.images : [];
+    const imagesHTML = images
+      .map(
+        (img, i) => `
+      <img src="${img.url}" class="incident-image ${
+          i === 0 ? "active" : ""
+        }" alt="Incident Image" loading="lazy">`
+      )
+      .join("");
+
+    let carouselHTML = "",
+      dotsHTML = "";
+
+    if (images.length === 0) {
+      carouselHTML = `
+        <div class="incident-image-carousel no-image">
+          <div class="incident-image-container">
+            <div class="no-image-placeholder">
+              <i class="fas fa-image"></i>
+              <span>No image available</span>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      carouselHTML = `
+        <div class="incident-image-carousel">
+          ${
+            images.length > 1
+              ? '<button class="carousel-btn left-btn"><i class="fas fa-chevron-left"></i></button>'
+              : ""
+          }
+          <div class="incident-image-container">${imagesHTML}</div>
+          ${
+            images.length > 1
+              ? '<button class="carousel-btn right-btn"><i class="fas fa-chevron-right"></i></button>'
+              : ""
+          }
+        </div>`;
+      dotsHTML = `
+        <div class="carousel-dots">
+          ${images
+            .map(
+              (_, i) => `<span class="dot ${i === 0 ? "active" : ""}"></span>`
+            )
+            .join("")}
+        </div>`;
+    }
+
+    const actionsHTML = incident.is_approved
+      ? `<div class="incident-actions">
+          <select class="status-dropdown">
+            <option value="pending" ${
+              incident.status === "pending" ? "selected" : ""
+            }>Under Review</option>
+            <option value="resolved" ${
+              incident.status === "resolved" ? "selected" : ""
+            }>Resolved</option>
+          </select>
+        </div>`
+      : `<div class="incident-actions">
+          <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
+          <a class="btn btn-decline"><i class="fas fa-xmark"></i> Decline</a>
+        </div>`;
+
+    return `
+      <div class="incident-card" data-card-id="${incident.incident_id}">
+        <div class="incident-header">
+          <div><strong>Incident Type:</strong> ${
+            incident.incident_type_display
+          }</div>
+          <div><strong>Impact Level:</strong>
+            <span class="impact-badge impact-${(
+              incident.impact_level || ""
+            ).toLowerCase()}">
+              ${incident.impact_level_display || "—"}
+            </span>
+          </div>
+        </div>
+        ${carouselHTML}
+        ${dotsHTML}
+        <div class="incident-meta">
+          <p><strong>Date:</strong> ${incident.created_at}</p>
+          <p><strong>Reporter:</strong> ${incident.reporter_name}</p>
+          <p><strong>Vessel:</strong> ${incident.vessel_name || "—"}</p>
+          <p><strong>Location:</strong> ${incident.location}</p>
+        </div>
+        <div class="incident-description">
+          <p><strong>Description:</strong> ${incident.description}</p>
+        </div>
+        ${actionsHTML}
+      </div>`;
+  };
+
+  // Initial attach
+  attachImagePreviewListeners();
+  document.querySelectorAll(".incident-card").forEach(updateCarouselControls);
+});
