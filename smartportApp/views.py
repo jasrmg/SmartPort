@@ -1045,6 +1045,47 @@ def determine_impact_level(incident_type, description=""):
   return "low"
 
 
+# APPROVE INCIDENT
+@require_POST
+@login_required
+def approve_incident(request, incident_id):
+  try:
+    incident = IncidentReport.objects.get(pk=incident_id)
+    if incident.is_approved:
+      return JsonResponse({'success': False, 'error': 'Already approved'})
+
+    incident.is_approved = True
+    incident.status = 'pending'
+    incident.save()
+
+    if incident.vessel:
+      ActivityLog.objects.create(
+        vessel=incident.vessel,
+        action_type=ActivityLog.ActionType.INCIDENT,
+        description=f"Incident report approved: {incident.description[:100]}...",
+        created_by=request.user.userprofile
+      )
+
+    return JsonResponse({'success': True})
+  except IncidentReport.DoesNotExist:
+    return JsonResponse({'success': False, 'error': 'Incident not found'})
+  except Exception as e:
+    return JsonResponse({'success': False, 'error': str(e)})
+  
+# REJECT INCIDENT
+@require_POST
+@login_required
+def decline_incident(request, incident_id):
+  try:
+    incident = IncidentReport.objects.get(pk=incident_id)
+    incident.delete()
+    return JsonResponse({'success': True})
+  except IncidentReport.DoesNotExist:
+    return JsonResponse({'success': False, 'error': 'Incident not found'})
+  except Exception as e:
+    return JsonResponse({'success': False, 'error': str(e)})
+
+
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

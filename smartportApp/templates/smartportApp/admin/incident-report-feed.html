@@ -356,6 +356,22 @@
     </div>
   </div>
 </div>
+
+<div id="declineConfirmModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Decline Incident Report</h>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to decline this report? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button id="declineConfirmBtn" class="btn danger">Yes, Decline</button>
+        <button id="declineCancelBtn" class="btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %} {% block script %}
 <!-- <script src="{% static 'admin/js/incident-report-feed-scroll.js' %}"></script> -->
 <script src="{% static 'admin/js/incident-report-feed.js' %}"></script>

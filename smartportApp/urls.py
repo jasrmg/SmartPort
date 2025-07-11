@@ -16,6 +16,7 @@ urlpatterns = [
   path("voyage-report/", views.voyage_report_view, name="voyage-report"), 
   path("activity-log/", views.activity_log_view, name="activity-log"),
   path("incident-report-feed/", views.report_feed_view, name="report-feed"),
+  
 
   path("user-management/", views.admin_users_view, name="user-management"),
 
@@ -51,6 +52,9 @@ urlpatterns = [
   path('vessel-detail/<int:vessel_id>/', views.vessel_detail_view, name='vessel-detail'),
   path("vessel-log/add/<int:vessel_id>/", views.add_vessel_log_entry, name="add_vessel_log_entry"),
   path('submit-incident/', views.submit_incident_report, name='submit_incident_report'),
+  # APPROVE OR REJECT INCIDENT REPORT
+  path('incident/approve/<int:incident_id>/', views.approve_incident, name='approve_incident'),
+  path('incident/decline/<int:incident_id>/', views.decline_incident, name='decline_incident'),
 
   # -------------------------------- CUSTOM --------------------------------
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),
