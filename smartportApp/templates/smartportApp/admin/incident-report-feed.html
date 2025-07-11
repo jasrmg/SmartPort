@@ -139,7 +139,7 @@
         </div>
 
         <!-- Image Carousel -->
-        {% if incident.images.all %}
+        {% if incident.images.count > 0 %}
         <div class="incident-image-carousel">
           <button class="carousel-btn left-btn">
             <i class="fas fa-chevron-left"></i>
@@ -166,6 +166,18 @@
           {% for _ in incident.images.all %}
           <span class="dot {% if forloop.first %}active{% endif %}"></span>
           {% endfor %}
+        </div>
+        {% endif %}
+        {% else %}
+        {% if forloop.counter <= 2 %}
+        <!-- Placeholder for incidents 1 and 2 if they have no image -->
+        <div class="incident-image-carousel no-image">
+          <div class="incident-image-container">
+            <div class="no-image-placeholder">
+              <i class="fas fa-image"></i>
+              <span>No image available</span>
+            </div>
+          </div>
         </div>
         {% endif %}
         {% endif %}
@@ -341,6 +353,6 @@
   </div>
 </div>
 {% endblock %} {% block script %}
-<script src="{% static 'admin/js/incident-report-feed.js' %}"></script>
 <script src="{% static 'admin/js/incident-report-feed-scroll.js' %}"></script>
+<script src="{% static 'admin/js/incident-report-feed.js' %}"></script>
 {% endblock %}

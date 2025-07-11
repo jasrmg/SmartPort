@@ -943,14 +943,45 @@ def submit_incident_report(request):
         uploaded_by=user
       )
 
+    # === Build incident response data ===
+    image_data = []
+    for img in incident.images.all():
+      try:
+        image_data.append({"url": img.image.url})
+      except Exception as e:
+        print(f"Skipping image with error: {e}")
+
+
+    incident_data = {
+      "incident_id": incident.incident_id,
+      "incident_type_display": incident.get_incident_type_display(),
+      "impact_level": incident.impact_level,
+      "impact_level_display": incident.get_impact_level_display(),
+      "created_at": localtime(incident.incident_datetime).strftime("%Y-%m-%d %H:%M"),
+      "reporter_name": f"{user.first_name} {user.last_name}".strip(),
+      "vessel_name": vessel.name if vessel else None,
+      "location": incident.location,
+      "description": incident.description,
+      "status": incident.status,
+      "is_approved": incident.is_approved,
+      "images": image_data
+    }
+
+    print("Incident created:", incident.incident_id)
+    print("Attached images:", image_data)
+
     return JsonResponse({
       'success': True,
       'message': 'Incident report submitted successfully.',
-      'approved': is_admin
+      'approved': is_admin,
+      'incident': incident_data  
     })
 
   except Exception as e:
+    import traceback
+    traceback.print_exc()
     return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+
 
 # HELPER FUNCTION FOR THE INCIDENT REPORT VIEW:
 def serialize_incident(incident):

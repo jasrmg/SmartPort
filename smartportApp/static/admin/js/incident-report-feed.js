@@ -117,12 +117,45 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       const result = await response.json();
+      const feed = document.getElementById("incidentFeed");
 
       if (result.success) {
+        if (!result.incident) {
+          console.error("Missing incident in response:", result);
+          showStatus("Server returned an invalid incident report.", false);
+          return;
+        }
+
         showStatus("Incident Report submitted successfully!", true);
         resetIncidentModal();
         spinner.style.display = "none";
-        // to do: insert in feed
+
+        const cardHTML = buildIncidentCard(result.incident);
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = cardHTML;
+        const newCard = tempDiv.firstElementChild;
+
+        const approvedCards = feed.querySelectorAll(".incident-card");
+        let inserted = false;
+
+        for (let card of approvedCards) {
+          const isApproved = card.querySelector(".btn-approve") === null; // if there's no approve btn, it's approved
+          if (isApproved) {
+            card.before(newCard);
+            inserted = true;
+            break;
+          }
+        }
+
+        if (!inserted) {
+          feed.appendChild(newCard);
+        }
+
+        updateCarouselControls(newCard);
+        attachImagePreviewListeners(
+          document.getElementById("fullscreenImageWrapper"),
+          document.getElementById("fullscreenImage")
+        );
       } else {
         showStatus(result.error || "Submission failed", false);
       }
