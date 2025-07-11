@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   // ---------------- REPORT INCIDENT MODAL ----------------
   const reportModalBtn = document.getElementById("reportPrompt");
+  if (!reportModalBtn) return;
   const reportModal = document.getElementById("incidentReportModal");
   const closeReportModal = document.getElementById("closeIncidentModal");
   const cancelReportModal = document.getElementById("cancelIncidentBtn");
@@ -8,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // OPEN THE MODAL
   reportModalBtn.addEventListener("click", () => {
+    resetIncidentModal();
     reportModal.style.display = "flex";
     populateVesselDropdown();
   });
@@ -18,6 +20,15 @@ document.addEventListener("DOMContentLoaded", function () {
       reportModal.style.display = "none";
     });
   });
+  cancelReportModal.addEventListener("click", () => {
+    const confirmCancel = confirm(
+      "Are you sure you want to discard this report?"
+    );
+    if (confirmCancel) {
+      reportModal.style.display = "none";
+    }
+  });
+
   window.addEventListener("click", (e) => {
     if (e.target === reportModal) {
       reportModal.style.display = "none";
@@ -56,102 +67,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // RESOLUTION MODAL:
-  document.querySelectorAll(".incident-card").forEach((card) => {
-    const dropdown = card.querySelector(".status-dropdown");
-
-    dropdown.addEventListener("change", (e) => {
-      if (e.target.value === "Resolved") {
-        document.getElementById("resolutionModal").style.display = "flex";
-
-        // Optional: Save reference for use on modal save
-        document.getElementById("resolutionModal").dataset.cardId =
-          card.dataset.cardId || "";
-      }
-    });
-  });
-  // Handle resolution modal close
-  document
-    .getElementById("closeResolutionModal")
-    .addEventListener("click", () => {
-      document.getElementById("resolutionModal").style.display = "none";
-    });
-
-  document
-    .getElementById("cancelResolutionBtn")
-    .addEventListener("click", () => {
-      document.getElementById("resolutionModal").style.display = "none";
-    });
-
-  // Save resolution (example handler)
-  document.getElementById("saveResolutionBtn").addEventListener("click", () => {
-    const resolutionText = document
-      .getElementById("resolutionDescription")
-      .value.trim();
-
-    if (!resolutionText) {
-      alert("Please describe how the issue was resolved.");
-      return;
-    }
-
-    // You can fetch the related card ID here if needed
-    const relatedCardId =
-      document.getElementById("resolutionModal").dataset.cardId;
-
-    document.getElementById("resolutionModal").style.display = "none";
-  });
-
-  // Initial call
-  updateCarousel(currentImage);
-
-  // Button listeners
-  leftBtn.addEventListener("click", () => {
-    if (currentImage > 0) {
-      currentImage--;
-      updateCarousel(currentImage);
-    }
-  });
-
-  rightBtn.addEventListener("click", () => {
-    if (currentImage < images.length - 1) {
-      currentImage++;
-      updateCarousel(currentImage);
-    }
-  });
-
-  // FULL SCREEN WHEN IMAGE IS CLICK
-  const incidentImages = document.querySelectorAll(".incident-image");
-  const fullscreenWrapper = document.getElementById("fullscreenImageWrapper");
-  const fullscreenImg = document.getElementById("fullscreenImage");
-  const closeBtn = document.querySelector(".close-fullscreen");
-
-  incidentImages.forEach((img) => {
-    img.addEventListener("click", () => {
-      fullscreenImg.src = img.src;
-      fullscreenWrapper.style.display = "flex";
-    });
-  });
-
-  closeBtn.addEventListener("click", () => {
-    fullscreenWrapper.style.display = "none";
-    fullscreenImg.src = ""; // clear image
-  });
-
-  // Optional: click outside image to close
-  fullscreenWrapper.addEventListener("click", (e) => {
-    if (e.target === fullscreenWrapper) {
-      fullscreenWrapper.style.display = "none";
-      fullscreenImg.src = "";
-    }
-  });
-
   // SUBMIT LOGIC:
   submitReportBtn.addEventListener("click", async () => {
     const statusMessage = document.querySelector(".status-message");
     const statusText = document.querySelector(".status-message-text");
     const spinner = submitReportBtn.querySelector(".spinner");
-    spinner.style.display = "inline-block";
-    submitReportBtn.disabled = true;
+
     // gather form data:
     const location = document.getElementById("incidentLocation").value.trim();
     const type = document.getElementById("incidentType").value;
@@ -170,6 +91,9 @@ document.addEventListener("DOMContentLoaded", function () {
       showStatus("Please specify the incident type.", false);
       return;
     }
+
+    spinner.style.display = "inline-block";
+    submitReportBtn.disabled = true;
 
     const formData = new FormData();
     formData.append("location", location);
@@ -208,6 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
       submitReportBtn.disabled = false;
     } finally {
       submitReportBtn.disabled = false;
+      spinner.style.display = "none";
     }
   });
 
@@ -253,22 +178,6 @@ const populateVesselDropdown = async () => {
   } catch (err) {
     console.error("Failed to fetch vessels:", err);
   }
-};
-
-// CAROUSEL FOR IMAGE:
-const images = document.querySelectorAll(".incident-image");
-const leftBtn = document.querySelector(".left-btn");
-const rightBtn = document.querySelector(".right-btn");
-let currentImage = 0;
-const updateCarousel = (index) => {
-  images.forEach((img, i) => {
-    img.classList.toggle("active", i === index);
-  });
-
-  // Show/hide buttons based on current index
-  leftBtn.style.display = index === 0 ? "none" : "flex";
-  rightBtn.style.display = index === images.length - 1 ? "none" : "flex";
-  console.log(images.length);
 };
 
 const showStatus = (message, isSuccess = true) => {

@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
 import json
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 
 
 # Create your views here.
@@ -143,13 +143,21 @@ def report_feed_view(request):
   incidents = IncidentReport.objects.filter(is_approved=True).order_by('-created_at')
   paginator = Paginator(incidents, 2)
 
-  page_number = request.GET.get("page")
-  page_obj = paginator.get_page(page_number or 1)
+  page_number = int(request.GET.get("page", 1))
+  try:
+    page_obj = paginator.page(page_number)
+
+  except EmptyPage:
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+      return JsonResponse({"incidents": [], "has_more": False})
+    return render(request, "smartportApp/admin/incident-report-feed.html", {"page_obj": paginator.page(paginator.num_pages)})
+  
 
   if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    print(f"Page {page_number} of {paginator.num_pages}, has_next: {page_obj.has_next()}")
     data = [serialize_incident(incident) for incident in page_obj]
-    return JsonResponse({"incidents": data})
-
+    return JsonResponse({"incidents": data, "has_more": page_obj.has_next()})
+  
   return render(request, "smartportApp/admin/incident-report-feed.html", {"page_obj": page_obj})
 
 # -------------------- END OF ADMIN TEMPLATES --------------------
@@ -941,16 +949,19 @@ def submit_incident_report(request):
 def serialize_incident(incident):
   return {
     "incident_id": incident.incident_id,
-    "incident_type": incident.get_incident_type_display(),
+    "incident_type_display": incident.get_incident_type_display(),
     "impact_level": incident.impact_level,
-    "location": incident.location,
+    "impact_level_display": incident.get_impact_level_display(),
     "created_at": incident.created_at.strftime("%B %d, %Y"),
+    "reporter_name": f"{incident.reporter.first_name} {incident.reporter.last_name}",
+    "vessel_name": incident.vessel.name if incident.vessel else None,
+    "location": incident.location,
     "description": incident.description,
-    "reporter": f"{incident.reporter.first_name} {incident.reporter.last_name}",
-    "vessel": incident.vessel.name if incident.vessel else "—",
     "is_approved": incident.is_approved,
-    "images": [img.image.url for img in incident.images.all()]
+    "status": incident.status,
+    "images": [{"url": img.image.url} for img in incident.images.all()],
   }
+
 
 
 

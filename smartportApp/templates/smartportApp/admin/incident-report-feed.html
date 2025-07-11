@@ -129,8 +129,11 @@
           </div>
           <div>
             <strong>Impact Level:</strong>
-            <span class="impact-badge {{ incident.impact_level|lower }}"
-              >{{ incident.get_impact_level_display }}</span
+            <span class="impact-badge impact-{{ incident.impact_level|lower }}">
+              <!---->
+              {{ incident.get_impact_level_display }}
+              <!---->
+              </span
             >
           </div>
         </div>
@@ -198,7 +201,6 @@
       {% empty %}
         <p class="no-results">No incident reports to show.</p>
       {% endfor %}
-      <div id="feedEndNotice" class="feed-end-notice" style="display: none;">Nothing to show.</div>
     </div>
   </div>
 </div>
@@ -331,4 +333,5 @@
 </div>
 {% endblock %} {% block script %}
 <script src="{% static 'admin/js/incident-report-feed.js' %}"></script>
+<script src="{% static 'admin/js/incident-report-feed-scroll.js' %}"></script>
 {% endblock %}

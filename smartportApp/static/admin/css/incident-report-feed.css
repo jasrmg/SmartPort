@@ -129,6 +129,67 @@
 .incidents-feed {
   margin-top: 2rem;
 }
+.feed-end-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 24px 0;
+  padding: 12px 20px;
+  background-color: var(--gray);
+  color: var(--dark-gray);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.feed-end-notice i {
+  color: var(--secondary);
+  font-size: 18px;
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dot {
+  height: 8px;
+  width: 8px;
+  background-color: #d4d4d4;
+  border-radius: 50%;
+  display: inline-block;
+  transition: background-color 0.3s ease;
+}
+
+.dot.active {
+  background-color: var(--secondary); /* or use #1e3a8a */
+}
+
+.impact-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+/* Impact Level Colors */
+.impact-low {
+  background-color: var(--lighter-blue);
+}
+.impact-medium {
+  background-color: var(--highlight);
+  color: black;
+}
+.impact-high {
+  background-color: var(--danger);
+}
 
 .incident-card {
   background-color: white;
