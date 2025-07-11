@@ -943,6 +943,15 @@ def submit_incident_report(request):
         uploaded_by=user
       )
 
+    # === LOG TO ACTIVITY IF VESSEL IS INVOLVED ===
+    if vessel:
+      log_vessel_activity(
+        vessel=vessel,
+        action_type=ActivityLog.ActionType.INCIDENT,
+        description=f"Incident reported: {incident.get_incident_type_display()} at {location}.",
+        user_profile=user
+      )
+
     # === Build incident response data ===
     image_data = []
     for img in incident.images.all():
@@ -966,9 +975,6 @@ def submit_incident_report(request):
       "is_approved": incident.is_approved,
       "images": image_data
     }
-
-    print("Incident created:", incident.incident_id)
-    print("Attached images:", image_data)
 
     return JsonResponse({
       'success': True,

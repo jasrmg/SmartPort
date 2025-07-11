@@ -105,6 +105,7 @@ class ActivityLog(models.Model):
     ARRIVED = "arrived", "Arrived"
     NOTE = "note", "Manual Note"
     CREATED = "created", "Created"
+    INCIDENT = "incident", "Incident"
 
   activity_log_id = models.AutoField(primary_key=True)
   vessel = models.ForeignKey('Vessel', on_delete=models.CASCADE, related_name='activity_logs')
