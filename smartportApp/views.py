@@ -140,7 +140,17 @@ def admin_users_view(request):
 
 
 def report_feed_view(request):
-  return render(request, "smartportApp/admin/incident-report-feed.html")
+  incidents = IncidentReport.objects.filter(is_approved=True).order_by('-created_at')
+  paginator = Paginator(incidents, 2)
+
+  page_number = request.GET.get("page")
+  page_obj = paginator.get_page(page_number or 1)
+
+  if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    data = [serialize_incident(incident) for incident in page_obj]
+    return JsonResponse({"incidents": data})
+
+  return render(request, "smartportApp/admin/incident-report-feed.html", {"page_obj": page_obj})
 
 # -------------------- END OF ADMIN TEMPLATES --------------------
 
@@ -926,6 +936,22 @@ def submit_incident_report(request):
 
   except Exception as e:
     return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+
+# HELPER FUNCTION FOR THE INCIDENT REPORT VIEW:
+def serialize_incident(incident):
+  return {
+    "incident_id": incident.incident_id,
+    "incident_type": incident.get_incident_type_display(),
+    "impact_level": incident.impact_level,
+    "location": incident.location,
+    "created_at": incident.created_at.strftime("%B %d, %Y"),
+    "description": incident.description,
+    "reporter": f"{incident.reporter.first_name} {incident.reporter.last_name}",
+    "vessel": incident.vessel.name if incident.vessel else "—",
+    "is_approved": incident.is_approved,
+    "images": [img.image.url for img in incident.images.all()]
+  }
+
 
 
 # --------------------------------- CUSTOM ---------------------------------

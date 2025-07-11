@@ -1,3 +1,4 @@
+<!-- prettier-ignore -->
 {% extends "smartportApp/admin/admin-base.html" %}
 <!---->
 {% load static %}
@@ -117,190 +118,87 @@
       </div>
     </div>
 
-    <div class="incident-card" data-card-id="1">
-      <div class="incident-header">
-        <div><strong>Incident Type:</strong> Oil Spill</div>
-        <div>
-          <strong>Impact Level:</strong>
-          <span class="impact-badge high">High</span>
+    <div class="incident-feed-container" id="incidentFeed">
+      {% for incident in page_obj %}
+      <div class="incident-card" data-card-id="{{ incident.incident_id }}">
+        <div class="incident-header">
+          <div>
+            <strong>Incident Type:</strong>
+            <!---->
+            {{ incident.get_incident_type_display }}
+          </div>
+          <div>
+            <strong>Impact Level:</strong>
+            <span class="impact-badge {{ incident.impact_level|lower }}"
+              >{{ incident.get_impact_level_display }}</span
+            >
+          </div>
         </div>
-      </div>
 
-      <!-- Image section -->
-      <!-- <div class="incident-image">
+        <!-- Image section -->
+        <!-- <div class="incident-image">
               <img src="/static/nagi.jpg" alt="Oil Spill Incident" />
             </div> -->
-      <!-- Image Carousel -->
-      <div class="incident-image-carousel">
-        <button class="carousel-btn left-btn">
-          <i class="fas fa-chevron-left"></i>
-        </button>
+        <!-- Image Carousel -->
+        {% if incident.images.all %}
+        <div class="incident-image-carousel">
+          <button class="carousel-btn left-btn">
+            <i class="fas fa-chevron-left"></i>
+          </button>
 
-        <div class="incident-image-container">
-          <img
-            src="/static/nagi.jpg"
-            alt="Incident Image 1"
-            class="incident-image active"
-          />
+          <div class="incident-image-container">
+            {% for image in incident.images.all %}
+            <img
+              src="{{ image.image.url }}"
+              alt="Incident Image"
+              class="incident-image {% if forloop.first %}active{% endif %}"
+            />
+            {% endfor %}
+          </div>
 
-          <img
-            src="/static/775cb4c0a64ca1d7740d91781bd4e9b2.jpg"
-            alt="Incident Image 1"
-            class="incident-image"
-          />
-
-          <img
-            src="/static/3-robot.jpg"
-            alt="Incident Image 1"
-            class="incident-image"
-          />
+          <button class="carousel-btn right-btn">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        {% endif %}
+        <div class="incident-meta">
+          <p><strong>Date:</strong>{{ incident.created_at|date:"F d, Y" }}</p>
+          <p>
+            <strong>Reporter:</strong>
+            <!---->
+            {{ incident.reporter.first_name }} {{ incident.reporter.last_name }}
+          </p>
+          <p><strong>Vessel:</strong>
+            {% if incident.vessel %}
+              {{ incident.vessel.name }}
+            {% else %}
+              —
+            {% endif %}
+          </p>
+          <p><strong>Location:</strong> {{ incident.location }}</p>
         </div>
 
-        <button class="carousel-btn right-btn">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-
-      <div class="incident-meta">
-        <p><strong>Date:</strong> June 20, 2025</p>
-        <p><strong>Reporter:</strong> John Doe</p>
-        <p><strong>Vessel:</strong> MV Pacific Explorer</p>
-        <p><strong>Location:</strong> Bisag Asa</p>
-      </div>
-
-      <div class="incident-description">
-        <p>
-          <strong>Description:</strong> During refueling at Berth 3,
-          approximately 50 liters of low-sulfur fuel spilled due to a faulty
-          valve. Immediate containment procedures were followed. No injuries
-          reported.
-        </p>
-      </div>
-
-      <div class="incident-actions">
-        <select class="status-dropdown">
-          <option>Under Review</option>
-          <option>Escalated</option>
-          <option>Resolved</option>
-        </select>
-        <a class="btn btn-approve"> <i class="fas fa-check"></i>Approve </a>
-        <a class="btn btn-decline">
-          <i class="fa-solid fa-xmark"></i> Decline
-        </a>
-      </div>
-    </div>
-
-    <!-- Incidents Feed -->
-    <div class="incident-card">
-      <div class="incident-header">
-        <div><strong>Incident Type:</strong> Injury</div>
-        <div>
-          <strong>Impact Level:</strong>
-          <span class="impact-badge high">High</span>
+        <div class="incident-description">
+          <p><strong>Description:</strong> {{ incident.description }}</p>
         </div>
-      </div>
 
-      <div class="incident-image">
-        <img src="/static/injury.jpg" alt="Crew Injury" />
-      </div>
-
-      <div class="incident-meta">
-        <p><strong>Date:</strong> June 15, 2025</p>
-        <p><strong>Reporter:</strong> Robert Johnson</p>
-        <p><strong>Vessel:</strong> MV Eastern Star</p>
-      </div>
-
-      <div class="incident-description">
-        <p>
-          <strong>Description:</strong> A deck crew member slipped on wet
-          surface while performing cargo securing duties. Minor fracture
-          confirmed. Immediate first aid and medical evacuation executed.
-        </p>
-      </div>
-
-      <div class="incident-actions">
-        <select class="status-dropdown">
-          <option>Under Review</option>
-          <option>Escalated</option>
-          <option>Resolved</option>
-        </select>
-        <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
-        <a class="btn btn-decline"><i class="fa-solid fa-xmark"></i> Decline</a>
-      </div>
-    </div>
-    <div class="incident-card">
-      <div class="incident-header">
-        <div><strong>Incident Type:</strong> Unauthorized Access</div>
-        <div>
-          <strong>Impact Level:</strong>
-          <span class="impact-badge low">Low</span>
+        {% if not incident.is_approved %}
+        <div class="incident-actions">
+          <select class="status-dropdown">
+            <option value="pending" {% if incident.status == 'pending' %}selected="selected"{% endif %}>Under Review</option>
+            <option value="resolved" {% if incident.status == 'resolved' %} selected="selected"{% endif %}>Resolved</option>
+          </select>
+          <a class="btn btn-approve"> <i class="fas fa-check"></i>Approve </a>
+          <a class="btn btn-decline">
+            <i class="fa-solid fa-xmark"></i> Decline
+          </a>
         </div>
+        {% endif %}
       </div>
-
-      <div class="incident-image">
-        <img src="/static/security.jpg" alt="Unauthorized Access" />
-      </div>
-
-      <div class="incident-meta">
-        <p><strong>Date:</strong> June 17, 2025</p>
-        <p><strong>Reporter:</strong> Maria Perez</p>
-        <p><strong>Vessel:</strong> —</p>
-      </div>
-
-      <div class="incident-description">
-        <p>
-          <strong>Description:</strong> An unauthorized individual entered the
-          restricted dock area without proper ID. Security intercepted within 3
-          minutes. No damages or loss reported.
-        </p>
-      </div>
-
-      <div class="incident-actions">
-        <select class="status-dropdown">
-          <option>Under Review</option>
-          <option>Escalated</option>
-          <option>Resolved</option>
-        </select>
-        <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
-        <a class="btn btn-decline"><i class="fa-solid fa-xmark"></i> Decline</a>
-      </div>
-    </div>
-    <div class="incident-card">
-      <div class="incident-header">
-        <div><strong>Incident Type:</strong> Equipment Failure</div>
-        <div>
-          <strong>Impact Level:</strong>
-          <span class="impact-badge medium">Medium</span>
-        </div>
-      </div>
-
-      <div class="incident-image">
-        <img src="/static/equipment.jpg" alt="Crane Malfunction" />
-      </div>
-
-      <div class="incident-meta">
-        <p><strong>Date:</strong> June 18, 2025</p>
-        <p><strong>Reporter:</strong> Alice Smith</p>
-        <p><strong>Vessel:</strong> MV Liberty Queen</p>
-      </div>
-
-      <div class="incident-description">
-        <p>
-          <strong>Description:</strong> The container crane malfunctioned during
-          offloading, halting operations for 45 minutes. Engineers responded
-          immediately and replaced the faulty hydraulic part.
-        </p>
-      </div>
-
-      <div class="incident-actions">
-        <select class="status-dropdown">
-          <option>Under Review</option>
-          <option>Escalated</option>
-          <option>Resolved</option>
-        </select>
-        <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
-        <a class="btn btn-decline"><i class="fa-solid fa-xmark"></i> Decline</a>
-      </div>
+      {% empty %}
+        <p class="no-results">No incident reports to show.</p>
+      {% endfor %}
+      <div id="feedEndNotice" class="feed-end-notice" style="display: none;">Nothing to show.</div>
     </div>
   </div>
 </div>
