@@ -108,21 +108,27 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>`;
     }
 
-    const actionsHTML = !incident.is_approved
-      ? `
-        <div class="incident-actions">
-          <select class="status-dropdown">
-            <option value="pending" ${
-              incident.status === "pending" ? "selected" : ""
-            }>Under Review</option>
-            <option value="resolved" ${
-              incident.status === "resolved" ? "selected" : ""
-            }>Resolved</option>
-          </select>
-          <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
-          <a class="btn btn-decline"><i class="fas fa-xmark"></i> Decline</a>
-        </div>`
-      : "";
+    let actionsHTML = "";
+
+    if (incident.is_approved) {
+      actionsHTML = `
+    <div class="incident-actions">
+      <select class="status-dropdown">
+        <option value="pending" ${
+          incident.status === "pending" ? "selected" : ""
+        }>Under Review</option>
+        <option value="resolved" ${
+          incident.status === "resolved" ? "selected" : ""
+        }>Resolved</option>
+      </select>
+    </div>`;
+    } else {
+      actionsHTML = `
+    <div class="incident-actions">
+      <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
+      <a class="btn btn-decline"><i class="fas fa-xmark"></i> Decline</a>
+    </div>`;
+    }
 
     return `
       <div class="incident-card" data-card-id="${incident.incident_id}">

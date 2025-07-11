@@ -12,7 +12,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.core.paginator import Paginator, EmptyPage
-
+from django.db.models import Case, When, IntegerField
 
 # Create your views here.
 @login_required
@@ -140,9 +140,16 @@ def admin_users_view(request):
 
 
 def report_feed_view(request):
-  incidents = IncidentReport.objects.filter(is_approved=True).order_by('-created_at')
-  paginator = Paginator(incidents, 2)
+  # prioritize not approve first by the admin
+  incidents = IncidentReport.objects.annotate(
+  approval_priority=Case(
+    When(is_approved=False, then=0),
+    default=1,
+    output_field=IntegerField()
+  )
+).order_by('approval_priority', '-created_at')
 
+  paginator = Paginator(incidents, 2) # (2) to change for testing purposes only (5)
   page_number = int(request.GET.get("page", 1))
   try:
     page_obj = paginator.page(page_number)
@@ -154,7 +161,7 @@ def report_feed_view(request):
   
 
   if request.headers.get("x-requested-with") == "XMLHttpRequest":
-    print(f"Page {page_number} of {paginator.num_pages}, has_next: {page_obj.has_next()}")
+    # print(f"Page {page_number} of {paginator.num_pages}, has_next: {page_obj.has_next()}")
     data = [serialize_incident(incident) for incident in page_obj]
     return JsonResponse({"incidents": data, "has_more": page_obj.has_next()})
   

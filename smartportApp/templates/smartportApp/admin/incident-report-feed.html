@@ -190,18 +190,22 @@
           <p><strong>Description:</strong> {{ incident.description }}</p>
         </div>
 
-        {% if not incident.is_approved %}
         <div class="incident-actions">
-          <select class="status-dropdown">
-            <option value="pending" {% if incident.status == 'pending' %}selected="selected"{% endif %}>Under Review</option>
-            <option value="resolved" {% if incident.status == 'resolved' %} selected="selected"{% endif %}>Resolved</option>
-          </select>
+          {% if incident.is_approved %}
+            <div class="incident-actions">
+              <select class="status-dropdown">
+                <option value="pending" {% if incident.status == 'pending' %}selected="selected"{% endif %}>Under Review</option>
+                <option value="resolved" {% if incident.status == 'resolved' %} selected="selected"{% endif %}>Resolved</option>
+              </select>
+            </div>
+          {% endif %}
+          {% if not incident.is_approved %}
           <a class="btn btn-approve"> <i class="fas fa-check"></i>Approve </a>
           <a class="btn btn-decline">
             <i class="fa-solid fa-xmark"></i> Decline
           </a>
+          {% endif %}
         </div>
-        {% endif %}
       </div>
       {% empty %}
         <p class="no-results">No incident reports to show.</p>
