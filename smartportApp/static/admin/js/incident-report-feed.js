@@ -266,25 +266,67 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initial attach
   attachImagePreviewListeners();
   document.querySelectorAll(".incident-card").forEach(updateCarouselControls);
-});
 
-// ----------------------- APPROVE / DECLINE LOGIC -----------------------
-let targetDeclineCard = null;
-const modal = document.getElementById("declineConfirmModal");
-const confirmBtn = document.getElementById("declineConfirmBtn");
-const cancelBtn = document.getElementById("declineCancelBtn");
+  // ----------------------- APPROVE / DECLINE LOGIC -----------------------
+  let targetDeclineCard = null;
+  const modal = document.getElementById("declineConfirmModal");
+  const confirmBtn = document.getElementById("declineConfirmBtn");
+  const cancelBtn = document.getElementById("declineCancelBtn");
 
-document.addEventListener("click", async (e) => {
-  const approveBtn = e.target.closest(".btn-approve");
-  const declineBtn = e.target.closest(".btn-decline");
+  document.addEventListener("click", async (e) => {
+    const approveBtn = e.target.closest(".btn-approve");
+    const declineBtn = e.target.closest(".btn-decline");
 
-  // ✅ APPROVE
-  if (approveBtn) {
-    const card = approveBtn.closest(".incident-card");
-    const incidentId = card.dataset.cardId;
+    // ✅ APPROVE
+    if (approveBtn) {
+      const card = approveBtn.closest(".incident-card");
+      const incidentId = card.dataset.cardId;
+
+      try {
+        const res = await fetch(`/incident/approve/${incidentId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          showToast("Incident approved");
+          card.querySelector(".incident-actions").innerHTML = `
+          <select class="status-dropdown">
+            <option value="pending" selected>Under Review</option>
+            <option value="resolved">Resolved</option>
+          </select>`;
+        } else {
+          showToast("Failed to approve incident", true);
+        }
+      } catch (err) {
+        console.error("Approval failed:", err);
+        showToast("An error occurred", true);
+      }
+    }
+
+    // ✅ DECLINE - open modal
+    if (declineBtn) {
+      targetDeclineCard = declineBtn.closest(".incident-card");
+      modal.style.display = "flex";
+    }
+  });
+
+  // ✅ Confirm decline
+  confirmBtn.addEventListener("click", async () => {
+    if (!targetDeclineCard || !targetDeclineCard.isConnected) {
+      console.warn("Target decline card is missing or already removed.");
+      modal.style.display = "none";
+      targetDeclineCard = null;
+      return;
+    }
+    const incidentId = targetDeclineCard.dataset.cardId;
 
     try {
-      const res = await fetch(`/incident/approve/${incidentId}/`, {
+      const res = await fetch(`/incident/decline/${incidentId}/`, {
         method: "POST",
         headers: {
           "X-CSRFToken": csrftoken,
@@ -294,71 +336,33 @@ document.addEventListener("click", async (e) => {
 
       const data = await res.json();
       if (data.success) {
-        showToast("Incident approved");
-        card.querySelector(".incident-actions").innerHTML = `
-          <select class="status-dropdown">
-            <option value="pending" selected>Under Review</option>
-            <option value="resolved">Resolved</option>
-          </select>`;
+        targetDeclineCard.remove();
+        showToast("Incident declined");
       } else {
-        showToast("Failed to approve incident", true);
+        showToast("Failed to decline incident", true);
       }
     } catch (err) {
-      console.error("Approval failed:", err);
+      console.error("Decline failed:", err);
       showToast("An error occurred", true);
+    } finally {
+      modal.style.display = "none";
+      targetDeclineCard = null;
     }
-  }
+  });
 
-  // ✅ DECLINE - open modal
-  if (declineBtn) {
-    targetDeclineCard = declineBtn.closest(".incident-card");
-    modal.style.display = "flex";
-  }
-});
-
-// ✅ Confirm decline
-confirmBtn.addEventListener("click", async () => {
-  if (!targetDeclineCard) return;
-
-  const incidentId = targetDeclineCard.dataset.cardId;
-
-  try {
-    const res = await fetch(`/incident/decline/${incidentId}/`, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": csrftoken,
-        "X-Requested-With": "XMLHttpRequest",
-      },
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      targetDeclineCard.remove();
-      showToast("Incident declined");
-    } else {
-      showToast("Failed to decline incident", true);
-    }
-  } catch (err) {
-    console.error("Decline failed:", err);
-    showToast("An error occurred", true);
-  } finally {
+  // ✅ Cancel decline
+  cancelBtn.addEventListener("click", () => {
     modal.style.display = "none";
     targetDeclineCard = null;
-  }
-});
+  });
 
-// ✅ Cancel decline
-cancelBtn.addEventListener("click", () => {
-  modal.style.display = "none";
-  targetDeclineCard = null;
-});
-
-// ✅ Click outside modal
-window.addEventListener("click", (e) => {
-  if (e.target === modal) {
-    modal.style.display = "none";
-    targetDeclineCard = null;
-  }
+  // ✅ Click outside modal
+  window.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+      targetDeclineCard = null;
+    }
+  });
 });
 
 const showToast = (msg, isError = false) => {
@@ -368,46 +372,3 @@ const showToast = (msg, isError = false) => {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 };
-
-// Modal confirm
-confirmBtn.addEventListener("click", async () => {
-  if (!targetDeclineCard) return;
-  const incidentId = targetDeclineCard.dataset.cardId;
-
-  try {
-    const res = await fetch(`/incident/decline/${incidentId}/`, {
-      method: "POST",
-      headers: {
-        "X-CSRFToken": csrftoken,
-        "X-Requested-With": "XMLHttpRequest",
-      },
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      targetDeclineCard.remove();
-      showToast("Incident declined");
-    } else {
-      showToast("Failed to decline incident", true);
-    }
-  } catch (err) {
-    console.error("Decline failed:", err);
-    showToast("An error occurred", true);
-  } finally {
-    modal.style.display = "none";
-    targetDeclineCard = null;
-  }
-});
-
-// Modal cancel or outside click
-cancelBtn.addEventListener("click", () => {
-  modal.style.display = "none";
-  targetDeclineCard = null;
-});
-
-window.addEventListener("click", (e) => {
-  if (e.target === modal) {
-    modal.style.display = "none";
-    targetDeclineCard = null;
-  }
-});
