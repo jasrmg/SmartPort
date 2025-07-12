@@ -164,6 +164,16 @@ def report_feed_view(request):
     incidents = with_approval_priority(incidents).annotate(
       impact_order=impact_order
     ).order_by('approval_priority', 'impact_order')
+
+  elif sort == "status_resolved":
+    incidents = with_approval_priority(incidents).order_by(
+      'approval_priority', '-status'
+    )
+  
+  elif sort == "status_pendign":
+    incidents = with_approval_priority(incidents).order_by(
+      'approval_priority', 'status'
+    )
   paginator = Paginator(incidents, 2)  # ilisanan ug 5 ig deploy
   page_number = int(request.GET.get("page", 1))
 
