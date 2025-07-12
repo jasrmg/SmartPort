@@ -368,6 +368,72 @@ document.addEventListener("DOMContentLoaded", () => {
       targetDeclineCard = null;
     }
   });
+
+  const resolutionModal = document.getElementById("resolutionModal");
+  const resolutionTextarea = document.getElementById("resolutionDescription");
+  const saveResolutionBtn = document.getElementById("saveResolutionBtn");
+  const cancelResolutionBtn = document.getElementById("cancelResolutionBtn");
+  const closeResolutionModal = document.getElementById("closeResolutionModal");
+
+  let targetResolutionCard = null;
+  let targetIncidentId = null;
+
+  // Open modal if status is changed to "resolved"
+  document.addEventListener("change", (e) => {
+    const dropdown = e.target.closest(".status-dropdown");
+    if (dropdown && e.target.value === "resolved") {
+      targetResolutionCard = e.target.closest(".incident-card");
+      targetIncidentId = targetResolutionCard?.dataset.cardId;
+      resolutionTextarea.value = "";
+      resolutionModal.style.display = "flex";
+    }
+  });
+
+  // Cancel or close
+  const closeResolution = () => {
+    resolutionModal.style.display = "none";
+    resolutionTextarea.value = "";
+    targetResolutionCard = null;
+    targetIncidentId = null;
+  };
+  cancelResolutionBtn.addEventListener("click", closeResolution);
+  closeResolutionModal.addEventListener("click", closeResolution);
+  window.addEventListener("click", (e) => {
+    if (e.target === resolutionModal) closeResolution();
+  });
+
+  // Save resolution
+  saveResolutionBtn.addEventListener("click", async () => {
+    const resolutionText = resolutionTextarea.value.trim();
+    if (!resolutionText || !targetIncidentId) {
+      showToast("Please provide a resolution description", true);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/incident/resolve/${targetIncidentId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({ resolution: resolutionText }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast("Incident marked as resolved");
+      } else {
+        showToast("Failed to resolve incident", true);
+      }
+    } catch (err) {
+      console.error("Error saving resolution:", err);
+      showToast("An error occurred while saving", true);
+    } finally {
+      closeResolution();
+    }
+  });
 });
 
 const showToast = (msg, isError = false) => {
