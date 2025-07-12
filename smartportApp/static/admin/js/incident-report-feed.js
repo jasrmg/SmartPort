@@ -4,6 +4,170 @@ let isLoading = false;
 let hasMore = true;
 
 document.addEventListener("DOMContentLoaded", () => {
+  // ----------------------- SUBMIT REPORT -----------------------
+  const reportPrompt = document.getElementById("reportPrompt");
+  const incidentModal = document.getElementById("incidentReportModal");
+  const closeIncidentModal = document.getElementById("closeIncidentModal");
+  const cancelIncidentBtn = document.getElementById("cancelIncidentBtn");
+
+  reportPrompt.addEventListener("click", () => {
+    incidentModal.style.display = "flex";
+  });
+
+  closeIncidentModal.addEventListener("click", () => {
+    incidentModal.style.display = "none";
+  });
+
+  cancelIncidentBtn.addEventListener("click", () => {
+    incidentModal.style.display = "none";
+  });
+
+  window.addEventListener("click", (e) => {
+    if (e.target === incidentModal) {
+      incidentModal.style.display = "none";
+    }
+  });
+
+  // ----------------------- SUBMIT REPORT FORM -----------------------
+  const submitIncidentBtn = document.getElementById("submitIncidentBtn");
+
+  submitIncidentBtn.addEventListener("click", async () => {
+    const location = document.getElementById("incidentLocation").value.trim();
+    const incidentType = document.getElementById("incidentType").value;
+    const otherType = document.getElementById("otherIncidentType").value.trim();
+    const description = document
+      .getElementById("incidentDescription")
+      .value.trim();
+    const vesselName = document.getElementById("incidentVessel").value;
+    const imageFiles = document.getElementById("incidentImage").files;
+
+    if (!location || !incidentType || !description) {
+      showToast("Please fill in all required fields.", true);
+      return;
+    }
+
+    if (incidentType === "other" && !otherType) {
+      showToast("Please specify the incident type.", true);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("location", location);
+    formData.append("incident_type", incidentType);
+    formData.append("other_incident_type", otherType);
+    formData.append("description", description);
+    formData.append("vessel_name", vesselName);
+    for (let i = 0; i < imageFiles.length; i++) {
+      formData.append("images", imageFiles[i]);
+    }
+
+    try {
+      submitIncidentBtn.disabled = true;
+      submitIncidentBtn.querySelector(".btn-text").style.display = "none";
+      submitIncidentBtn.querySelector(".spinner").style.display =
+        "inline-block";
+
+      const response = await fetch("/submit-incident/", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const cardHTML = buildIncidentCard(data.incident);
+        const feed = document.getElementById("incidentFeed");
+        feed.insertAdjacentHTML("afterbegin", cardHTML);
+        updateCarouselControls(feed.firstElementChild);
+        attachImagePreviewListeners();
+
+        showToast("Incident report submitted successfully!");
+        incidentModal.style.display = "none";
+        resetIncidentForm();
+      } else {
+        showToast(data.error || "Submission failed", true);
+      }
+    } catch (err) {
+      console.error("Submission failed:", err);
+      showToast("An error occurred during submission", true);
+    } finally {
+      submitIncidentBtn.disabled = false;
+      submitIncidentBtn.querySelector(".btn-text").style.display =
+        "inline-block";
+      submitIncidentBtn.querySelector(".spinner").style.display = "none";
+    }
+  });
+
+  const resetIncidentForm = () => {
+    document.getElementById("incidentLocation").value = "";
+    document.getElementById("incidentType").value = "";
+    document.getElementById("otherIncidentType").value = "";
+    document.getElementById("incidentDescription").value = "";
+    document.getElementById("incidentVessel").value = "";
+    document.getElementById("incidentImage").value = "";
+    document.getElementById("imagePreviewContainer").innerHTML = "";
+    document.getElementById("otherIncidentTypeGroup").style.display = "none";
+  };
+
+  // ------ TOGGLE OF OTHER INCIDENT TYPE ------
+  const incidentTypeSelect = document.getElementById("incidentType");
+  const otherIncidentGroup = document.getElementById("otherIncidentTypeGroup");
+
+  incidentTypeSelect.addEventListener("change", () => {
+    if (incidentTypeSelect.value === "other") {
+      otherIncidentGroup.style.display = "block";
+    } else {
+      otherIncidentGroup.style.display = "none";
+    }
+  });
+
+  // --------- PREFILL THE DROPDOWN FOR THE VESSEL ---------
+  fetch("/get-vessels/")
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.vessels || !Array.isArray(data.vessels)) {
+        console.error("Unexpected response:", data);
+        return;
+      }
+
+      const select = document.getElementById("incidentVessel");
+      data.vessels.forEach((v) => {
+        const opt = document.createElement("option");
+        opt.value = v.name;
+        opt.textContent = v.name;
+        select.appendChild(opt);
+      });
+    })
+    .catch((err) => {
+      console.error("Failed to fetch vessels:", err);
+      showToast("Could not load vessels", true);
+    });
+
+  // --------- PREVIEW OF SELECTED IMAGE ---------
+  const imageInput = document.getElementById("incidentImage");
+  const previewContainer = document.getElementById("imagePreviewContainer");
+
+  imageInput.addEventListener("change", function () {
+    previewContainer.innerHTML = "";
+
+    const files = Array.from(this.files);
+    files.forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        img.className = "preview-thumb";
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
   const feed = document.getElementById("incidentFeed");
   const filterSelect = document.querySelector(".filter-select");
   const fullscreenWrapper = document.getElementById("fullscreenImageWrapper");
@@ -223,8 +387,20 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>`;
     }
 
-    const actionsHTML = incident.is_approved
-      ? `<div class="incident-actions">
+    let actionsHTML = "";
+
+    if (incident.is_approved) {
+      if (incident.status === "resolved") {
+        actionsHTML = `
+        <div class="incident-actions">
+          <span class="status-label resolved">
+            <i class="fas fa-check-circle"></i> Resolved
+          </span>
+        </div>
+      `;
+      } else {
+        actionsHTML = `
+        <div class="incident-actions">
           <select class="status-dropdown">
             <option value="pending" ${
               incident.status === "pending" ? "selected" : ""
@@ -233,11 +409,17 @@ document.addEventListener("DOMContentLoaded", () => {
               incident.status === "resolved" ? "selected" : ""
             }>Resolved</option>
           </select>
-        </div>`
-      : `<div class="incident-actions">
-          <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
-          <a class="btn btn-decline"><i class="fas fa-xmark"></i> Decline</a>
-        </div>`;
+        </div>
+        `;
+      }
+    } else {
+      actionsHTML = `
+      <div class="incident-actions">
+        <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
+        <a class="btn btn-decline"><i class="fas fa-xmark"></i> Decline</a>
+      </div>
+      `;
+    }
 
     return `
       <div class="incident-card" data-card-id="${incident.incident_id}">
