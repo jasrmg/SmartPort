@@ -816,6 +816,16 @@ input[type="file"].form-input {
   background-color: #b13535;
 }
 
+.status-label.resolved {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: var(--primary);
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
 /* Responsive Design */
 @media (max-width: 600px) {
   .report-prompt {

@@ -298,12 +298,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const data = await res.json();
         if (data.success) {
-          showToast("Incident approved");
+          const status = data.status || "pending"; // fallback
           card.querySelector(".incident-actions").innerHTML = `
-          <select class="status-dropdown">
-            <option value="pending" selected>Under Review</option>
-            <option value="resolved">Resolved</option>
-          </select>`;
+            <select class="status-dropdown" disabled>
+              <option value="pending" ${
+                status === "pending" ? "selected" : ""
+              }>Under Review</option>
+              <option value="resolved" ${
+                status === "resolved" ? "selected" : ""
+              }>Resolved</option>
+            </select>
+          `;
+
+          showToast("Incident approved");
         } else {
           showToast("Failed to approve incident", true);
         }
@@ -393,6 +400,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeResolution = () => {
     resolutionModal.style.display = "none";
     resolutionTextarea.value = "";
+
+    if (targetResolutionCard) {
+      const dropdown = targetResolutionCard.querySelector(".status-dropdown");
+      if (dropdown) {
+        dropdown.value = "pending";
+      }
+    }
+
     targetResolutionCard = null;
     targetIncidentId = null;
   };
@@ -424,6 +439,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
       if (data.success) {
         showToast("Incident marked as resolved");
+        if (targetResolutionCard) {
+          const actions =
+            targetResolutionCard.querySelector(".incident-actions");
+          if (actions) {
+            actions.innerHTML = `
+        <span class="status-label resolved">
+          <i class="fas fa-check-circle"></i> Resolved
+        </span>`;
+          }
+        }
       } else {
         showToast("Failed to resolve incident", true);
       }

@@ -1085,52 +1085,73 @@ def decline_incident(request, incident_id):
   except Exception as e:
     return JsonResponse({'success': False, 'error': str(e)})
 
+
+from django.db import transaction
 # RESOLVE INCIDENT
 @csrf_exempt
 def resolve_incident(request, incident_id):
   if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
     try:
-      user = request.user
-      if not user.is_authenticated:
+      if not request.user.is_authenticated:
         return JsonResponse({"success": False, "error": "Unauthorized"}, status=401)
+
+      user_profile = getattr(request.user, 'userprofile', None)
+      if not user_profile:
+        return JsonResponse({"success": False, "error": "User profile not found"}, status=400)
 
       body = json.loads(request.body)
       resolution_text = body.get("resolution", "").strip()
       if not resolution_text:
         return JsonResponse({"success": False, "error": "Missing resolution"}, status=400)
 
-      incident = IncidentReport.objects.select_related('vessel', 'reported_by').get(pk=incident_id)
-      user_profile = UserProfile.objects.get(firebase_uid=user.uid)
+      # Use select_related for foreign keys that are accessed later
+      incident = IncidentReport.objects.select_related('vessel', 'reporter').get(pk=incident_id)
 
-      # Create or update resolution
-      IncidentResolution.objects.update_or_create(
-        incident=incident,
-        defaults={
-          "resolution_report": resolution_text,
-          "resolution_date": timezone.now(),
-          "resolved_by": user_profile
-        }
-      )
-
-      incident.status = "resolved"
-      incident.save()
-
-      if incident.vessel:
-        description = f"Incident '{incident.incident_type}' resolved."
-        log_vessel_activity(
-          vessel=incident.vessel,
-          action_type="incident",
-          description=description,
-          user_profile=user_profile
+      with transaction.atomic():
+        # Create or update resolution
+        IncidentResolution.objects.update_or_create(
+          incident=incident,
+          defaults={
+            "resolution_report": resolution_text,
+            "resolution_date": timezone.now(),
+            "resolved_by": user_profile
+          }
         )
 
-      return JsonResponse({"success": True})
+        incident.status = "resolved"
+        incident.save()
+
+        # Log vessel activity if related
+        if incident.vessel:
+          incident_type_label = incident.get_incident_type_display()
+          location = incident.location or "unspecified location"
+          short_description = (incident.description[:100] + "...") if len(incident.description) > 100 else incident.description
+          short_description = " ".join(short_description.split())
+
+          description = (
+            f"Resolved incident: '{incident_type_label}' at {location}. "
+            f"Summary: {short_description}"
+          )
+
+          log_vessel_activity(
+            vessel=incident.vessel,
+            action_type="incident",
+            description=description,
+            user_profile=user_profile
+          )
+
+      return JsonResponse({"success": True, "status": incident.status})
+
     except IncidentReport.DoesNotExist:
       return JsonResponse({"success": False, "error": "Incident not found"}, status=404)
-    except Exception as e:
-      return JsonResponse({"success": False, "error": str(e)}, status=500)
-  return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
+    except Exception as e:
+      print("🔥 Exception occurred during resolution:")
+      import traceback
+      traceback.print_exc()
+      return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+  return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required
