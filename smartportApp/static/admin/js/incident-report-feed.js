@@ -47,16 +47,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ----------------------- INFINITE SCROLL -----------------------
-  window.addEventListener("scroll", () => {
-    const cards = feed.querySelectorAll(".incident-card");
-    const secondLast = cards[cards.length - 2];
-    if (!secondLast) return;
+  // ----------------------- INFINITE SCROLL USING DEBOUNCING -----------------------
+  let scrollTimeout = null;
 
-    const rect = secondLast.getBoundingClientRect();
-    if (rect.top < window.innerHeight + 100) {
-      loadNextPage();
-    }
+  window.addEventListener("scroll", () => {
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      const cards = feed.querySelectorAll(".incident-card");
+      const secondLast = cards[cards.length - 2];
+      if (!secondLast) return;
+
+      const rect = secondLast.getBoundingClientRect();
+      if (rect.top < window.innerHeight + 100) {
+        loadNextPage();
+      }
+    }, 150);
   });
 
   const loadNextPage = async () => {
