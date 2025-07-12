@@ -1085,6 +1085,51 @@ def decline_incident(request, incident_id):
   except Exception as e:
     return JsonResponse({'success': False, 'error': str(e)})
 
+# RESOLVE INCIDENT
+@csrf_exempt
+def resolve_incident(request, incident_id):
+  if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+    try:
+      user = request.user
+      if not user.is_authenticated:
+        return JsonResponse({"success": False, "error": "Unauthorized"}, status=401)
+
+      body = json.loads(request.body)
+      resolution_text = body.get("resolution", "").strip()
+      if not resolution_text:
+        return JsonResponse({"success": False, "error": "Missing resolution"}, status=400)
+
+      incident = IncidentReport.objects.select_related('vessel', 'reported_by').get(pk=incident_id)
+      user_profile = UserProfile.objects.get(firebase_uid=user.uid)
+
+      # Create or update resolution
+      IncidentResolution.objects.update_or_create(
+        incident=incident,
+        defaults={
+          "resolution_report": resolution_text,
+          "resolution_date": timezone.now(),
+          "resolved_by": user_profile
+        }
+      )
+
+      incident.status = "resolved"
+      incident.save()
+
+      if incident.vessel:
+        description = f"Incident '{incident.incident_type}' resolved."
+        log_vessel_activity(
+          vessel=incident.vessel,
+          action_type="incident",
+          description=description,
+          user_profile=user_profile
+        )
+
+      return JsonResponse({"success": True})
+    except IncidentReport.DoesNotExist:
+      return JsonResponse({"success": False, "error": "Incident not found"}, status=404)
+    except Exception as e:
+      return JsonResponse({"success": False, "error": str(e)}, status=500)
+  return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
 
 # --------------------------------- CUSTOM ---------------------------------

@@ -55,6 +55,9 @@ urlpatterns = [
   # APPROVE OR REJECT INCIDENT REPORT
   path('incident/approve/<int:incident_id>/', views.approve_incident, name='approve_incident'),
   path('incident/decline/<int:incident_id>/', views.decline_incident, name='decline_incident'),
+  # RESOLVE INCIDENT REPORT
+  path("incident/resolve/<int:incident_id>/", views.resolve_incident, name="resolve_incident"),
+
 
   # -------------------------------- CUSTOM --------------------------------
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),
