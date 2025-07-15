@@ -138,6 +138,9 @@ def activity_log_view(request):
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
+def admin_manifest_view(request):
+  return render(request, "smartportApp/admin/manifest.html")
+
 from django.db.models import F
 def report_feed_view(request):
   sort = request.GET.get("sort", "newest")

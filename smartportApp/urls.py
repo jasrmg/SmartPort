@@ -16,7 +16,7 @@ urlpatterns = [
   path("voyage-report/", views.voyage_report_view, name="voyage-report"), 
   path("activity-log/", views.activity_log_view, name="activity-log"),
   path("incident-report-feed/", views.report_feed_view, name="report-feed"),
-  
+  path("manifest/", views.admin_manifest_view, name="manifest"),
 
   path("user-management/", views.admin_users_view, name="user-management"),
 
