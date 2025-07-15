@@ -19,4 +19,16 @@ document.addEventListener("DOMContentLoaded", () => {
     voyageSubmanifest.style.display = "none";
     voyageListSection.style.display = "block";
   });
+
+  // ----------- FLATPICKR -----------
+  flatpickr("#dateFilter", {
+    clickOpens: true,
+    dateFormat: "Y-m-d",
+    allowInput: false,
+    onChange: function (selectedDates, dateStr) {
+      document.getElementById("dateFilter").textContent =
+        dateStr || "Select Date";
+      document.getElementById("selectedDate").value = dateStr;
+    },
+  });
 });

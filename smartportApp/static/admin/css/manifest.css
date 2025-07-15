@@ -90,6 +90,12 @@ body {
   background-size: 1rem;
   transition: border-color 0.2s ease-in-out;
 }
+.form-select[type="text"] {
+  cursor: pointer; /* looks more like an input with dropdown */
+}
+#dateFilter {
+  background-image: none;
+}
 
 .form-select:focus {
   border-color: #2563eb;

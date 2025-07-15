@@ -6,6 +6,11 @@
 <!---->
 {% block head %}
 <link rel="stylesheet" href="{% static 'admin/css/manifest.css' %}" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 {% endblock %}
 <!--BODY-->
 
@@ -116,9 +121,8 @@
         </select>
       </div>
       <div class="search-filter">
-        <select class="form-select">
-          <option value="all">Date</option>
-        </select>
+        <div class="form-select" id="dateFilter" tabindex="0">Select Date</div>
+        <input type="hidden" id="selectedDate" name="selected_date" />
       </div>
     </div>
     <div class="voyage-cards-container">
