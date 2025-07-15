@@ -175,6 +175,7 @@
           <tbody>
             {% if vessels %} {% for vessel in vessels %}
             <tr data-vessel-id="{{ vessel.vessel_id }}">
+              aa
               <td>{{ vessel.name }}</td>
               <td>{{ vessel.imo }}</td>
               <td>{{ vessel.type }}</td>
@@ -186,6 +187,7 @@
               <td>
                 <button
                   class="btn-icon edit"
+                  title="Edit Vessel"
                   data-name="{{ vessel.name }}"
                   data-type="{{ vessel.type }}"
                   data-imo="{{ vessel.imo }}"
@@ -193,7 +195,11 @@
                 >
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn-icon delete" data-imo="{{ vessel.imo }}">
+                <button
+                  class="btn-icon delete"
+                  title="Delete Vessel"
+                  data-imo="{{ vessel.imo }}"
+                >
                   <i class="fas fa-trash"></i>
                 </button>
               </td>

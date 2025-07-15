@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Manifest | Smart Port</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/static/ADMIN/voyage-report.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar Navigation -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+            <i class="fas fa-anchor logo-icon"></i>
+            <span class="logo-text">SMART PORT</span>
+            <button class="collapse-btn"><i class="fas fa-bars"></i></button>
+          </div>
+        </div>
+        <ul class="nav-menu">
+          <li class="nav-item">
+            <a href="admin-dashboard.html" class="nav-link">
+              <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item expanded">
+            <a href="#" class="nav-link active">
+              <!-- Main Vessels link, can be # or admin-vessels.html -->
+              <i class="fas fa-ship"></i> <span>Vessels</span>
+            </a>
+            <ul class="nav-sub-menu" style="height: auto">
+              <li>
+                <a href="admin-vessels.html" class="nav-sub-link"
+                  ><i class="fas fa-list"></i> <span>View All Vessels</span></a
+                >
+              </li>
+              <li>
+                <a href="vessel-activity-log.html" class="nav-sub-link"
+                  ><i class="fas fa-history"></i> <span>Activity Log</span></a
+                >
+              </li>
+              <li>
+                <a href="assign-route.html" class="nav-sub-link"
+                  ><i class="fas fa-route"></i> <span>Assign Route</span></a
+                >
+              </li>
+              <li>
+                <a href="voyage-report.html" class="nav-sub-link active"
+                  ><i class="fas fa-file-alt"></i> <span>Voyage Report</span></a
+                >
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="admin-users.html" class="nav-link">
+              <i class="fas fa-users"></i> <span>Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="admin-manifests.html" class="nav-link">
+              <i class="fas fa-file-alt"></i> <span>Manifests</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="admin-reports.html" class="nav-link">
+              <i class="fas fa-chart-line"></i> <span>Reports</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="fas fa-cog"></i> <span>Settings</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">
+              <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="main-content">
+        <!-- Top Bar -->
+        <div class="topbar">
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search reports..." />
+          </div>
+          <div class="user-menu">
+            <button class="notification-btn">
+              <i class="fas fa-bell"></i>
+              <span class="notification-badge">1</span>
+            </button>
+            <div class="user-profile">
+              <div class="user-avatar">AD</div>
+              <span class="user-name">Admin User</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-header">
+          <div class="page-title">
+            <h1>Manifest Management</h1>
+            <p>Review sub manifests details and verify shipments.</p>
+          </div>
+        </div>
+
+        <!-- Voyage Reports List Section -->
+        <div class="voyage-list-container" id="voyage-list-section">
+          <div class="voyage-header">
+            <!-- Add filter/sort options if needed -->
+            <div class="search-filter">
+              <select class="form-select">
+                <option value="all">All Vessel Types</option>
+                <option value="container">Container Ships</option>
+                <option value="bulk">Bulk Carriers</option>
+                <option value="tanker">Tankers</option>
+                <option value="roro">Ro-Ro</option>
+              </select>
+            </div>
+
+            <!-- Add filter/sort options if needed -->
+            <div class="search-filter">
+              <select class="form-select">
+                <option value="all">Origin Port</option>
+                <option value="container">Container Ships</option>
+                <option value="bulk">Bulk Carriers</option>
+                <option value="tanker">Tankers</option>
+                <option value="roro">Ro-Ro</option>
+              </select>
+            </div>
+            <!-- Add filter/sort options if needed -->
+            <div class="search-filter">
+              <select class="form-select">
+                <option value="all">Destination Port</option>
+                <option value="container">Container Ships</option>
+                <option value="bulk">Bulk Carriers</option>
+                <option value="tanker">Tankers</option>
+                <option value="roro">Ro-Ro</option>
+              </select>
+            </div>
+            <div class="search-filter">
+              <select class="form-select">
+                <option value="all">Date</option>
+              </select>
+            </div>
+          </div>
+          <div class="voyage-cards-container">
+            <div class="voyage-card" data-voyage-id="1">
+              <div class="voyage-header">
+                <div class="voyage-card-icon">
+                  <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="voyage-card-title">
+                  <h3>Voyage VN2024-056</h3>
+                  <p>MV Pacific Navigator</p>
+                </div>
+              </div>
+              <p class="voyage-card-info">
+                <strong>Route:</strong> Hong Kong to Manila
+              </p>
+              <p class="voyage-card-info">
+                <strong>Arrival:</strong> May 20, 2024
+              </p>
+              <p class="voyage-card-info">
+                <strong>Departure:</strong> May 21, 2024 @ 10:00 AM
+              </p>
+            </div>
+          </div>
+          <div class="pagination-container">
+            <button class="pagination-btn" data-page="prev">«</button>
+            <button class="pagination-btn active" data-page="1">1</button>
+            <button class="pagination-btn" data-page="2">2</button>
+            <button class="pagination-btn" data-page="next">»</button>
+          </div>
+        </div>
+
+        <div class="voyage-submanifest" style="display: none">
+          <div class="voyage-details-header">
+            <h2>
+              Submanifests for Voyage <span id="voyage-number-display"></span>
+            </h2>
+            <button class="btn back-to-list-btn" id="back-to-voyage-list">
+              <i class="fas fa-arrow-left"></i>
+              Back to Reports List
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="submanifest-table">
+              <thead>
+                <tr>
+                  <th>Submanifest ID</th>
+                  <th>Item Count</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="submanifest-tbody">
+                <tr>
+                  <td>SM001</td>
+                  <td>10</td>
+                  <td>
+                    <span class="status-badge warning">Pending Admin</span>
+                  </td>
+                  <td>
+                    <button class="btn-icon view" title="View">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon approve" title="Approve">
+                      <i class="fas fa-check"></i>
+                    </button>
+                    <button class="btn-icon reject" title="Reject">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>SM002</td>
+                  <td>5</td>
+                  <td>
+                    <span class="status-badge available"
+                      >Approved by Admin</span
+                    >
+                  </td>
+                  <td>
+                    <button class="btn view">View</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>SM003</td>
+                  <td>3</td>
+                  <td>
+                    <span class="status-badge danger">Rejected by Admin</span>
+                  </td>
+                  <td>
+                    <button class="btn view">View</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="generate-manifest-wrapper">
+            <button
+              id="generate-manifest-btn"
+              class="btn generate-manifest-btn"
+              disabled
+            >
+              Generate Master Manifest
+            </button>
+            <p id="manifest-warning" class="manifest-warning">
+              Cannot generate master manifest. Some submanifests are still
+              pending.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOR PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script src="/static/ADMIN/voyage-report.js"></script>
+  </body>
+</html>
