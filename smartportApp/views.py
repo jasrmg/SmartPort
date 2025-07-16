@@ -173,7 +173,7 @@ def report_feed_view(request):
       'approval_priority', '-status'
     )
   
-  elif sort == "status_pendign":
+  elif sort == "status_pending":
     incidents = with_approval_priority(incidents).order_by(
       'approval_priority', 'status'
     )
