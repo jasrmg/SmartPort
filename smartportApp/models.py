@@ -190,4 +190,41 @@ class MasterManifest(models.Model):
   class Meta:
     ordering = ['-created_at']
 
+class SubManifest(models.Model):
+  voyage = models.ForeignKey(Voyage, on_delete=models.CASCADE)
+
+  # Created by Shipper
+  created_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
+
+  # Consignee / Consignor
+  consignee_name = models.CharField(max_length=255)
+  consignee_email = models.EmailField()
+  consignee_address = models.TextField()
+
+  consignor_name = models.CharField(max_length=255)
+  consignor_email = models.EmailField()
+  consignor_address = models.TextField()
+
+  # Shipment Details
+  container_no = models.CharField(max_length=100)
+  seal_no = models.CharField(max_length=100)
+  bill_of_lading_no = models.CharField(max_length=100)
+  handling_instruction = models.TextField(blank=True)
+
+  # Review Process
+  STATUS_CHOICES = [
+    ('pending_admin', 'Pending Admin Review'),
+    ('rejected_by_admin', 'Rejected by Admin'),
+    ('pending_customs', 'Pending Customs Review'),
+    ('rejected_by_customs', 'Rejected by Customs'),
+    ('approved', 'Approved'),
+  ]
+  status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending_admin')
+
+  admin_note = models.TextField(blank=True, null=True)
+  customs_note = models.TextField(blank=True, null=True)
+  master_manifest = models.ForeignKey(MasterManifest, on_delete=models.SET_NULL, null=True, blank=True)
+
+  updated_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='updated_submanifests')
+  updated_at = models.DateTimeField(auto_now=True)
 
