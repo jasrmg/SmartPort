@@ -255,8 +255,8 @@ const centerFlatpickr = (instance) => {
 const setupFlatpickr = (selector) => {
   flatpickr(selector, {
     enableTime: true,
-    dateFormat: "Y-m-d H:i",
-    time_24hr: true,
+    dateFormat: "Y-m-d h:i K",
+    time_24hr: false,
     minDate: "today",
     onOpen: function (selectedDates, dateStr, instance) {
       setTimeout(() => {
@@ -265,6 +265,3 @@ const setupFlatpickr = (selector) => {
     },
   });
 };
-
-setupFlatpickr("#departurePicker");
-setupFlatpickr("#etaPicker");

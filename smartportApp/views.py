@@ -483,8 +483,8 @@ def assign_route(request):
 
     # Parse datetime fields
     try:
-      departure_dt = datetime.strptime(departure_str, "%Y-%m-%d %H:%M")
-      eta_dt = datetime.strptime(eta_str, "%Y-%m-%d %H:%M")
+      departure_dt = datetime.strptime(departure_str, "%Y-%m-%d %I:%M %p")
+      eta_dt = datetime.strptime(eta_str, "%Y-%m-%d %I:%M %p")
 
       # Make them timezone-aware using Django's timezone helper
       departure_dt = timezone.make_aware(departure_dt)
@@ -944,10 +944,10 @@ def get_submanifests_by_voyage(request, voyage_id):
 
   data = [
     {
-      "id": sm.id,
-      "status": sm.status,
+      "id": sm.submanifest_id,
+      "status": sm.get_status_display(),
       "submanifest_number": sm.submanifest_number,
-      "item_count": sm.documents.count(), 
+      "item_count": sm.cargo_items.count(),
     }
     for sm in submanifests
   ]

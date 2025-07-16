@@ -252,6 +252,7 @@ class SubManifest(models.Model):
       SubManifest.objects.filter(pk=self.pk).update(submanifest_number=self.submanifest_number)
 
 class Cargo(models.Model):
+  cargo_id = models.AutoField(primary_key=True)
   submanifest = models.ForeignKey(
     SubManifest,
     on_delete=models.CASCADE,
