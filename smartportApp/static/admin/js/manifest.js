@@ -31,4 +31,59 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("selectedDate").value = dateStr;
     },
   });
+
+  // PREFILL THE TABLE VIEW WHEN CLICKED:
+  const voyageSubmanifestSection = document.querySelector(
+    ".voyage-submanifest"
+  );
+  const submanifestTableBody = document.getElementById("submanifest-tbody");
+
+  voyageCards.forEach((card) => {
+    card.addEventListener("click", async () => {
+      const voyageId = card.dataset.voyageId;
+      const voyageNumber = card.querySelector("h3").innerText;
+
+      try {
+        const response = await fetch(`/api/submanifests/${voyageId}/`);
+        const data = await response.json();
+
+        voyageListSection.style.display = "none";
+        voyageSubmanifestSection.style.display = "block";
+        voyageNumberDisplay.textContent = voyageNumber;
+        submanifestTableBody.innerHTML = "";
+
+        if (data.submanifests.length === 0) {
+          submanifestTableBody.innerHTML =
+            "<tr><td colspan='4'>No submanifests found.</td></tr>";
+        } else {
+          data.submanifests.forEach((sm) => {
+            const row = `
+            <tr>
+              <td>${sm.submanifest_number}</td>
+              <td>${sm.item_count}</td>
+              <td><span class="status-badge">${sm.status.replaceAll(
+                "_",
+                " "
+              )}</span></td>
+              <td>
+                <button class="btn-icon view"><i class="fas fa-eye"></i></button>
+                <button class="btn-icon approve"><i class="fas fa-check"></i></button>
+                <button class="btn-icon reject"><i class="fas fa-times"></i></button>
+              </td>
+            </tr>`;
+            submanifestTableBody.insertAdjacentHTML("beforeend", row);
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch submanifests:", error);
+      }
+    });
+  });
+
+  document
+    .getElementById("back-to-voyage-list")
+    .addEventListener("click", () => {
+      voyageSubmanifestSection.style.display = "none";
+      voyageListSection.style.display = "block";
+    });
 });

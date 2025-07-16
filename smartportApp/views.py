@@ -215,7 +215,7 @@ def with_approval_priority(queryset):
 
 # -------------------- TEMPLATES LOGIC --------------------
 
-from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution
+from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document
 
 # FUNCTION FOR GETTING PORT LOCATION TO FILL THE LEAFLET MAP
 def get_ports(request):
@@ -938,6 +938,22 @@ def log_vessel_activity(vessel, action_type, description, user_profile):
     created_by=user_profile
   )
 
+# MANIFEST VIEW PART:
+def get_submanifests_by_voyage(request, voyage_id):
+  submanifests = SubManifest.objects.filter(voyage_id=voyage_id)
+
+  data = [
+    {
+      "id": sm.id,
+      "status": sm.status,
+      "submanifest_number": sm.submanifest_number,
+      "item_count": sm.documents.count(), 
+    }
+    for sm in submanifests
+  ]
+
+  return JsonResponse({"submanifests": data})
+
 # UPLOAD INCIDENT REPORT
 def submit_incident_report(request):
   if request.method != "POST":
@@ -1169,6 +1185,8 @@ def resolve_incident(request, incident_id):
       return JsonResponse({"success": False, "error": str(e)}, status=500)
 
   return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

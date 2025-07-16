@@ -190,7 +190,13 @@ class MasterManifest(models.Model):
   class Meta:
     ordering = ['-created_at']
 
+
+from django.utils import timezone
+
 class SubManifest(models.Model):
+  submanifest_id = models.AutoField(primary_key=True)
+  submanifest_number = models.CharField(max_length=50, unique=True, blank=True)
+
   voyage = models.ForeignKey(Voyage, on_delete=models.CASCADE)
 
   # Created by Shipper
@@ -230,6 +236,41 @@ class SubManifest(models.Model):
 
   def get_documents(self):
     return self.documents.all()
+  
+  @property
+  def item_count(self):
+    return self.cargo_items.count()
+  
+  def save(self, *args, **kwargs):
+    is_new = self.pk is None 
+    super().save(*args, **kwargs) #save first to get id
+
+    if is_new and not self.submanifest_number:
+      today_str = timezone.now().strftime('%Y%m%d')
+      self.submanifest_number = f"SUBM-{today_str}-{self.submanifest_id}"
+      # save again to update the number
+      SubManifest.objects.filter(pk=self.pk).update(submanifest_number=self.submanifest_number)
+
+class Cargo(models.Model):
+  submanifest = models.ForeignKey(
+    SubManifest,
+    on_delete=models.CASCADE,
+    related_name="cargo_items"
+  )
+
+  item_number = models.PositiveIntegerField()
+  description = models.TextField()
+  quantity = models.PositiveIntegerField()
+  value = models.DecimalField(max_digits=12, decimal_places=2)
+  weight = models.DecimalField(max_digits=10, decimal_places=2)
+  additional_info = models.TextField(blank=True, null=True)
+  hs_code = models.CharField(max_length=20, blank=True, null=True) 
+  class Meta:
+    unique_together = ("submanifest", "item_number")
+    ordering = ["item_number"]
+
+  def __str__(self):
+    return f"Item {self.item_number} in {self.submanifest.submanifest_number}"
 
 
 class Document(models.Model):
