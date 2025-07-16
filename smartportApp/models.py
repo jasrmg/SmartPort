@@ -14,6 +14,8 @@ class Port(models.Model):
     return f"{self.port_name} ({self.port_code})" 
   
 class Vessel(models.Model):
+  # TODO: Add `flag_state` (country of vessel registration) if required for customs documentation.
+
   vessel_id = models.AutoField(primary_key=True)
   
   class VesselStatus(models.TextChoices):
@@ -52,7 +54,6 @@ class Vessel(models.Model):
     return f"{self.name} (IMO {self.imo })"
   
 class Voyage(models.Model):
-
   class VoyageStatus(models.TextChoices):
     ARRIVED = "arrived", "Arrived" 
     IN_TRANSIT = "in_transit", "In Transit"
@@ -177,14 +178,6 @@ class MasterManifest(models.Model):
   created_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
   created_at = models.DateTimeField(auto_now_add=True)
 
-  departure_port = models.ForeignKey(Port, on_delete=models.SET_NULL, null=True, related_name='master_departures')
-  arrival_port = models.ForeignKey(Port, on_delete=models.SET_NULL, null=True, related_name='master_arrivals')
-  departure_time = models.DateTimeField()
-  eta = models.DateTimeField()
-
-  flag_state = models.CharField(max_length=100)
-  destination = models.CharField(max_length=255)
-
   STATUS_CHOICES = [
     ('generated', 'Generated'),
     ('finalized', 'Finalized'),
@@ -193,4 +186,8 @@ class MasterManifest(models.Model):
 
   def __str__(self):
     return f"Master Manifest {self.mastermanifest_id} - Voyage {self.voyage.voyage_number}"
+  
+  class Meta:
+    ordering = ['-created_at']
+
 
