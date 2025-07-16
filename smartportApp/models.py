@@ -217,7 +217,7 @@ class SubManifest(models.Model):
   bill_of_lading_no = models.CharField(max_length=17)
   handling_instruction = models.TextField(blank=True)
 
-  # Review Processs
+  # Review Process
   STATUS_CHOICES = [
     ('pending_admin', 'Pending Admin Review'),
     ('rejected_by_admin', 'Rejected by Admin'),

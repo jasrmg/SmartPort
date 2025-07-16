@@ -19,7 +19,7 @@ urlpatterns = [
   path("manifest/", views.admin_manifest_view, name="manifest"),
 
   path("user-management/", views.admin_users_view, name="user-management"),
-
+  # -------------------------------- END ADMIN TEMPLATES LOAD --------------------------------
   # PORTS ENDPOINT FOR THE LEAFLET MAP COMPLETE PORT DETAILS
   path('get-ports/', views.get_ports, name='get_ports'),
   # PORTS ENDPOINT FOR NAME AND ID ONLY (assign route)

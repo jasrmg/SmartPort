@@ -27,7 +27,7 @@
       <h1>
         <i class="fa-solid fa-file-lines fa-icon"></i>
         <!---->
-        Submanifest — {{ submanifest.submanifest_number }}
+        {{ submanifest.submanifest_number }}
       </h1>
 
       <div class="section">
@@ -177,18 +177,39 @@
             </tr>
           </thead>
           <tbody>
+            {% for doc in submanifest.get_documents %}
             <tr>
-              <td>Bill of Lading</td>
-              <td>bl_2025_00123.pdf</td>
-              <td>Juan Dela Cruz</td>
-              <td>July 16, 2025</td>
+              <td>
+                {% if doc.document_type == "other" %}
+                <!---->
+                {{ doc.custom_filename|default:"Custom Document" }}
+                <!---->
+                {% else %}
+                <!---->
+                {{ doc.get_document_type_display }}
+                <!---->
+                {% endif %}
+              </td>
+
+              <td>
+                <a
+                  href="{{ doc.file.url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ doc.file.name|cut:"documents/" }}
+                </a>
+              </td>
+              <td>
+                {{ doc.uploaded_by.first_name }} {{ doc.uploaded_by.last_name }}
+              </td>
+              <td>{{ doc.uploaded_at|date:"F d, Y" }}</td>
             </tr>
+            {% empty %}
             <tr>
-              <td>Invoice</td>
-              <td>invoice_001.pdf</td>
-              <td>Juan Dela Cruz</td>
-              <td>July 16, 2025</td>
+              <td>No uploaded documents found.</td>
             </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>

@@ -100,4 +100,32 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
+
+  // ---------------- PREFILL PORT FILTER DROPDOWN ----------------
+  const originSelect = document.getElementById("originPortSelect");
+  const destinationSelect = document.getElementById("destinationPortSelect");
+
+  const populatePorts = async () => {
+    try {
+      const response = await fetch("/get-port-options/");
+      if (!response.ok) throw new Error("Failed to load port options.");
+      const { ports } = await response.json();
+
+      ports.forEach((port) => {
+        const option1 = document.createElement("option");
+        option1.value = port.id;
+        option1.textContent = port.name;
+        originSelect.appendChild(option1);
+
+        const option2 = document.createElement("option");
+        option2.value = port.id;
+        option2.textContent = port.name;
+        destinationSelect.appendChild(option2);
+      });
+    } catch (error) {
+      console.error("Error loading port options:", err);
+    }
+  };
+
+  populatePorts();
 });

@@ -96,30 +96,23 @@
         <select class="form-select">
           <option value="all">All Vessel Types</option>
           <option value="container">Container Ships</option>
-          <option value="bulk">Bulk Carriers</option>
-          <option value="tanker">Tankers</option>
-          <option value="roro">Ro-Ro</option>
+          <option value="ro_ro">Ro-Ro</option>
+          <option value="general_cargo">General Cargo</option>
         </select>
       </div>
 
       <div class="search-filter">
-        <select class="form-select">
+        <select class="form-select" id="originPortSelect">
           <option value="all">Origin Port</option>
-          <option value="container">Container Ships</option>
-          <option value="bulk">Bulk Carriers</option>
-          <option value="tanker">Tankers</option>
-          <option value="roro">Ro-Ro</option>
         </select>
       </div>
+
       <div class="search-filter">
-        <select class="form-select">
+        <select class="form-select" id="destinationPortSelect">
           <option value="all">Destination Port</option>
-          <option value="container">Container Ships</option>
-          <option value="bulk">Bulk Carriers</option>
-          <option value="tanker">Tankers</option>
-          <option value="roro">Ro-Ro</option>
         </select>
       </div>
+
       <div class="search-filter">
         <div class="form-select" id="dateFilter" tabindex="0">Select Date</div>
         <input type="hidden" id="selectedDate" name="selected_date" />
