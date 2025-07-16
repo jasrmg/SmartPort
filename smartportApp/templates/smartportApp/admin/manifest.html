@@ -125,25 +125,40 @@
         <input type="hidden" id="selectedDate" name="selected_date" />
       </div>
     </div>
+
     <div class="voyage-cards-container">
-      <div class="voyage-card" data-voyage-id="1">
+      {% for voyage in voyages %}
+      <div class="voyage-card" data-voyage-id="{{ voyage.voyage_id }}">
         <div class="voyage-header">
           <div class="voyage-card-icon">
             <i class="fas fa-file-invoice"></i>
           </div>
           <div class="voyage-card-title">
-            <h3>Voyage VN2024-056</h3>
-            <p>MV Pacific Navigator</p>
+            <h3>{{ voyage.voyage_number }}</h3>
+            <p>{{ voyage.vessel.name }}</p>
           </div>
         </div>
         <p class="voyage-card-info">
-          <strong>Route:</strong> Hong Kong to Manila
+          <strong>Route:</strong> {{ voyage.departure_port.port_name }} to
+          <!---->
+          {{ voyage.arrival_port.port_name }}
         </p>
-        <p class="voyage-card-info"><strong>Arrival:</strong> May 20, 2024</p>
         <p class="voyage-card-info">
-          <strong>Departure:</strong> May 21, 2024 @ 10:00 AM
+          <strong>Arrival:</strong>
+          {% if voyage.arrival_date %} {{ voyage.arrival_date|date:"M d, Y" }}
+          {% elif voyage.eta %} (ETA) {{ voyage.eta|date:"M d, Y" }} {% else %}
+          Not Available {% endif %}
+        </p>
+
+        <p class="voyage-card-info">
+          <strong>Departure:</strong>
+          <!---->
+          {{ voyage.departure_date|date:"M d, Y @ h:i A" }}
         </p>
       </div>
+      {% empty %}
+      <p>No voyages found.</p>
+      {% endfor %}
     </div>
     <div class="pagination-container">
       <button class="pagination-btn" data-page="prev">«</button>
@@ -195,7 +210,7 @@
             <td>SM002</td>
             <td>5</td>
             <td>
-              <span class="status-badge available">Approved by Admin</span>
+              <span class="status-badge approved">Approved by Admin</span>
             </td>
             <td>
               <button class="btn view">View</button>

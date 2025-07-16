@@ -139,7 +139,11 @@ def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
 def admin_manifest_view(request):
-  return render(request, "smartportApp/admin/manifest.html")
+  voyages = Voyage.objects.select_related("vessel", "departure_port", "arrival_port").order_by("-departure_date")
+  context = {
+    "voyages": voyages,
+  }
+  return render(request, "smartportApp/admin/manifest.html", context)
 
 from django.db.models import F
 def report_feed_view(request):
