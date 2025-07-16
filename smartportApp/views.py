@@ -142,8 +142,24 @@ def admin_users_view(request):
 
 def admin_manifest_view(request):
   voyages = Voyage.objects.select_related("vessel", "departure_port", "arrival_port").order_by("-departure_date")
+
+  # pagination setup
+  paginator = Paginator(voyages, 25) # 25 per page
+
+  page_number = request.GET.get("page", 1)
+  try:
+    page_number = int(page_number)
+  except (TypeError, ValueError):
+    page_number = 1
+
+  page_obj = paginator.get_page(page_number)
+
   context = {
-    "voyages": voyages,
+    "voyages": page_obj,
+    "paginator": paginator,
+    "current_page": page_obj.number,
+    "has_next": page_obj.has_next(),
+    "has_prev": page_obj.has_previous(),
   }
   return render(request, "smartportApp/admin/manifest.html", context)
 
@@ -560,8 +576,6 @@ def assign_route(request):
 
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
-  
-  
 
 
 # helper function to fetch the active voyage
@@ -576,7 +590,6 @@ def get_active_voyages():
     ).filter(
       status__in=['in_transit', 'delayed', 'assigned']
     ).order_by('-departure_date')
-
 
 
 # UPDATE VOYAGE STATUS

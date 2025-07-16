@@ -153,12 +153,45 @@
       <p>No voyages found.</p>
       {% endfor %}
     </div>
-    <div class="pagination-container">
-      <button class="pagination-btn" data-page="prev">«</button>
-      <button class="pagination-btn active" data-page="1">1</button>
-      <button class="pagination-btn" data-page="2">2</button>
-      <button class="pagination-btn" data-page="next">»</button>
+
+    {% if paginator.num_pages > 1 %}
+    <div
+      class="pagination-container"
+      id="pagination-container"
+      data-total-pages="{{ paginator.num_pages }}"
+      data-current-page="{{ current_page }}"
+    >
+      <button
+        class="pagination-btn"
+        id="prev-page-btn"
+        {%
+        if
+        not
+        has_prev
+        %}disabled{%
+        endif
+        %}
+      >
+        «
+      </button>
+
+      <div id="pagination-window"></div>
+
+      <button
+        class="pagination-btn"
+        id="next-page-btn"
+        {%
+        if
+        not
+        has_next
+        %}disabled{%
+        endif
+        %}
+      >
+        »
+      </button>
     </div>
+    {% endif %}
   </div>
 
   <div class="voyage-submanifest" style="display: none">
@@ -182,10 +215,10 @@
         </thead>
         <tbody id="submanifest-tbody">
           <tr>
-            <td>SM001</td>
-            <td>10</td>
+            <td></td>
+            <td></td>
             <td>
-              <span class="status-badge warning">Pending Admin</span>
+              <span class="status-badge warning"></span>
             </td>
             <td>
               <button class="btn-icon approve" title="Approve">
@@ -194,26 +227,6 @@
               <button class="btn-icon reject" title="Reject">
                 <i class="fas fa-times"></i>
               </button>
-            </td>
-          </tr>
-          <tr>
-            <td>SM002</td>
-            <td>5</td>
-            <td>
-              <span class="status-badge approved">Approved by Admin</span>
-            </td>
-            <td>
-              <button class="btn view">View</button>
-            </td>
-          </tr>
-          <tr>
-            <td>SM003</td>
-            <td>3</td>
-            <td>
-              <span class="status-badge danger">Rejected by Admin</span>
-            </td>
-            <td>
-              <button class="btn view">View</button>
             </td>
           </tr>
         </tbody>
