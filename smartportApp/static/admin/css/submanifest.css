@@ -1,0 +1,188 @@
+:root {
+  --primary: #0a1f44;
+  --secondary: #1e3a8a;
+  --accent: #2d9c5a;
+  --danger: #d14343;
+  --highlight: #d4af37;
+  --light-blue: #4682b4;
+  --lighter-blue: #8ca6db;
+  --light: #f5f5f5;
+  --gray: #e5e7eb;
+  --dark-gray: #6b7280;
+  --warning: #f59e0b;
+  --success: #10b981;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  background-color: var(--light);
+  color: var(--primary);
+  margin: 0;
+  padding: 40px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 24px;
+  color: var(--secondary);
+  border-bottom: 2px solid var(--gray);
+  padding-bottom: 8px;
+}
+
+h2 {
+  font-size: 18px;
+  color: var(--accent);
+  margin-top: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.field {
+  flex: 1 1 45%;
+  background-color: var(--gray);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.field strong {
+  display: block;
+  color: var(--dark-gray);
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+th,
+td {
+  padding: 10px;
+  border: 1px solid var(--gray);
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  background-color: var(--primary);
+  color: white;
+}
+
+.status-approved {
+  color: var(--success);
+  font-weight: bold;
+}
+
+.notes {
+  background-color: var(--gray);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.fa-icon {
+  color: var(--secondary);
+}
+
+.submanifest-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.btn-icon {
+  background-color: var(--primary);
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.3s;
+}
+
+.btn-icon:hover {
+  background-color: var(--secondary);
+}
+
+#submanifestDetails {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm;
+  margin: 20mm auto;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 20mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #a4-wrapper {
+    box-shadow: none !important;
+    margin: 0;
+    width: auto;
+    min-height: auto;
+    padding: 0;
+  }
+
+  .btn-icon,
+  .submanifest-actions {
+    display: none !important;
+  }
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--secondary);
+  font-weight: 500;
+  margin-bottom: 15px;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  color: var(--primary);
+}
+
+.back-button i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}

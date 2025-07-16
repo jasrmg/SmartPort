@@ -53,6 +53,10 @@ urlpatterns = [
   path("vessel-log/add/<int:vessel_id>/", views.add_vessel_log_entry, name="add_vessel_log_entry"),
   # MANIFEST VIEW PART:
   path("api/submanifests/<int:voyage_id>/", views.get_submanifests_by_voyage, name="api-submanifests"),
+  # MASTERMANIFEST
+  # path("mastermanifest/<int:submanifest_id>/", views.submanifest_view, name="submanifest-view"),
+  # SUBMANIFEST
+  path("submanifest/<int:submanifest_id>/", views.submanifest_view, name="submanifest-view"),
 
   path('submit-incident/', views.submit_incident_report, name='submit_incident_report'),
   # APPROVE OR REJECT INCIDENT REPORT

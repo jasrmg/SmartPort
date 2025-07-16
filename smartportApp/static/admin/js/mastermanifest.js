@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // ---------------- DOWNLOAD PDF FILE ----------------
   document.getElementById("downloadPDF").addEventListener("click", () => {
     html2pdf()
       .set({

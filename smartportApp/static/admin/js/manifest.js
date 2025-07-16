@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   });
 
-  // PREFILL THE TABLE VIEW WHEN CLICKED:
+  // ---------------- PREFILL THE TABLE VIEW WHEN CLICKED ----------------
   const voyageSubmanifestSection = document.querySelector(
     ".voyage-submanifest"
   );
@@ -66,7 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 " "
               )}</span></td>
               <td>
-                <button class="btn-icon view"><i class="fas fa-eye"></i></button>
+                <button class="btn-icon view" data-submanifest-id="${sm.id}">
+                  <i class="fas fa-eye"></i>
+                </button>
                 <button class="btn-icon approve"><i class="fas fa-check"></i></button>
                 <button class="btn-icon reject"><i class="fas fa-times"></i></button>
               </td>
@@ -80,10 +82,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ---------------- BACK TO LIST ----------------
   document
     .getElementById("back-to-voyage-list")
     .addEventListener("click", () => {
       voyageSubmanifestSection.style.display = "none";
       voyageListSection.style.display = "block";
     });
+
+  // ---------------- OPEN SUBMANIFEST ----------------
+  submanifestTableBody.addEventListener("click", (e) => {
+    const viewBtn = e.target.closest(".btn-icon.view");
+    if (viewBtn) {
+      const submanifestId = viewBtn.getAttribute("data-submanifest-id");
+      if (submanifestId) {
+        window.open(`/submanifest/${submanifestId}/`, "_blank");
+      }
+    }
+  });
 });

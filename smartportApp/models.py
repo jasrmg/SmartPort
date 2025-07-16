@@ -212,12 +212,12 @@ class SubManifest(models.Model):
   consignor_address = models.TextField()
 
   # Shipment Details
-  container_no = models.CharField(max_length=100)
-  seal_no = models.CharField(max_length=100)
-  bill_of_lading_no = models.CharField(max_length=100)
+  container_no = models.CharField(max_length=11) # 4 LETTERS 6 DIGITS 1 CHECK DIGIT (ex. MSKU1234567)
+  seal_no = models.CharField(max_length=15) #
+  bill_of_lading_no = models.CharField(max_length=17)
   handling_instruction = models.TextField(blank=True)
 
-  # Review Process
+  # Review Processs
   STATUS_CHOICES = [
     ('pending_admin', 'Pending Admin Review'),
     ('rejected_by_admin', 'Rejected by Admin'),
@@ -233,6 +233,8 @@ class SubManifest(models.Model):
 
   updated_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='updated_submanifests')
   updated_at = models.DateTimeField(auto_now=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+
 
   def get_documents(self):
     return self.documents.all()

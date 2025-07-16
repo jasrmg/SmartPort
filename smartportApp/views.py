@@ -1,5 +1,5 @@
 import json
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
@@ -13,6 +13,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Case, When, IntegerField
+
+from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document
 
 # Create your views here.
 @login_required
@@ -145,6 +147,16 @@ def admin_manifest_view(request):
   }
   return render(request, "smartportApp/admin/manifest.html", context)
 
+def submanifest_view(request, submanifest_id):
+  submanifest = get_object_or_404(SubManifest.objects.select_related(
+    "voyage", "voyage__vessel", "created_by", "master_manifest"
+  ).prefetch_related("cargo_items", "documents"), pk=submanifest_id)
+
+  context = {
+    "submanifest": submanifest
+  }
+  return render(request, "smartportApp/admin/submanifest.html", context)
+
 from django.db.models import F
 def report_feed_view(request):
   sort = request.GET.get("sort", "newest")
@@ -211,11 +223,12 @@ def with_approval_priority(queryset):
     )
   )
 
+
 # -------------------- END OF ADMIN TEMPLATES --------------------
 
 # -------------------- TEMPLATES LOGIC --------------------
 
-from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document
+
 
 # FUNCTION FOR GETTING PORT LOCATION TO FILL THE LEAFLET MAP
 def get_ports(request):
