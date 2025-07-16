@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Submanifest</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-..."
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      :root {
+        --primary: #0a1f44;
+        --secondary: #1e3a8a;
+        --accent: #2d9c5a;
+        --danger: #d14343;
+        --highlight: #d4af37;
+        --light-blue: #4682b4;
+        --lighter-blue: #8ca6db;
+        --light: #f5f5f5;
+        --gray: #e5e7eb;
+        --dark-gray: #6b7280;
+        --warning: #f59e0b;
+        --success: #10b981;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        background-color: var(--light);
+        color: var(--primary);
+        margin: 0;
+        padding: 40px;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+      }
+
+      h1 {
+        margin-top: 0;
+        font-size: 24px;
+        color: var(--secondary);
+        border-bottom: 2px solid var(--gray);
+        padding-bottom: 8px;
+      }
+
+      h2 {
+        font-size: 18px;
+        color: var(--accent);
+        margin-top: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .section {
+        margin-bottom: 20px;
+      }
+
+      .field-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .field {
+        flex: 1 1 45%;
+        background-color: var(--gray);
+        padding: 10px 14px;
+        border-radius: 6px;
+        margin-top: 10px;
+      }
+
+      .field strong {
+        display: block;
+        color: var(--dark-gray);
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        border: 1px solid var(--gray);
+        text-align: left;
+        font-size: 14px;
+      }
+
+      th {
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .status-approved {
+        color: var(--success);
+        font-weight: bold;
+      }
+
+      .notes {
+        background-color: var(--gray);
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .fa-icon {
+        color: var(--secondary);
+      }
+
+      .submanifest-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .btn-icon {
+        background-color: var(--primary);
+        color: white;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background-color 0.3s;
+      }
+
+      .btn-icon:hover {
+        background-color: var(--secondary);
+      }
+
+      #submanifestDetails {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 20mm;
+        margin: 20mm auto;
+        background: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 20mm;
+        }
+
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        #a4-wrapper {
+          box-shadow: none !important;
+          margin: 0;
+          width: auto;
+          min-height: auto;
+          padding: 0;
+        }
+
+        .btn-icon,
+        .submanifest-actions {
+          display: none !important;
+        }
+      }
+
+      .back-button {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        color: var(--secondary);
+        font-weight: 500;
+        margin-bottom: 15px;
+        transition: all 0.2s ease;
+      }
+
+      .back-button:hover {
+        color: var(--primary);
+      }
+
+      .back-button i {
+        margin-right: 8px;
+        font-size: 1.1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="manifest.html" class="back-button no-print">
+      <i class="fas fa-arrow-left"></i> Back to Manifests
+    </a>
+    <div class="container" id="submanifestDetails">
+      <h1>
+        <i class="fa-solid fa-file-lines fa-icon"></i> Submanifest —
+        SUBM-20250716-001
+      </h1>
+
+      <div class="section">
+        <h2><i class="fa-solid fa-ship fa-icon"></i> Shipment Summary</h2>
+        <div class="field-row">
+          <div class="field"><strong>Voyage Number</strong> VY-001</div>
+          <div class="field"><strong>Vessel</strong> MV Pacific Star</div>
+          <div class="field"><strong>Origin</strong> Manila</div>
+          <div class="field"><strong>Destination</strong> Cebu</div>
+          <div class="field">
+            <strong>Status</strong>
+            <span class="status-approved">Approved</span>
+          </div>
+          <div class="field">
+            <strong>Created</strong> July 16, 2025 — 10:23 AM
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><i class="fa-solid fa-user-tie fa-icon"></i> Shipper Details</h2>
+        <div class="field-row">
+          <div class="field"><strong>Name</strong> Juan Dela Cruz</div>
+          <div class="field"><strong>Email</strong> juan@example.com</div>
+          <div class="field" style="flex: 1 1 100%">
+            <strong>Address</strong> 123 Sampaguita St, Makati City
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><i class="fa-solid fa-user fa-icon"></i> Consignee Details</h2>
+        <div class="field-row">
+          <div class="field"><strong>Name</strong> Maria Santos</div>
+          <div class="field"><strong>Email</strong> maria@example.com</div>
+          <div class="field" style="flex: 1 1 100%">
+            <strong>Address</strong> 456 Banilad Rd, Cebu City
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>
+          <i class="fa-solid fa-boxes-packing fa-icon"></i> Shipment Details
+        </h2>
+        <div class="field-row">
+          <div class="field"><strong>Container No.</strong> MSKU1234567</div>
+          <div class="field"><strong>Seal No.</strong> SEAL-98765</div>
+          <div class="field"><strong>Bill of Lading</strong> BL-2025-00123</div>
+          <div class="field" style="flex: 1 1 100%">
+            <strong>Handling Instructions</strong> Fragile — Handle with care
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><i class="fa-solid fa-dolly fa-icon"></i> Cargo Items (2)</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Item No.</th>
+              <th>Description</th>
+              <th>Qty</th>
+              <th>Weight (kg)</th>
+              <th>Value (₱)</th>
+              <th>HS Code</th>
+              <th>Additional Info</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Electronic Gadgets</td>
+              <td>100</td>
+              <td>200.50</td>
+              <td>500,000</td>
+              <td>8542.31</td>
+              <td>Keep away from moisture</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Garments</td>
+              <td>300</td>
+              <td>150.00</td>
+              <td>200,000</td>
+              <td>6203.42</td>
+              <td>Folded neatly</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2>
+          <i class="fa-solid fa-file-upload fa-icon"></i> Attached Documents
+        </h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Filename</th>
+              <th>Uploaded By</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Bill of Lading</td>
+              <td>bl_2025_00123.pdf</td>
+              <td>Juan Dela Cruz</td>
+              <td>July 16, 2025</td>
+            </tr>
+            <tr>
+              <td>Invoice</td>
+              <td>invoice_001.pdf</td>
+              <td>Juan Dela Cruz</td>
+              <td>July 16, 2025</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <h2><i class="fa-solid fa-clipboard-check fa-icon"></i> Review Logs</h2>
+        <div class="notes">
+          <strong>Admin Note:</strong> Approved after verifying container seal
+          and cargo type.<br />
+          <strong>Customs Note:</strong> Compliant with import regulations.
+        </div>
+      </div>
+
+      <div class="submanifest-actions">
+        <button id="printBtn" class="btn-icon" title="Print">
+          <i class="fas fa-print"></i> Print
+        </button>
+        <button id="pdfBtn" class="btn-icon" title="Download PDF">
+          <i class="fas fa-file-pdf"></i> Download PDF
+        </button>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      const printBtn = document.getElementById("printBtn");
+      const pdfBtn = document.getElementById("pdfBtn");
+
+      // Print function
+      printBtn.addEventListener("click", () => {
+        window.print();
+      });
+
+      // Download as PDF
+      pdfBtn.addEventListener("click", () => {
+        const element = document.getElementById("submanifestDetails");
+        const opt = {
+          margin: [0.5, 0.5, 0.5, 0.5],
+          filename: "submanifest-details.pdf",
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+        };
+        html2pdf()
+          .set(opt)
+          .from(document.getElementById("submanifestDetails"))
+          .save();
+      });
+    </script>
+  </body>
+</html>

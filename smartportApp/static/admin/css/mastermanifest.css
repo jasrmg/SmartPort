@@ -1,0 +1,152 @@
+:root {
+  --primary: #0a1f44;
+  --secondary: #1e3a8a;
+  --accent: #2d9c5a;
+  --danger: #d14343;
+  --highlight: #d4af37;
+  --light-blue: #4682b4;
+  --lighter-blue: #8ca6db;
+  --light: #f5f5f5;
+  --gray: #e5e7eb;
+  --dark-gray: #6b7280;
+  --warning: #f59e0b;
+  --success: #10b981;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: var(--light);
+  margin: 0;
+  padding: 40px;
+}
+
+.a4-wrapper {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 20mm auto;
+  padding: 20mm;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+h1 {
+  font-size: 22px;
+  border-bottom: 2px solid var(--gray);
+  padding-bottom: 8px;
+  color: var(--secondary);
+}
+
+.section {
+  margin-top: 20px;
+}
+
+.section h2 {
+  font-size: 16px;
+  color: var(--accent);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.info-box {
+  flex: 1 1 45%;
+  background-color: var(--gray);
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.info-box strong {
+  color: var(--dark-gray);
+  display: block;
+  font-size: 12px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 8px;
+  border: 1px solid var(--gray);
+  text-align: left;
+}
+
+th {
+  background-color: var(--primary);
+  color: white;
+}
+
+.notes {
+  background-color: var(--gray);
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.actions {
+  margin-top: 20px;
+  text-align: right;
+}
+
+.btn {
+  background-color: var(--primary);
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+@media print {
+  .actions {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 20mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .a4-wrapper {
+    box-shadow: none;
+    margin: 0;
+  }
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--secondary);
+  font-weight: 500;
+  margin-bottom: 15px;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  color: var(--primary);
+}
+
+.back-button i {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
