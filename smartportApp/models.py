@@ -228,3 +228,28 @@ class SubManifest(models.Model):
   updated_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='updated_submanifests')
   updated_at = models.DateTimeField(auto_now=True)
 
+  def get_documents(self):
+    return self.documents.all()
+
+
+class Document(models.Model):
+  DOCUMENT_TYPE_CHOICES = [
+    ('bill_of_lading', 'Bill of Lading'),
+    ('invoice', 'Invoice'),
+    ('packing_list', 'Packing List'),
+    ('other', 'Other'),
+  ]
+
+  document_id = models.AutoField(primary_key=True)
+  submanifest = models.ForeignKey('SubManifest', on_delete=models.CASCADE, related_name='documents')
+
+  document_type = models.CharField(max_length=50, choices=DOCUMENT_TYPE_CHOICES)
+  file = models.FileField(upload_to='documents/')
+  uploaded_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
+  uploaded_at = models.DateTimeField(auto_now_add=True)
+
+  # Optional: if `document_type == "other"`
+  custom_filename = models.CharField(max_length=255, blank=True)
+
+  def __str__(self):
+    return f"{self.get_document_type_display()} - {self.submanifest_id}"
