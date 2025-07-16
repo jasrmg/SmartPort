@@ -169,3 +169,28 @@ class IncidentResolution(models.Model):
   resolution_report = models.TextField()
   resolution_date = models.DateTimeField()
   resolved_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
+
+class MasterManifest(models.Model):
+  mastermanifest_id = models.AutoField(primary_key=True)
+  vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
+  voyage = models.OneToOneField(Voyage, on_delete=models.CASCADE, related_name='master_manifest')
+  created_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+
+  departure_port = models.ForeignKey(Port, on_delete=models.SET_NULL, null=True, related_name='master_departures')
+  arrival_port = models.ForeignKey(Port, on_delete=models.SET_NULL, null=True, related_name='master_arrivals')
+  departure_time = models.DateTimeField()
+  eta = models.DateTimeField()
+
+  flag_state = models.CharField(max_length=100)
+  destination = models.CharField(max_length=255)
+
+  STATUS_CHOICES = [
+    ('generated', 'Generated'),
+    ('finalized', 'Finalized'),
+  ]
+  status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='generated')
+
+  def __str__(self):
+    return f"Master Manifest {self.mastermanifest_id} - Voyage {self.voyage.voyage_number}"
+
