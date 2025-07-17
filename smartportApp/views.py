@@ -974,7 +974,8 @@ def get_submanifests_by_voyage(request, voyage_id):
   data = [
     {
       "id": sm.submanifest_id,
-      "status": sm.get_status_display(),
+      "status": sm.status,
+      "status_label": sm.get_status_display(),
       "submanifest_number": sm.submanifest_number,
       "item_count": sm.cargo_items.count(),
     }

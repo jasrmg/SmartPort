@@ -370,11 +370,11 @@ body {
 }
 
 /* Reject Button */
-.btn-icon.reject {
+.btn-icon.reject-btn {
   color: var(--danger);
   background-color: rgba(209, 67, 67, 0.1);
 }
-.btn-icon.reject:hover {
+.btn-icon.reject-btn:hover {
   color: white;
   background-color: var(--danger);
 }
@@ -408,4 +408,47 @@ body {
 
 .toast.fade-out {
   opacity: 0;
+}
+/* STATUS BADGE */
+.status-badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Pending Admin Review */
+.status-badge.pending_admin {
+  background-color: rgba(30, 58, 138, 0.1);
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+}
+
+/* Rejected by Admin */
+.status-badge.rejected_by_admin {
+  background-color: rgba(209, 67, 67, 0.1);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+/* Pending Customs Review */
+.status-badge.pending_customs {
+  background-color: rgba(212, 175, 55, 0.15);
+  color: var(--highlight);
+  border: 1px solid var(--highlight);
+}
+
+/* Rejected by Customs */
+.status-badge.rejected_by_customs {
+  background-color: rgba(209, 67, 67, 0.1);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+/* Approved */
+.status-badge.approved {
+  background-color: rgba(45, 156, 90, 0.15);
+  color: var(--accent);
+  border: 1px solid var(--accent);
 }
