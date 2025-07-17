@@ -120,35 +120,40 @@
     </div>
 
     <div class="voyage-cards-container">
-      {% for voyage in voyages %}
-      <div class="voyage-card" data-voyage-id="{{ voyage.voyage_id }}">
+      {% for v in page_obj %}
+      <!---->
+      <div class="voyage-card" data-voyage-id="{{ v.voyage.voyage_id }}">
         <div class="voyage-header">
           <div class="voyage-card-icon">
             <i class="fas fa-file-invoice"></i>
           </div>
           <div class="voyage-card-title">
-            <h3>{{ voyage.voyage_number }}</h3>
-            <p>{{ voyage.vessel.name }}</p>
+            <h3>{{ v.voyage.voyage_number }}</h3>
+            <p>{{ v.voyage.vessel.name }}</p>
           </div>
         </div>
         <p class="voyage-card-info">
-          <strong>Route:</strong> {{ voyage.departure_port.port_name }} to
+          <strong>Route:</strong> {{ v.voyage.departure_port.port_name }} to
           <!---->
-          {{ voyage.arrival_port.port_name }}
+          {{ v.voyage.arrival_port.port_name }}
         </p>
         <p class="voyage-card-info">
           <strong>Arrival:</strong>
-          {% if voyage.arrival_date %} {{ voyage.arrival_date|date:"M d, Y" }}
-          {% elif voyage.eta %} (ETA) {{ voyage.eta|date:"M d, Y" }} {% else %}
-          Not Available {% endif %}
+          {% if v.voyage.arrival_date %} {{ v.voyage.arrival_date|date:"M d, Y"
+          }}
+          <!---->
+          {% elif v.voyage.eta %} (ETA) {{ v.voyage.eta|date:"M d, Y" }}
+          <!---->
+          {% else %} Not Available {% endif %}
         </p>
 
         <p class="voyage-card-info">
           <strong>Departure:</strong>
           <!---->
-          {{ voyage.departure_date|date:"M d, Y @ h:i A" }}
+          {{ v.voyage.departure_date|date:"M d, Y @ h:i A" }}
         </p>
       </div>
+      <!---->
       {% empty %}
       <p>No voyages found.</p>
       {% endfor %}
@@ -161,35 +166,11 @@
       data-total-pages="{{ paginator.num_pages }}"
       data-current-page="{{ current_page }}"
     >
-      <button
-        class="pagination-btn"
-        id="prev-page-btn"
-        {%
-        if
-        not
-        has_prev
-        %}disabled{%
-        endif
-        %}
-      >
-        «
-      </button>
+      <button class="pagination-btn" id="prev-page-btn">«</button>
 
       <div id="pagination-window"></div>
 
-      <button
-        class="pagination-btn"
-        id="next-page-btn"
-        {%
-        if
-        not
-        has_next
-        %}disabled{%
-        endif
-        %}
-      >
-        »
-      </button>
+      <button class="pagination-btn" id="next-page-btn">»</button>
     </div>
     {% endif %}
   </div>
@@ -253,5 +234,10 @@
 {% endblock %}
 <!--SCRIPT-->
 {% block script %}
-<script src="{% static 'admin/js/manifest.js' %}"></script>
+<script type="module" src="{% static 'admin/js/manifest.js' %}"></script>
+<script
+  type="module"
+  src="{% static 'admin/js/manifest-pagination.js' %}"
+></script>
+
 {% endblock %}

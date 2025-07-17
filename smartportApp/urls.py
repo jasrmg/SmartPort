@@ -52,6 +52,7 @@ urlpatterns = [
   path('vessel-detail/<int:vessel_id>/', views.vessel_detail_view, name='vessel-detail'),
   path("vessel-log/add/<int:vessel_id>/", views.add_vessel_log_entry, name="add_vessel_log_entry"),
   # MANIFEST VIEW PART:
+  # DISPLAY SUBMANIFEST IN TABLE
   path("api/submanifests/<int:voyage_id>/", views.get_submanifests_by_voyage, name="api-submanifests"),
   # MASTERMANIFEST
   # path("mastermanifest/<int:submanifest_id>/", views.submanifest_view, name="submanifest-view"),

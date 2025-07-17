@@ -112,7 +112,7 @@ def manage_voyage_view(request):
 
 def voyage_report_view(request):
   reports = VoyageReport.objects.select_related('voyage__vessel', 'created_by').order_by('-created_at')
-  paginator = Paginator(reports, 2)
+  paginator = Paginator(reports, 1)
   page_number = request.GET.get('page')
   if not str(page_number).isdigit():
     page_number = 1
@@ -141,26 +141,29 @@ def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
 def admin_manifest_view(request):
-  voyages = Voyage.objects.select_related("vessel", "departure_port", "arrival_port").order_by("-departure_date")
+  voyages = Voyage.objects.select_related(
+    "vessel", "departure_port", "arrival_port"
+  ).order_by("-departure_date")
 
-  # pagination setup
-  paginator = Paginator(voyages, 25) # 25 per page
-
+  paginator = Paginator(voyages, 1)  # Adjust page size as needed
   page_number = request.GET.get("page", 1)
+
   try:
     page_number = int(page_number)
   except (TypeError, ValueError):
     page_number = 1
 
   page_obj = paginator.get_page(page_number)
+  parsed_voyages = parse_manifest_page(page_obj)
 
   context = {
-    "voyages": page_obj,
+    "page_obj": parsed_voyages,
     "paginator": paginator,
     "current_page": page_obj.number,
     "has_next": page_obj.has_next(),
     "has_prev": page_obj.has_previous(),
   }
+
   return render(request, "smartportApp/admin/manifest.html", context)
 
 def submanifest_view(request, submanifest_id):
@@ -745,7 +748,7 @@ def voyage_report_filtered(request):
       reports = reports.filter(voyage__arrival_port_id=destination)
 
 
-    paginator = Paginator(reports.order_by("-created_at"), 2)
+    paginator = Paginator(reports.order_by("-created_at"), 1)
     page_obj = paginator.get_page(page)
     parsed_reports = parse_voyage_report_page(page_obj)
 
@@ -964,7 +967,7 @@ def log_vessel_activity(vessel, action_type, description, user_profile):
     created_by=user_profile
   )
 
-# MANIFEST VIEW PART:
+# MANIFEST VIEW PART ENDPOINTS:
 def get_submanifests_by_voyage(request, voyage_id):
   submanifests = SubManifest.objects.filter(voyage_id=voyage_id)
 
@@ -1212,6 +1215,23 @@ def resolve_incident(request, incident_id):
 
   return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
 
+# HELPER FOR MANIFEST VIEW:
+def parse_manifest_page(page_obj):
+  parsed_voyages = []
+
+  for voyage in page_obj:
+    parsed_voyages.append({
+      "voyage": voyage,
+      "vessel_name": voyage.vessel.name if voyage.vessel else "Unknown",
+      "departure_port": voyage.departure_port.port_name if voyage.departure_port else "N/A",
+      "arrival_port": voyage.arrival_port.port_name if voyage.arrival_port else "N/A",
+      "departure_date": voyage.departure_date.strftime("%b %d, %Y %H:%M") if voyage.departure_date else "N/A",
+      "eta": voyage.eta.strftime("%b %d, %Y %H:%M") if voyage.eta else "Not Set",
+      "status": voyage.status,
+      "voyage_number": voyage.voyage_number,
+    })
+
+  return parsed_voyages
 
 
 # --------------------------------- CUSTOM ---------------------------------
