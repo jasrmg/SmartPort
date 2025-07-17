@@ -14,7 +14,7 @@ import json
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Case, When, IntegerField
 
-from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document
+from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification
 
 # Create your views here.
 @login_required
@@ -983,6 +983,46 @@ def get_submanifests_by_voyage(request, voyage_id):
 
   return JsonResponse({"submanifests": data})
 
+# APPROVE SUBMANIFEST
+def approve_submanifest(request, submanifest_id):
+  print("APPROVING")
+  if not request.user.userprofile.role == "admin":
+    return JsonResponse({"error": "Unauthorized"}, status=403)
+  
+  submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
+
+  if submanifest.status == "approved":
+    return JsonResponse({"error": "Submanifest already approved"}, status=400)
+  
+  submanifest.status = "approved"
+  submanifest.save()
+
+  # log activity
+  log_vessel_activity(
+    vessel=submanifest.voyage.vessel,
+    action_type=ActivityLog.ActionType.SUBMANIFEST_APPROVED,
+    description=f"Submanifest #{submanifest.submanifest_number} was approved.",
+    user_profile=request.user.userprofile
+  )
+  # ActivityLog.objects.create(
+  #   action_type=ActivityLog.ActionType.NOTE,
+  #   description=f"Approved submanifest #{submanifest.submanifest_number}",
+  #   created_by=request.user.userprofile,
+  # )
+
+  link_url = f"/submanifest/{submanifest.submanifest_id}/"
+  # send notification
+  create_notification(
+    user=submanifest.created_by,
+    title="Submanifest Approved",
+    message=f"Submanifest #{submanifest.submanifest_number} has been approved.",
+    link_url=f"/submanifest/{submanifest.submanifest_id}/",#or submanifest.pk
+    triggered_by=request.user.userprofile
+  )
+  print("SAMPLE LINK URL: ", link_url)
+
+  return JsonResponse({"success": True, "message": "Submanifest approved successfully"})
+
 # UPLOAD INCIDENT REPORT
 def submit_incident_report(request):
   if request.method != "POST":
@@ -1233,6 +1273,29 @@ def parse_manifest_page(page_obj):
 
   return parsed_voyages
 
+
+# NOTIFICATION HELPER:
+def create_notification(user, title, message, link_url=None, triggered_by=None):
+  """
+  Creates a new in-app notification.
+  
+  Parameters:
+  - user: UserProfile instance (recipient)
+  - title: Short title for the notification
+  - message: Detailed message content
+  - link_url: Optional frontend route (e.g., /submanifest/123/)
+  - triggered_by: Optional UserProfile (admin, shipper, etc. who triggered it)
+  """
+  if not isinstance(user, UserProfile):
+    raise ValueError("Expected `user` to be an instance of UserProfile")
+  
+  Notification.objects.create(
+    user=user,
+    title=title,
+    message=message,
+    link_url=link_url or "",
+    triggered_by=triggered_by
+  )
 
 # --------------------------------- CUSTOM ---------------------------------
 @login_required

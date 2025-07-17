@@ -107,6 +107,7 @@ class ActivityLog(models.Model):
     NOTE = "note", "Manual Note"
     CREATED = "created", "Created"
     INCIDENT = "incident", "Incident"
+    SUBMANIFEST_APPROVED = "submanifest_approved", "Submanifest Approved"
 
   activity_log_id = models.AutoField(primary_key=True)
   vessel = models.ForeignKey('Vessel', on_delete=models.CASCADE, related_name='activity_logs')

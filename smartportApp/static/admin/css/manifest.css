@@ -360,11 +360,11 @@ body {
 }
 
 /* Approve Button */
-.btn-icon.approve {
+.btn-icon.approve-btn {
   color: var(--accent);
   background-color: rgba(16, 185, 129, 0.1);
 }
-.btn-icon.approve:hover {
+.btn-icon.approve-btn:hover {
   color: white;
   background-color: var(--accent);
 }
@@ -377,4 +377,35 @@ body {
 .btn-icon.reject:hover {
   color: white;
   background-color: var(--danger);
+}
+/* TOAST */
+#toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+
+.toast {
+  background-color: var(--success);
+  color: white;
+  padding: 0.75rem 1.2rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.4s ease;
+  opacity: 1;
+  font-size: 0.9rem;
+}
+
+.toast-error {
+  background-color: var(--danger);
+}
+
+.toast-info {
+  background-color: var(--highlight);
+}
+
+.toast.fade-out {
+  opacity: 0;
 }
