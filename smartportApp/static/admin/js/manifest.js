@@ -15,14 +15,23 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
   voyageSubmanifest.style.display = "block";
 
   // Assign voyageId to the Generate button
+  const viewBtn = document.getElementById("view-manifest-btn");
   const generateBtn = document.getElementById("generate-manifest-btn");
+
+  if (viewBtn) {
+    viewBtn.style.display = "none";
+    viewBtn.dataset.voyageId = voyageId;
+  }
+
   if (generateBtn) {
+    generateBtn.style.display = "inline-flex";
     generateBtn.dataset.voyageId = voyageId;
+    generateBtn.disabled = true;
   }
 
   try {
     const response = await fetch(`/api/submanifests/${voyageId}/`);
-    const { submanifests } = await response.json();
+    const { submanifests, has_manifest } = await response.json();
 
     submanifestTableBody.innerHTML = "";
 
@@ -30,6 +39,24 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
       submanifestTableBody.innerHTML = `
         <tr><td colspan="4">No submanifests found.</td></tr>`;
       return;
+    }
+
+    // check if all submanifest is approved and enable it
+    const allApproved = submanifests.every(
+      (sm) => sm.status === "approved" || sm.status === "pending_customs"
+    );
+
+    // Check if master manifest already exists
+    if (has_manifest && viewBtn) {
+      viewBtn.style.display = "inline-flex";
+      viewBtn.href = `/view-master-manifest/${voyageId}/`;
+      if (generateBtn) generateBtn.style.display = "none";
+    } else if (!has_manifest && allApproved && generateBtn) {
+      setupGenerateManifestButton(voyageId, generateBtn);
+      generateBtn.style.display = "inline-flex";
+    } else {
+      generateBtn.style.display = "inline-flex";
+      generateBtn.disabled = true;
     }
 
     submanifests.forEach((sm) => {
@@ -53,15 +80,62 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
       submanifestTableBody.insertAdjacentHTML("beforeend", row);
     });
 
-    initApproveSubmanifest();
-    // check if all submanifest is approved and enable it
-    const allApproved = submanifests.every(
-      (sm) => sm.status === "approved" || sm.status === "pending_customs"
-    );
-    generateBtn.disabled = !allApproved;
+    initApproveSubmanifest(voyageId);
+
+    if (generateBtn) generateBtn.disabled = !allApproved;
   } catch (err) {
     console.error("❌ Failed to fetch submanifests:", err);
   }
+};
+const handleGenerate = async (voyageId) => {
+  if (!voyageId) return;
+
+  try {
+    const response = await fetch(`/generate-master-manifest/${voyageId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrftoken,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Error: ", data.error);
+      showToast(data.error || "Failed to generate master manifest.", true);
+      return;
+    }
+
+    showToast("Master Manifest generated successfully.", false);
+
+    // update the ui:
+    const generateBtn = document.querySelector(
+      `#generate-manifest-btn[data-voyage-id='${voyageId}']`
+    );
+    if (generateBtn) generateBtn.style.display = "none";
+
+    const viewBtn = document.getElementById("view-manifest-btn");
+    if (viewBtn) {
+      viewBtn.href = `/view-master-manifest/${voyageId}/`;
+      viewBtn.style.display = "inline-flex";
+    }
+  } catch (error) {
+    console.error("Error: ", error);
+    showToast(`Network error: ${error}`);
+  }
+};
+
+const setupGenerateManifestButton = (voyageId, generateBtn) => {
+  if (!generateBtn) return;
+
+  // Clone the node to prevent multiple listeners
+  const newGenerateBtn = generateBtn.cloneNode(true);
+  newGenerateBtn.disabled = false;
+  generateBtn.replaceWith(newGenerateBtn);
+
+  // Attach new click listener
+  newGenerateBtn.addEventListener("click", () => handleGenerate(voyageId));
 };
 
 // Bind click events on voyage cards
@@ -136,7 +210,7 @@ const populatePorts = async () => {
 };
 
 // Approve submanifest
-const initApproveSubmanifest = () => {
+const initApproveSubmanifest = (voyageId) => {
   document.querySelectorAll(".approve-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const submanifestId = btn.dataset.submanifestId;
@@ -155,6 +229,7 @@ const initApproveSubmanifest = () => {
 
         if (!response.ok) {
           showToast("Error: " + data.error, true);
+          console.error("Error: ", data.error);
           return;
         }
 
@@ -174,19 +249,55 @@ const initApproveSubmanifest = () => {
         const allApproved = Array.from(
           document.querySelectorAll(".status-badge")
         ).every((badge) => {
-          const val = badge.textContent.trim().toLowerCase();
-          return val === "approved" || val === "pending customs review"; // dapat approve ra ni diri, test lang ko sa generate master manifest
+          return (
+            badge.classList.contains("approved") ||
+            badge.classList.contains("pending_customs")
+          );
         });
 
+        console.log("All approved:", allApproved);
+
         if (allApproved) {
-          generateManifestBtn.disabled = false;
+          const dynamicGenerateBtn = document.querySelector(
+            `#generate-manifest-btn[data-voyage-id="${voyageId}"]`
+          );
+          console.log("generate btn: ", dynamicGenerateBtn);
+          if (dynamicGenerateBtn) {
+            dynamicGenerateBtn.disabled = false;
+            checkMasterManifestExists(voyageId);
+          }
           manifestWarning.style.display = "none";
         }
       } catch (error) {
+        console.error("error: ", error);
         showToast("Network error: " + error.message, true);
       }
     });
   });
+};
+
+// helper to check if mastermanifest exist
+const checkMasterManifestExists = async (voyageId) => {
+  try {
+    const response = await fetch(`/api/submanifests/${voyageId}/`);
+    const { has_manifest } = await response.json();
+
+    const generateBtn = document.querySelector(
+      `#generate-manifest-btn[data-voyage-id="${voyageId}"]`
+    );
+    const viewBtn = document.getElementById("view-manifest-btn");
+
+    if (has_manifest && viewBtn) {
+      viewBtn.style.display = "inline-flex";
+      viewBtn.href = `/view-master-manifest/${voyageId}/`;
+      if (generateBtn) generateBtn.style.display = "none";
+    } else if (!has_manifest && generateBtn) {
+      generateBtn.style.display = "inline-flex";
+      generateBtn.disabled = false;
+    }
+  } catch (error) {
+    console.error("Error checking master manifest:", error);
+  }
 };
 
 // Toast Utility
@@ -218,5 +329,4 @@ document.addEventListener("DOMContentLoaded", () => {
   setupBackToListButtons();
   setupFlatpickr();
   populatePorts();
-  initApproveSubmanifest();
 });

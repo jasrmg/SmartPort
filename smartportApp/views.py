@@ -973,6 +973,7 @@ def log_vessel_activity(vessel, action_type, description, user_profile):
 def get_submanifests_by_voyage(request, voyage_id):
   submanifests = SubManifest.objects.filter(voyage_id=voyage_id)
 
+  has_manifest = submanifests.exists()
   data = [
     {
       "id": sm.submanifest_id,
@@ -980,6 +981,7 @@ def get_submanifests_by_voyage(request, voyage_id):
       "status_label": sm.get_status_display(),
       "submanifest_number": sm.submanifest_number,
       "item_count": sm.cargo_items.count(),
+      "has_manifest": has_manifest
     }
     for sm in submanifests
   ]
@@ -1056,7 +1058,6 @@ def generate_master_manifest(request, voyage_id):
     return JsonResponse({"error": str(e)}, status=500)
   return JsonResponse({"message": "Master Manifest generated successfully."})
 
-
 def master_manifest_detail_view(request, manifest_id):
   master_manifest = get_object_or_404(MasterManifest, pk=manifest_id)
   submanifests = SubManifest.objects.filter(voyage=master_manifest.voyage)
@@ -1068,6 +1069,14 @@ def master_manifest_detail_view(request, manifest_id):
 
   return render(request, "admin/mastermanifest.html", context)
 
+# HELPER TO CHECK IF THE MASTER MANIFEST ALREADY EXIST FOR THAT VOYAGE:
+def check_master_manifest(request, voyage_id):
+  try:
+    voyage = Voyage.objects.get(id=voyage_id)
+    has_manifest = MasterManifest.objects.filter(voyage=voyage).exists()
+    return JsonResponse({"has_manifest": has_manifest})
+  except Voyage.DoesNotExist:
+    return JsonResponse({"error": "Voyage not found"}, status=404)
 
 # =========== REPORT ===========
 # UPLOAD INCIDENT REPORT
