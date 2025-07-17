@@ -29,7 +29,7 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
           <td>${sm.item_count}</td>
           <td><span class="status-badge">${sm.status}</span></td>
           <td>
-            <button class="btn-icon view" data-submanifest-id="${sm.id}">
+            <button class="btn-icon view" data-submanifest-id="${sm.id}" title="View">
               <i class="fas fa-eye"></i>
             </button>
             <button class="btn-icon approve" title="Approve">

@@ -297,3 +297,30 @@ class Document(models.Model):
 
   def __str__(self):
     return f"{self.get_document_type_display()} - {self.submanifest_id}"
+
+
+class Notification(models.Model):
+  notification_id = models.AutoField(primary_key=True)
+  user = models.ForeignKey(
+    UserProfile,
+    on_delete=models.CASCADE,
+    related_name="notifications"
+  )
+  title = models.CharField(max_length=255)
+  message = models.TextField()
+  link_url = models.CharField(max_length=500, blank=True)  
+  is_read = models.BooleanField(default=False)
+  created_at = models.DateTimeField(auto_now_add=True)
+
+  triggered_by = models.ForeignKey(
+    UserProfile,
+    on_delete=models.SET_NULL,
+    null=True,
+    related_name="triggered_notifications"
+  )
+
+  class Meta:
+    ordering = ['-created_at']
+
+  def __str__(self):
+    return f"To {self.user.email}: {self.title}"
