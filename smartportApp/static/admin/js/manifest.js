@@ -88,10 +88,12 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
   }
 };
 const handleGenerate = async (voyageId) => {
+  console.log("🚀 Attempting to generate master manifest for", voyageId);
+
   if (!voyageId) return;
 
   try {
-    const response = await fetch(`/generate-master-manifest/${voyageId}`, {
+    const response = await fetch(`/generate-master-manifest/${voyageId}/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -119,6 +121,13 @@ const handleGenerate = async (voyageId) => {
     if (viewBtn) {
       viewBtn.href = `/view-master-manifest/${voyageId}/`;
       viewBtn.style.display = "inline-flex";
+      viewBtn.disabled = false;
+      viewBtn.dataset.voyageId = voyageId;
+
+      if (viewBtn.tagName === "BUTTON") {
+        viewBtn.onclick = () =>
+          window.open(`/view-master-manifest/${voyageId}/`, "_blank");
+      }
     }
   } catch (error) {
     console.error("Error: ", error);
@@ -127,6 +136,8 @@ const handleGenerate = async (voyageId) => {
 };
 
 const setupGenerateManifestButton = (voyageId, generateBtn) => {
+  console.log("🔁 Binding generate button for voyage", voyageId);
+
   if (!generateBtn) return;
 
   // Clone the node to prevent multiple listeners
@@ -255,15 +266,12 @@ const initApproveSubmanifest = (voyageId) => {
           );
         });
 
-        console.log("All approved:", allApproved);
-
         if (allApproved) {
           const dynamicGenerateBtn = document.querySelector(
             `#generate-manifest-btn[data-voyage-id="${voyageId}"]`
           );
-          console.log("generate btn: ", dynamicGenerateBtn);
           if (dynamicGenerateBtn) {
-            dynamicGenerateBtn.disabled = false;
+            setupGenerateManifestButton(voyageId, dynamicGenerateBtn);
             checkMasterManifestExists(voyageId);
           }
           manifestWarning.style.display = "none";
@@ -290,10 +298,13 @@ const checkMasterManifestExists = async (voyageId) => {
     if (has_manifest && viewBtn) {
       viewBtn.style.display = "inline-flex";
       viewBtn.href = `/view-master-manifest/${voyageId}/`;
+      viewBtn.disabled = false;
+      viewBtn.dataset.voyageId = voyageId;
       if (generateBtn) generateBtn.style.display = "none";
     } else if (!has_manifest && generateBtn) {
       generateBtn.style.display = "inline-flex";
       generateBtn.disabled = false;
+      if (viewBtn) viewBtn.style.display = "none";
     }
   } catch (error) {
     console.error("Error checking master manifest:", error);

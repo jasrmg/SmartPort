@@ -1033,7 +1033,7 @@ def generate_master_manifest(request, voyage_id):
     return JsonResponse({"error": "Invalid method"}, status=405)
   
   try:
-    voyage = Voyage.objects.get(id=voyage_id)
+    voyage = Voyage.objects.get(voyage_id=voyage_id)
     submanifest = SubManifest.objects.filter(voyage=voyage)
 
     if submanifest.filter(status__in=["pending_admin", "rejected_by_admin", "rejected_by_customs"]).exists():
@@ -1067,7 +1067,7 @@ def master_manifest_detail_view(request, manifest_id):
     "submanifests": submanifests,
   }
 
-  return render(request, "admin/mastermanifest.html", context)
+  return render(request, "smartportApp/admin/mastermanifest.html", context)
 
 # HELPER TO CHECK IF THE MASTER MANIFEST ALREADY EXIST FOR THAT VOYAGE:
 def check_master_manifest(request, voyage_id):

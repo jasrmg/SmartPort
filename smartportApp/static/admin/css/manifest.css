@@ -246,6 +246,34 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+.view-manifest-btn {
+  background-color: var(--accent);
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.view-manifest-btn:hover {
+  background-color: #23874a; /* slightly darker shade of --accent */
+  transform: translateY(-1px);
+}
+
+.view-manifest-btn:active {
+  transform: translateY(1px);
+}
+
+.view-manifest-btn:disabled {
+  background-color: var(--gray);
+  color: var(--dark-gray);
+  cursor: not-allowed;
+  box-shadow: none;
+}
 
 .generate-manifest-btn:disabled {
   background-color: var(--gray);
