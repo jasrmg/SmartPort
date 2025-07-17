@@ -249,6 +249,7 @@ def with_approval_priority(queryset):
 
 
 
+# =========== VESSELS ===========
 # FUNCTION FOR GETTING PORT LOCATION TO FILL THE LEAFLET MAP
 def get_ports(request):
   try:
@@ -314,6 +315,7 @@ def get_port_options(request):
     return JsonResponse({"ports": data})
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
+
 
 # API ENDPOINT FOR UPDATING THE VESSELS TABLE IN THE ALL VESSELS
 @csrf_exempt
@@ -967,7 +969,7 @@ def log_vessel_activity(vessel, action_type, description, user_profile):
     created_by=user_profile
   )
 
-# MANIFEST VIEW PART ENDPOINTS:
+# # =========== MANIFEST ===========:
 def get_submanifests_by_voyage(request, voyage_id):
   submanifests = SubManifest.objects.filter(voyage_id=voyage_id)
 
@@ -985,24 +987,24 @@ def get_submanifests_by_voyage(request, voyage_id):
   return JsonResponse({"submanifests": data})
 
 # APPROVE SUBMANIFEST
-def approve_submanifest(request, submanifest_id):
+def admin_approve_submanifest(request, submanifest_id):
   print("APPROVING")
   if not request.user.userprofile.role == "admin":
     return JsonResponse({"error": "Unauthorized"}, status=403)
   
   submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
 
-  if submanifest.status == "approved":
+  if submanifest.status == "pending_customs":
     return JsonResponse({"error": "Submanifest already approved"}, status=400)
   
-  submanifest.status = "approved"
+  submanifest.status = "pending_customs"
   submanifest.save()
 
   # log activity
   log_vessel_activity(
     vessel=submanifest.voyage.vessel,
     action_type=ActivityLog.ActionType.SUBMANIFEST_APPROVED,
-    description=f"Submanifest #{submanifest.submanifest_number} was approved.",
+    description=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
     user_profile=request.user.userprofile
   )
   # ActivityLog.objects.create(
@@ -1016,14 +1018,58 @@ def approve_submanifest(request, submanifest_id):
   create_notification(
     user=submanifest.created_by,
     title="Submanifest Approved",
-    message=f"Submanifest #{submanifest.submanifest_number} has been approved.",
-    link_url=f"/submanifest/{submanifest.submanifest_id}/",#or submanifest.pk
+    message=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
+    link_url=f"/submanifest/{submanifest.submanifest_id}/",
     triggered_by=request.user.userprofile
   )
   print("SAMPLE LINK URL: ", link_url)
 
   return JsonResponse({"success": True, "message": "Submanifest approved successfully"})
 
+def generate_master_manifest(request, voyage_id):
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid method"}, status=405)
+  
+  try:
+    voyage = Voyage.objects.get(id=voyage_id)
+    submanifest = SubManifest.objects.filter(voyage=voyage)
+
+    if submanifest.filter(status__in=["pending_admin", "rejected_by_admin", "rejected_by_customs"]).exists():
+      return JsonResponse({"error": "Some submanifests are not approved yet."}, status=400)
+    
+    if MasterManifest.objects.filter(voyage=voyage).exists():
+      return JsonResponse({"error": "Master Manifest already exists for this voyage."}, status=400)
+
+
+    with transaction.atomic():
+      master_manifest = MasterManifest.objects.create(
+        voyage=voyage,
+        vessel=voyage.vessel,
+        created_by=request.user.userprofile,
+        status="generated",
+        created_at=now(),
+      )
+
+  except Voyage.DoesNotExist:
+    return JsonResponse({"error": "Voyage not found"}, status=404)
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
+  return JsonResponse({"message": "Master Manifest generated successfully."})
+
+
+def master_manifest_detail_view(request, manifest_id):
+  master_manifest = get_object_or_404(MasterManifest, pk=manifest_id)
+  submanifests = SubManifest.objects.filter(voyage=master_manifest.voyage)
+
+  context = {
+    "manifest": master_manifest,
+    "submanifests": submanifests,
+  }
+
+  return render(request, "admin/mastermanifest.html", context)
+
+
+# =========== REPORT ===========
 # UPLOAD INCIDENT REPORT
 def submit_incident_report(request):
   if request.method != "POST":

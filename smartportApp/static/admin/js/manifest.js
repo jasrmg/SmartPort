@@ -14,6 +14,12 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
   voyageListSection.style.display = "none";
   voyageSubmanifest.style.display = "block";
 
+  // Assign voyageId to the Generate button
+  const generateBtn = document.getElementById("generate-manifest-btn");
+  if (generateBtn) {
+    generateBtn.dataset.voyageId = voyageId;
+  }
+
   try {
     const response = await fetch(`/api/submanifests/${voyageId}/`);
     const { submanifests } = await response.json();
@@ -48,6 +54,11 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
     });
 
     initApproveSubmanifest();
+    // check if all submanifest is approved and enable it
+    const allApproved = submanifests.every(
+      (sm) => sm.status === "approved" || sm.status === "pending_customs"
+    );
+    generateBtn.disabled = !allApproved;
   } catch (err) {
     console.error("❌ Failed to fetch submanifests:", err);
   }
@@ -143,12 +154,11 @@ const initApproveSubmanifest = () => {
         const data = await response.json();
 
         if (!response.ok) {
-          showToast("Error: " + data.error, "error");
+          showToast("Error: " + data.error, true);
           return;
         }
 
-        showToast("Submanifest approved!", "success");
-
+        showToast("Submanifest approved!", false);
         const row = btn.closest("tr");
         const statusBadge = row.querySelector(".status-badge");
 
@@ -165,7 +175,7 @@ const initApproveSubmanifest = () => {
           document.querySelectorAll(".status-badge")
         ).every((badge) => {
           const val = badge.textContent.trim().toLowerCase();
-          return val === "approved" || val === "pending customs review";
+          return val === "approved" || val === "pending customs review"; // dapat approve ra ni diri, test lang ko sa generate master manifest
         });
 
         if (allApproved) {
@@ -173,18 +183,27 @@ const initApproveSubmanifest = () => {
           manifestWarning.style.display = "none";
         }
       } catch (error) {
-        showToast("Network error: " + error.message, "error");
+        showToast("Network error: " + error.message, true);
       }
     });
   });
 };
 
 // Toast Utility
-const showToast = (message, type = "success", duration = 2500) => {
+const showToast = (msg, isError = false, duration = 2500) => {
   const toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
-  toastContainer.appendChild(toast);
+  toast.className = `custom-toast ${isError ? "error" : ""}`;
+  toast.textContent = msg;
+
+  const containerId = "toast-container";
+  let container = document.getElementById(containerId);
+  if (!container) {
+    container = document.createElement("div");
+    container.id = containerId;
+    document.body.appendChild(container);
+  }
+
+  container.appendChild(toast);
 
   setTimeout(() => {
     toast.classList.add("fade-out");

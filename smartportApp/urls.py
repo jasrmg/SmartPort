@@ -54,12 +54,14 @@ urlpatterns = [
   # MANIFEST VIEW PART:
   # DISPLAY SUBMANIFEST IN TABLE
   path("api/submanifests/<int:voyage_id>/", views.get_submanifests_by_voyage, name="api-submanifests"),
-  # MASTERMANIFEST
-  # path("mastermanifest/<int:submanifest_id>/", views.submanifest_view, name="submanifest-view"),
+  # GENERATE MASTERMANIFEST
+  path("generate-master-manifest/<int:voyage_id>/", views.generate_master_manifest, name="generate_master_manifest"),
+  # VIEW MASTERMANIFEST
+  path("master-manifest/<int:manifest_id>/", views.master_manifest_detail_view, name="master_manifest_detail"),
   # VIEW SUBMANIFEST
   path("submanifest/<int:submanifest_id>/", views.submanifest_view, name="submanifest-view"),
   # APPROVE SUBMANIFEST
-  path("submanifest/<int:submanifest_id>/approve/", views.approve_submanifest, name="approve-submanifest"),
+  path("submanifest/<int:submanifest_id>/approve/", views.admin_approve_submanifest, name="approve-submanifest"),
 
   path('submit-incident/', views.submit_incident_report, name='submit_incident_report'),
   # APPROVE OR REJECT INCIDENT REPORT
