@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Master Manifest - A4</title>
+    <title>Master Manifest - {{ manifest.mastermanifest_id }}</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -19,7 +19,7 @@
       <h1>
         <i class="fa-solid fa-clipboard-list"></i> Master Manifest —
         <!---->
-        {{ manifest.manifest_number }}
+        {{ manifest.mastermanifest_id }}
       </h1>
 
       <div class="section">
@@ -48,7 +48,7 @@
           <div class="info-box">
             <strong>ETA</strong>
             <!---->
-            {{ manifest.voyage.arrival_date|date:"F j, Y — h:i A" }}
+            {{ manifest.voyage.eta|date:"F j, Y — h:i A" }}
           </div>
           <div class="info-box">
             <strong>Departure Date</strong>
@@ -95,6 +95,54 @@
         </table>
       </div>
 
+      <div class="section">
+        <h2><i class="fa-solid fa-box"></i> Cargo Details</h2>
+
+        {% for sub in submanifests %}
+        <h3 style="margin-top: 2rem">
+          <i class="fa-solid fa-file-lines"></i>
+          <!---->
+          Submanifest: {{ sub.submanifest_number }}
+        </h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Item No.</th>
+              <th>Description</th>
+              <th>Quantity</th>
+              <th>Weight (kg)</th>
+              <th>Value (₱)</th>
+              <th>HS Code</th>
+              <th>Additional Info</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cargo in sub.cargo_items.all %}
+            <tr>
+              <td>{{ cargo.item_number }}</td>
+              <td>{{ cargo.description }}</td>
+              <td>{{ cargo.quantity }}</td>
+              <td>{{ cargo.weight }}</td>
+              <td>{{ cargo.value }}</td>
+              <td>{{ cargo.hs_code|default:"—" }}</td>
+              <td>{{ cargo.additional_info|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td
+                colspan="7"
+                style="text-align: center; color: var(--dark-gray)"
+              >
+                No cargo items listed for this submanifest.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endfor %}
+      </div>
+
       <div class="actions">
         <button class="btn" onclick="window.print()">
           <i class="fas fa-print"></i> Print
@@ -106,6 +154,6 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="{% static 'js/mastermanifest.js' %}"></script>
+    <script src="{% static 'admin/js/mastermanifest.js' %}"></script>
   </body>
 </html>

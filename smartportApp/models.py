@@ -174,6 +174,7 @@ class IncidentResolution(models.Model):
 
 class MasterManifest(models.Model):
   mastermanifest_id = models.AutoField(primary_key=True)
+  # TO ADD submanifest_number = models.CharField(max_length=50, unique=True, blank=True)
   vessel = models.ForeignKey(Vessel, on_delete=models.CASCADE)
   voyage = models.OneToOneField(Voyage, on_delete=models.CASCADE, related_name='master_manifest')
   created_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
