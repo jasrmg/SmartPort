@@ -1082,7 +1082,7 @@ def master_manifest_detail_view(request, manifest_id):
 # HELPER TO CHECK IF THE MASTER MANIFEST ALREADY EXIST FOR THAT VOYAGE:
 def check_master_manifest(request, voyage_id):
   try:
-    voyage = Voyage.objects.get(id=voyage_id)
+    voyage = Voyage.objects.get(voyage_id=voyage_id)
     has_manifest = MasterManifest.objects.filter(voyage=voyage).exists()
     return JsonResponse({"has_manifest": has_manifest})
   except Voyage.DoesNotExist:
