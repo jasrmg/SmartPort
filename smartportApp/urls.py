@@ -56,14 +56,12 @@ urlpatterns = [
   path("api/submanifests/<int:voyage_id>/", views.get_submanifests_by_voyage, name="api-submanifests"),
   # GENERATE MASTERMANIFEST
   path("generate-master-manifest/<int:voyage_id>/", views.generate_master_manifest, name="generate_master_manifest"),
-  # GET MASTER MANIFEST
+  # GET MASTER MANIFEST ID
   path("get-master-manifest-id/<int:voyage_id>/", views.get_master_manifest_id, name="get_master_manifest_id"),
-
   # CHECK IF THE MASTER MANIFEST ALREADY EXIST FOR THAT VOYAGE:
   path("api/voyage/<int:voyage_id>/has-master-manifest/", views.check_master_manifest, name="check_master_manifest"),
-
   # VIEW MASTERMANIFEST
-  path("master-manifest/<int:manifest_id>/", views.master_manifest_detail_view, name="master_manifest_detail"),
+  path("master-manifest/<int:mastermanifest_id>/", views.master_manifest_detail_view, name="master_manifest_detail"),
   # VIEW SUBMANIFEST
   path("submanifest/<int:submanifest_id>/", views.submanifest_view, name="submanifest-view"),
   # APPROVE SUBMANIFEST

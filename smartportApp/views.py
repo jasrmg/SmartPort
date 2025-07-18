@@ -176,6 +176,16 @@ def submanifest_view(request, submanifest_id):
   }
   return render(request, "smartportApp/admin/submanifest.html", context)
 
+def master_manifest_detail_view(request, mastermanifest_id):
+  master_manifest = get_object_or_404(MasterManifest, pk=mastermanifest_id)
+  submanifests = SubManifest.objects.filter(voyage=master_manifest.voyage)
+
+  context = {
+    "manifest": master_manifest,
+    "submanifests": submanifests,
+  }
+  return render(request, "smartportApp/admin/mastermanifest.html", context)
+
 from django.db.models import F
 def report_feed_view(request):
   sort = request.GET.get("sort", "newest")
@@ -1068,16 +1078,7 @@ def get_master_manifest_id(request, voyage_id):
   except MasterManifest.DoesNotExist:
     return JsonResponse({"error": "No master manifest found for this voyage."}, status=404)
 
-def master_manifest_detail_view(request, manifest_id):
-  master_manifest = get_object_or_404(MasterManifest, pk=manifest_id)
-  submanifests = SubManifest.objects.filter(voyage=master_manifest.voyage)
 
-  context = {
-    "manifest": master_manifest,
-    "submanifests": submanifests,
-  }
-
-  return render(request, "smartportApp/admin/mastermanifest.html", context)
 
 # HELPER TO CHECK IF THE MASTER MANIFEST ALREADY EXIST FOR THAT VOYAGE:
 def check_master_manifest(request, voyage_id):

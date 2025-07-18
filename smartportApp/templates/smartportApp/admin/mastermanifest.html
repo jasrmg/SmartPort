@@ -18,29 +18,52 @@
     <div class="a4-wrapper" id="masterManifest">
       <h1>
         <i class="fa-solid fa-clipboard-list"></i> Master Manifest —
-        MM-20250716-001
+        <!---->
+        {{ manifest.manifest_number }}
       </h1>
 
       <div class="section">
         <h2><i class="fa-solid fa-ship"></i> Voyage & Vessel Info</h2>
         <div class="info-grid">
-          <div class="info-box"><strong>Voyage No.</strong> VY-001</div>
           <div class="info-box">
-            <strong>Vessel Name</strong> MV Pacific Star
-          </div>
-          <div class="info-box"><strong>Departure</strong> Manila</div>
-          <div class="info-box"><strong>Arrival</strong> Cebu</div>
-          <div class="info-box">
-            <strong>ETA</strong> July 20, 2025 — 09:00 AM
+            <strong>Voyage No.</strong>
+            <!---->
+            {{ manifest.voyage.voyage_number }}
           </div>
           <div class="info-box">
-            <strong>Departure Date</strong> July 18, 2025 — 03:00 PM
+            <strong>Vessel Name</strong>
+            <!---->
+            {{ manifest.voyage.vessel.name }}
+          </div>
+          <div class="info-box">
+            <strong>Departure</strong>
+            <!---->
+            {{ manifest.voyage.departure_port.port_name }}
+          </div>
+          <div class="info-box">
+            <strong>Arrival</strong>
+            <!---->
+            {{ manifest.voyage.arrival_port.port_name }}
+          </div>
+          <div class="info-box">
+            <strong>ETA</strong>
+            <!---->
+            {{ manifest.voyage.arrival_date|date:"F j, Y — h:i A" }}
+          </div>
+          <div class="info-box">
+            <strong>Departure Date</strong>
+            <!---->
+            {{ manifest.voyage.departure_date|date:"F j, Y — h:i A" }}
           </div>
         </div>
       </div>
 
       <div class="section">
-        <h2><i class="fa-solid fa-boxes-packing"></i> Submanifests (2)</h2>
+        <h2>
+          <i class="fa-solid fa-boxes-packing"></i> Submanifests
+          <!---->
+          ({{ submanifests|length }})
+        </h2>
         <table>
           <thead>
             <tr>
@@ -53,30 +76,21 @@
             </tr>
           </thead>
           <tbody>
+            {% for sub in submanifests %}
             <tr>
-              <td>SUBM-20250716-001</td>
-              <td>Juan Dela Cruz</td>
-              <td>Maria Santos</td>
-              <td>MSKU1234567</td>
-              <td>2</td>
+              <td>{{ sub.submanifest_number }}</td>
+              <td>{{ sub.consignor_name }}</td>
+              <td>{{ sub.consignee_name }}</td>
+              <td>{{ sub.container_no }}</td>
+              <td>{{ sub.cargo_items.count }}</td>
               <td>
-                <span style="color: var(--success); font-weight: bold"
-                  >Approved</span
+                <span
+                  class="{% if sub.status == 'approved' %}text-success {% elif sub.status == 'pending_admin' or sub.status == 'pending_customs' %}text-warning {% elif sub.status == 'rejected_by_admin' or sub.status == 'rejected_by_customs' %}text-danger {% else %}text-muted{% endif %}"
+                  >{{ sub.get_status_display }}</span
                 >
               </td>
             </tr>
-            <tr>
-              <td>SUBM-20250716-002</td>
-              <td>Carlos Reyes</td>
-              <td>Anna Villanueva</td>
-              <td>APL99887766</td>
-              <td>3</td>
-              <td>
-                <span style="color: var(--success); font-weight: bold"
-                  >Approved</span
-                >
-              </td>
-            </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
