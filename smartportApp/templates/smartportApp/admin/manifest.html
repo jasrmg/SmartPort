@@ -139,8 +139,9 @@
         </p>
         <p class="voyage-card-info">
           <strong>Arrival:</strong>
-          {% if v.voyage.arrival_date %} {{ v.voyage.arrival_date|date:"M d, Y"
-          }}
+          {% if v.voyage.arrival_date %}
+          <!---->
+          {{ v.voyage.arrival_date|date:"M d, Y @ h:i A" }}
           <!---->
           {% elif v.voyage.eta %} (ETA) {{ v.voyage.eta|date:"M d, Y" }}
           <!---->

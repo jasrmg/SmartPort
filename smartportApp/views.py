@@ -1056,7 +1056,17 @@ def generate_master_manifest(request, voyage_id):
     return JsonResponse({"error": "Voyage not found"}, status=404)
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
-  return JsonResponse({"message": "Master Manifest generated successfully."})
+  
+  return JsonResponse({"message": "Master Manifest generated successfully.", "manifests_id": master_manifest.pk})
+
+def get_master_manifest_id(request, voyage_id):
+  try:
+    manifest = MasterManifest.objects.get(voyage_id=voyage_id)
+    print("MASMAN: ", manifest.mastermanifest_id)
+    print("MASMANsss: ", manifest.pk)
+    return JsonResponse({"manifest_id": manifest.mastermanifest_id})
+  except MasterManifest.DoesNotExist:
+    return JsonResponse({"error": "No master manifest found for this voyage."}, status=404)
 
 def master_manifest_detail_view(request, manifest_id):
   master_manifest = get_object_or_404(MasterManifest, pk=manifest_id)
