@@ -106,8 +106,7 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
           <td>${escapeHtml(sm.item_count?.toString() || "0")}</td>
           <td><span class="status-badge  ${escapeHtml(
             sm.status || ""
-          )}">${escapeHtml(sm.status_label || "")}
-      }</span></td>
+          )}">${escapeHtml(sm.status_label || "")}</span></td>
           <td>
             <button class="btn-icon view" data-submanifest-id="${escapeHtml(
               sm.id?.toString() || ""
