@@ -467,6 +467,97 @@ const showToast = (msg, isError = false, duration = 2500) => {
   }, duration);
 };
 
+// SUBMANIFEST REJECTION
+const setupRejectModal = () => {
+  const rejectModal = document.getElementById("rejectModal");
+  const rejectForm = document.getElementById("rejectForm");
+  const rejectNoteInput = document.getElementById("rejectNote");
+  const rejectIdInput = document.getElementById("rejectSubmanifestId");
+  const cancelBtn = document.getElementById("cancelRejectBtn");
+
+  if (!rejectModal || !rejectForm || !rejectNoteInput || !rejectIdInput) return;
+
+  // cancel
+  cancelBtn.addEventListener("click", () => {
+    rejectModal.style.display = "none";
+  });
+
+  window.addEventListener("click", (e) => {
+    if (e.target === rejectModal) {
+      rejectModal.style.display = "none";
+    }
+  });
+
+  // handle form submission for the reject
+  rejectForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const submanifestId = rejectIdInput.value;
+    const note = rejectNoteInput.value.trim();
+
+    if (!submanifestId || !note) {
+      showToast("Please enter a rejection reason.", true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/submanifest/${submanifestId}/reject/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({ note }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showToast(data.error || "Rejection failed.", true);
+        return;
+      }
+
+      showToast("Submanifest rejected successfully.", false);
+
+      // ui update after success:
+      rejectModal.style.display = "none";
+
+      const row = document
+        .querySelector(`.reject-btn[data-submanifest-id="${submanifestId}"]`)
+        ?.closest("tr");
+
+      if (row) {
+        const badge = row.querySelector(".status-badge");
+        if (badge) {
+          badge.textContent = "Rejected by Admin";
+          badge.className = "status-badge rejected_by_admin";
+        }
+
+        row.querySelector(".approve-btn")?.remove();
+        row.querySelector(".reject-btn")?.remove();
+      }
+    } catch (error) {
+      console.error("Error rejecting submanifest:", error);
+      showToast("Network error during rejection.", true);
+    }
+  });
+};
+
+// bind reject button clicks
+const bindRejectButtons = () => {
+  document.addEventListener("click", (e) => {
+    const rejectBtn = e.target.closest(".reject-btn");
+    if (!rejectBtn) return;
+
+    const submanifestId = rejectBtn.dataset.submanifestId;
+    if (!submanifestId) return;
+
+    document.getElementById("rejectSubmanifestId").value = submanifestId;
+    document.getElementById("rejectNote").value = "";
+    document.getElementById("rejectModal").style.display = "flex";
+  });
+};
+
 // Init
 document.addEventListener("DOMContentLoaded", () => {
   bindVoyageCardEvents();
@@ -474,4 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupBackToListButtons();
   setupFlatpickr();
   populatePorts();
+
+  setupRejectModal();
+  bindRejectButtons();
 });

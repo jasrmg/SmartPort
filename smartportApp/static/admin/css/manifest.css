@@ -286,6 +286,21 @@ body {
   font-size: 0.9rem;
 }
 
+#rejectForm {
+  display: flex;
+  flex-direction: column;
+}
+#rejectNote {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--gray);
+  border-radius: 4px;
+  resize: none;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.95rem;
+}
+
 /* ---------- START OF TABLE ---------- */
 .table-responsive {
   max-height: 380px;

@@ -66,7 +66,10 @@ urlpatterns = [
   path("submanifest/<int:submanifest_id>/", views.submanifest_view, name="submanifest-view"),
   # APPROVE SUBMANIFEST
   path("submanifest/<int:submanifest_id>/approve/", views.admin_approve_submanifest, name="approve-submanifest"),
+  # REJECT SUBMANIFEST
+  path("submanifest/<int:submanifest_id>/reject/", views.admin_reject_submanifest, name="reject-submanifest"),
 
+  # INCIDENT REPORT PART:
   path('submit-incident/', views.submit_incident_report, name='submit_incident_report'),
   # APPROVE OR REJECT INCIDENT REPORT
   path('incident/approve/<int:incident_id>/', views.approve_incident, name='approve_incident'),

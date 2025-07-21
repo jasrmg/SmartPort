@@ -1014,7 +1014,47 @@ def get_submanifests_by_voyage(request, voyage_id):
 
   return JsonResponse({"submanifests": data})
 
-# APPROVE SUBMANIFEST
+# REJECT SUBMANIFEST: ADMIN
+@require_POST
+def admin_reject_submanifest(request, submanifest_id):
+  print("REJECTING")
+  if not request.user.userprofile.role == "admin":
+    return JsonResponse({"error": "Unauthorized"}, status=403)
+  
+  try:
+    data = json.loads(request.body)
+    note = data.get("note", "").strip()
+    if not note:
+      return JsonResponse({"error": "Rejection reason required"}, status=400)
+    
+    user = request.user.userprofile
+
+    sub = SubManifest.objects.get(submanifest_id=submanifest_id)
+    sub.status = "rejected_by_admin"
+    sub.admin_note = f"{user}: {note}"
+    sub.updated_by = user
+    sub.save()
+
+
+    link_url = f"submanifest/{sub.submanifest_id}/" # sample link only
+    print("SAMPLE LINK URL: ", link_url)
+    # send notification to the shipper
+    create_notification(
+      user=sub.created_by,
+      title="Submanifest Rejected",
+      message=f"Your submanifest ({sub.submanifest_number}) was rejected by the admin. Reason: {note}",
+      link_url=link_url,
+      triggered_by=user
+    )
+
+    return JsonResponse({"message": "Rejected"})
+  
+  except SubManifest.DoesNotExist:
+    return JsonResponse({"error": "Submanifest not found"}, status=404)
+
+
+
+# APPROVE SUBMANIFEST: ADMIN
 def admin_approve_submanifest(request, submanifest_id):
   print("APPROVING")
   if not request.user.userprofile.role == "admin":

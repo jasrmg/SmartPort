@@ -244,6 +244,35 @@
 </div>
 <div id="toast-container"></div>
 {% endblock %}
+<!---->
+{% block modal %}
+<!-- Reject Modal -->
+<div id="rejectModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Reject Submanifest</h3>
+    </div>
+    <div class="modal-body">
+      <form id="rejectForm">
+        <input type="hidden" id="rejectSubmanifestId" />
+        <textarea
+          id="rejectNote"
+          required
+          rows="5"
+          placeholder="Add Rejection Note"
+        ></textarea>
+        <div class="modal-actions">
+          <button type="button" id="cancelRejectBtn" class="btn-cancel">
+            Cancel
+          </button>
+          <button type="submit" class="btn-danger">Reject</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
 <!--SCRIPT-->
 {% block script %}
 <script type="module" src="{% static 'admin/js/manifest.js' %}"></script>
