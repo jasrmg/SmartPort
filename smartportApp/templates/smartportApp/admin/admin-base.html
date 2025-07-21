@@ -106,7 +106,7 @@
               <div class="user-avatar">
                 <img
                   id="userAvatarImg"
-                  src="{{ user_profile.avatar | default:'/media/avatars/default.png' }}"
+                  src="{{ user_profile.avatar | default:'/media/avatars/default_image.jpg' }}"
                 />
               </div>
               <span class="user-name" id="displayName"></span>
@@ -333,30 +333,6 @@
     <!--SCRIPT BLOCK-->
     {% block script %} {% endblock %}
     <!--LOADER JS -->
-    <script>
-      const hideLoader = () => {
-        const loader = document.getElementById("loader");
-        loader.classList.add("fade-out");
-
-        //remove from dom after transition:
-        document.body.classList.remove("loading");
-        setTimeout(() => {
-          loader.remove();
-        }, 600);
-      };
-      if (document.readyState === "complete") {
-        setTimeout(hideLoader, 1500);
-      } else {
-        window.addEventListener("load", () => {
-          setTimeout(hideLoader, 1500);
-        });
-      }
-
-      const csrftoken = document.querySelector(
-        'meta[name="csrf-token"]'
-      ).content;
-
-      console.log("CSRF TOKEN: ", csrftoken);
-    </script>
+    <script></script>
   </body>
 </html>

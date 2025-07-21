@@ -1,19 +1,74 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const hideLoader = () => {
+    const loader = document.getElementById("loader");
+    loader.classList.add("fade-out");
+
+    //remove from dom after transition:
+    document.body.classList.remove("loading");
+    setTimeout(() => {
+      loader.remove();
+    }, 600);
+  };
+
+  const csrftoken = document.querySelector('meta[name="csrf-token"]').content;
+
+  console.log("CSRF TOKEN: ", csrftoken);
+
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
-      fetchUserDataFromFirestore((userData) => {
-        prefillTopBar(userData);
-
-        // OPEN EDIT PROFILE MODAL:
-        sidebarEditProfileBtn.addEventListener("click", () => {
-          editProfileModal.style.display = "flex";
-          prefillEditProfileModal();
+      prefillTopBar()
+        .catch((err) => {
+          console.error("Error pre-filling topbar:", err);
+        })
+        .finally(() => {
+          hideLoader();
         });
-        openEditProfileBtn.addEventListener("click", () => {
-          editProfileModal.style.display = "flex";
-          prefillEditProfileModal();
+
+      sidebarEditProfileBtn.addEventListener("click", () => {
+        editProfileModal.style.display = "flex";
+        fetchUserDataFromFirestore((userData) => {
+          // Set input fields
+          firstNameInput.value = userData.first_name || "";
+          firstNameInput.setAttribute(
+            "data-original",
+            userData.first_name || ""
+          );
+
+          lastNameInput.value = userData.last_name || "";
+          lastNameInput.setAttribute("data-original", userData.last_name || "");
+
+          // Set avatar preview
+          if (userData.avatar) {
+            avatarPreview.src = userData.avatar;
+          } else {
+            avatarPreview.src = "/media/avatars/default_image.jpg"; // fallback default
+          }
         });
       });
+
+      openEditProfileBtn.addEventListener("click", () => {
+        editProfileModal.style.display = "flex";
+        fetchUserDataFromFirestore((userData) => {
+          // Set input fields
+          firstNameInput.value = userData.first_name || "";
+          firstNameInput.setAttribute(
+            "data-original",
+            userData.first_name || ""
+          );
+
+          lastNameInput.value = userData.last_name || "";
+          lastNameInput.setAttribute("data-original", userData.last_name || "");
+
+          // Set avatar preview
+          if (userData.avatar) {
+            avatarPreview.src = userData.avatar;
+          } else {
+            avatarPreview.src = "/media/avatars/default_image.jpg"; // fallback default
+          }
+        });
+      });
+    } else {
+      hideLoader(); // fallback if no user
     }
   });
 
@@ -569,11 +624,19 @@ const prefillEditProfileModal = () => {
 };
 
 const prefillTopBar = () => {
-  fetchUserDataFromFirestore((userData) => {
-    document.getElementById("displayName").textContent = `${toTitleCase(
-      userData.role
-    )}`;
-    document.getElementById("userAvatarImg").src = `${userData.avatar}`;
+  return new Promise((resolve, reject) => {
+    fetchUserDataFromFirestore((userData) => {
+      try {
+        document.getElementById("displayName").textContent = `${toTitleCase(
+          userData.role
+        )}`;
+        document.getElementById("userAvatarImg").src = `${userData.avatar}`;
+
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
   });
 };
 
