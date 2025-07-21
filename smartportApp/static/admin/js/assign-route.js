@@ -171,6 +171,40 @@ document.addEventListener("DOMContentLoaded", function () {
   closeSuccessBtn.addEventListener("click", () => {
     successModal.style.display = "none";
   });
+
+  vesselSelect.addEventListener("change", async (e) => {
+    const vesselId = e.target.value;
+
+    // Reset origin
+    originSelect.innerHTML = '<option value="">Select Origin Port</option>';
+    originSelect.disabled = false;
+
+    if (!vesselId) return;
+
+    try {
+      const response = await fetch(
+        `/get-vessel-last-destination/?vessel_id=${vesselId}`
+      );
+      const data = await response.json();
+
+      if (data.has_voyage) {
+        const option = document.createElement("option");
+        option.value = data.last_destination_id;
+        option.textContent = data.last_destination_name;
+        option.selected = true;
+        originSelect.appendChild(option);
+        originSelect.disabled = true;
+      } else {
+        // Populate all ports
+        const portRes = await fetch("/get-port-options/");
+        const { ports } = await portRes.json();
+        populateSelect(originSelect, ports, "name", "id");
+      }
+    } catch (error) {
+      console.error("Failed to fetch vessel last destination:", error);
+      showErrorModal("Error retrieving vessel voyage history.");
+    }
+  });
 });
 
 // OUTSIDE DOM

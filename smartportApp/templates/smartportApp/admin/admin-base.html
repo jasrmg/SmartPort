@@ -333,6 +333,11 @@
     <!--SCRIPT BLOCK-->
     {% block script %} {% endblock %}
     <!--LOADER JS -->
-    <script></script>
+    <script>
+      const csrftoken = document.querySelector(
+        'meta[name="csrf-token"]'
+      ).content;
+      console.log("CSRF TOKEN: ", csrftoken);
+    </script>
   </body>
 </html>

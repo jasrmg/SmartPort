@@ -596,6 +596,30 @@ def assign_route(request):
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
 
+# helper function to get the last vessel destination to be used in assign route view
+@require_GET
+def get_vessel_last_destination(request):
+  vessel_id = request.GET.get("vessel_id")
+
+  if not vessel_id:
+    return JsonResponse({"error": "Vessel ID is required"}, status=400)
+  
+  try:
+    latest_voyage = (
+      Voyage.objects.filter(vessel_id=vessel_id).order_by("-departure_date").first()
+    )
+
+    if not latest_voyage:
+      return JsonResponse({"has_voyage": False})
+    
+    return JsonResponse({
+      "has_voyage": True,
+      "last_destination_id": latest_voyage.arrival_port.port_id,
+      "last_destination_name": latest_voyage.arrival_port.port_name
+    })
+  
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
 
 # helper function to fetch the active voyage
 def get_active_voyages():
@@ -611,7 +635,8 @@ def get_active_voyages():
     ).order_by('-departure_date')
 
 
-# UPDATE VOYAGE STATUS
+
+# ======================== UPDATE VOYAGE STATUS ========================
 # MANAGE VOYAGE
 @require_POST
 @login_required

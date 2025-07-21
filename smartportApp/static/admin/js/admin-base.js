@@ -10,10 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 600);
   };
 
-  const csrftoken = document.querySelector('meta[name="csrf-token"]').content;
-
-  console.log("CSRF TOKEN: ", csrftoken);
-
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
       prefillTopBar()

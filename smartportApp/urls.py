@@ -38,6 +38,9 @@ urlpatterns = [
   path('api/vessels/delete/', views.delete_vessel, name='delete_vessel'),
   # ASSIGN ROUTE CREATION
   path("assign-route/submit/", views.assign_route, name="assign_route_ajax"),
+  # LAST DESTINATION OF THE VESSEL
+  path("get-vessel-last-destination/", views.get_vessel_last_destination, name="get_vessel_last_destination"),
+
   # UPDATE STATUS
   path('update-voyage-status/', views.update_voyage_status, name='update_voyage_status'),
   # API ENDPOINT FOR THE VOYAGE REPORT PAGINATOR:
