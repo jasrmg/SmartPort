@@ -23,8 +23,6 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
   // Assign voyageId to the Generate button
   const viewBtn = document.getElementById("view-master-manifest-btn");
   const generateBtn = document.getElementById("generate-manifest-btn");
-  console.log("view btn: ", viewBtn);
-  console.log("generate btn: ", generateBtn);
 
   if (viewBtn) {
     viewBtn.style.display = "none";
@@ -63,7 +61,6 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
     const allApproved = submanifests.every(
       (sm) => sm.status === "approved" || sm.status === "pending_customs"
     );
-    console.log("IS ALL APPROVED: ", allApproved);
 
     // check if naay MASTERMANIFEST
     fetch(`/api/voyage/${voyageId}/has-master-manifest/`)
@@ -175,8 +172,6 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
 };
 
 const handleGenerate = async (voyageId) => {
-  console.log("🚀 Attempting to generate master manifest for", voyageId);
-
   if (!voyageId) {
     showToast("Invalid voyage ID", true);
     return;
@@ -204,7 +199,6 @@ const handleGenerate = async (voyageId) => {
 
     if (data.manifest_id) {
       const manifestUrl = `/master-manifest/${data.manifest_id}/`;
-      console.log("🔗 View manifest at:", manifestUrl);
       window.open(manifestUrl, "_blank");
     }
 
@@ -254,8 +248,6 @@ const handleGenerate = async (voyageId) => {
 };
 
 const setupGenerateManifestButton = (voyageId, generateBtn) => {
-  console.log("🔁 Binding generate button for voyage", voyageId);
-
   if (!generateBtn) return;
 
   // Clone the node to prevent multiple listeners

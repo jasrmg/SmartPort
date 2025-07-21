@@ -14,7 +14,7 @@ import json
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Case, When, IntegerField
 
-from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification
+from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
 
 # Create your views here.
 @login_required
@@ -178,13 +178,17 @@ def submanifest_view(request, submanifest_id):
   }
   return render(request, "smartportApp/admin/submanifest.html", context)
 
+
 def master_manifest_detail_view(request, mastermanifest_id):
   master_manifest = get_object_or_404(MasterManifest, pk=mastermanifest_id)
   submanifests = SubManifest.objects.filter(voyage=master_manifest.voyage)
 
+  total_cargo_count = Cargo.objects.filter(submanifest__in=submanifests).count()
+
   context = {
     "manifest": master_manifest,
     "submanifests": submanifests,
+    "total_cargo_count": total_cargo_count,
   }
   return render(request, "smartportApp/admin/mastermanifest.html", context)
 

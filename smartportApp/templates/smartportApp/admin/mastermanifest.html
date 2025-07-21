@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Master Manifest - {{ manifest.mastermanifest_id }}</title>
+    <title>Master Manifest - {{ manifest.mastermanifest_number }}</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -19,7 +19,7 @@
       <h1>
         <i class="fa-solid fa-clipboard-list"></i> Master Manifest —
         <!---->
-        {{ manifest.mastermanifest_id }}
+        {{ manifest.mastermanifest_number }}
       </h1>
 
       <div class="section">
@@ -96,7 +96,11 @@
       </div>
 
       <div class="section">
-        <h2><i class="fa-solid fa-box"></i> Cargo Details</h2>
+        <h2>
+          <i class="fa-solid fa-box"></i> Cargo Details
+          <!---->
+          ({{ total_cargo_count }})
+        </h2>
 
         {% for sub in submanifests %}
         <h3 style="margin-top: 2rem">
