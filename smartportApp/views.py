@@ -113,7 +113,7 @@ def manage_voyage_view(request):
   return render(request, "smartportApp/admin/manage-voyage.html", context)
 
 def voyage_report_view(request):
-  reports = VoyageReport.objects.select_related('voyage__vessel', 'created_by').order_by('-created_at')
+  reports = VoyageReport.objects.select_related('voyage__vessel', 'created_by').filter(voyage__status="arrived").order_by('-created_at')
   paginator = Paginator(reports, 1)
   page_number = request.GET.get('page')
   if not str(page_number).isdigit():
@@ -662,19 +662,18 @@ def update_voyage_status(request):
     else:
       voyage.save()
 
-    # Handle VoyageReport logic
-    report, created = VoyageReport.objects.get_or_create(
-      voyage=voyage,
-      defaults={
-        "created_by": user,
-        "created_at": now()
-      }
-    )
-
     if new_status == "delayed":
       if not reason:
         return JsonResponse({"error": "Reason is required for delayed status."}, status=400)
       
+      report, _ = VoyageReport.objects.get_or_create(
+        voyage=voyage,
+        defaults={
+          "created_by": user,
+          "created_at": now()
+        }
+      )
+
       report.delayed_reason = reason
       report.save()
 
@@ -687,11 +686,20 @@ def update_voyage_status(request):
       )
 
     elif new_status == "arrived":
-      # Compose report summary (you'll display this in frontend, so save data only)
+      # Compose report summary 
       duration = ""
       if voyage.arrival_date and voyage.departure_date:
         delta = voyage.arrival_date - voyage.departure_date
         duration = str(delta)
+
+      # Handle VoyageReport logic
+      report, created = VoyageReport.objects.get_or_create(
+        voyage=voyage,
+        defaults={
+          "created_by": user,
+          "created_at": now()
+        }
+      )
 
       report.voyage_report = json.dumps({
         "vessel": {
@@ -748,7 +756,9 @@ def voyage_report_filtered(request):
     destination = request.GET.get("destination", "all")
     page = int(request.GET.get("page", 1))
 
-    reports = VoyageReport.objects.select_related("voyage__vessel")
+    reports = VoyageReport.objects.select_related("voyage__vessel").filter(
+      voyage__status="arrived"
+    )
 
     if vessel_type != "all":
       reports = reports.filter(voyage__vessel__vessel_type=vessel_type)
