@@ -237,6 +237,10 @@ class SubManifest(models.Model):
   updated_at = models.DateTimeField(auto_now=True)
   created_at = models.DateTimeField(auto_now_add=True)
 
+  # TODO: Upgrade to full status history tracking once rejection auditing becomes a requirement.
+  admin_rejection_count = models.PositiveIntegerField(default=0)
+  customs_rejection_count = models.PositiveIntegerField(default=0)
+
 
   def get_documents(self):
     return self.documents.all()
