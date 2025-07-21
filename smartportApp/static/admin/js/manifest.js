@@ -38,6 +38,7 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
   }
 
   try {
+    // display submanifest in the table
     const response = await fetch(`/api/submanifests/${voyageId}/`);
 
     if (!response.ok) {
@@ -182,6 +183,7 @@ const handleGenerate = async (voyageId) => {
   }
 
   try {
+    // generate master manifest
     const response = await fetch(`/generate-master-manifest/${voyageId}/`, {
       method: "POST",
       headers: {

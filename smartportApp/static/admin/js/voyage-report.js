@@ -120,6 +120,8 @@ const populateVoyageDetail = (data) => {
   const summary = parsed.voyage_summary;
   const vessel = parsed.vessel;
 
+  const rawDuration = summary.duration;
+
   document.querySelector("#detail-voyage-number").textContent =
     summary.voyage_number;
   document.querySelector('[data-field="voyageNumber"]').textContent =
@@ -132,8 +134,34 @@ const populateVoyageDetail = (data) => {
     summary.arrival_port;
   document.querySelector('[data-field="arrivalDateTime"]').textContent =
     formatDate(summary.arrival_date);
-  document.querySelector('[data-field="totalDuration"]').textContent =
-    summary.duration.startsWith("-") ? "—" : summary.duration || "-";
+  if (!rawDuration || rawDuration.startsWith("-")) {
+    document.querySelector('[data-field="totalDuration"]').textContent = "—";
+  } else {
+    const match = rawDuration.match(
+      /(?:(\d+)\s+days?,\s*)?(\d{1,2}):(\d{1,2})/
+    );
+
+    const daysNum = match?.[1] ? parseInt(match[1]) : 0;
+    const hoursNum = match?.[2] ? parseInt(match[2]) : 0;
+    const minsNum = match?.[3] ? parseInt(match[3]) : 0;
+
+    const parts = [];
+
+    if (daysNum > 0) {
+      parts.push(`${daysNum} day${daysNum !== 1 ? "s" : ""}`);
+    }
+    if (hoursNum > 0) {
+      parts.push(`${hoursNum} hour${hoursNum !== 1 ? "s" : ""}`);
+    }
+    if (minsNum > 0) {
+      parts.push(`${minsNum} min${minsNum !== 1 ? "s" : ""}`);
+    }
+
+    const displayText = parts.join(" and ");
+    document.querySelector('[data-field="totalDuration"]').textContent =
+      displayText || "—";
+  }
+
   document.querySelector('[data-field="generatedBy"]').textContent =
     summary.generated_by;
   document.querySelector('[data-field="Status"]').textContent = summary.status;

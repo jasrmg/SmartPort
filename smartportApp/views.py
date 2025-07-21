@@ -49,20 +49,22 @@ from datetime import timedelta
 # HELPER TO FORMAT THE DATE TIME TO BE DISPLAYED IN THE FRONTEND
 def format_duration_string(duration_str):
   try:
-    if duration_str.startswith("-"):
+    if not duration_str or duration_str.startswith("-"):
       return "—"
 
     parts = duration_str.strip().split(", ")
 
-    # Case: "2 days, 5:10:00"
+    # Extract days and time
     if len(parts) == 2:
       days = int(parts[0].split()[0])
-      time_parts = list(map(int, parts[1].split(":")))
-    else:  # Case: "5:10:00"
+      time_str = parts[1].split(".")[0]  # Remove microseconds if present
+    else:
       days = 0
-      time_parts = list(map(int, parts[0].split(":")))
+      time_str = parts[0].split(".")[0]
 
+    time_parts = list(map(int, time_str.split(":")))
     hours, minutes = time_parts[0], time_parts[1]
+
     duration_display = ""
 
     if days > 0:
@@ -256,8 +258,6 @@ def with_approval_priority(queryset):
 # -------------------- END OF ADMIN TEMPLATES --------------------
 
 # -------------------- TEMPLATES LOGIC --------------------
-
-
 
 # =========== VESSELS ===========
 # FUNCTION FOR GETTING PORT LOCATION TO FILL THE LEAFLET MAP
@@ -806,8 +806,10 @@ def parse_voyage_report_page(page_obj):
   for report in page_obj:
     try:
       data = json.loads(report.voyage_report or '{}')
-      raw_duration = data.get("voyage_summary", {}).get("duration", "")
-      data["voyage_summary"]["clean_duration"] = format_duration_string(raw_duration)
+      voyage_summary = data.get("voyage_summary") or {}
+      raw_duration = voyage_summary.get("duration", "")
+      voyage_summary["clean_duration"] = format_duration_string(raw_duration)
+      data["voyage_summary"] = voyage_summary
     except Exception:
       data = {}
 
@@ -1061,6 +1063,14 @@ def generate_master_manifest(request, voyage_id):
         status="generated",
         created_at=now(),
       )
+
+      # format for mastermanifest_number: MASM-YYYYMMDD-ID
+      today_str = now().strftime("%Y%m%d")
+      manifest_number = f"MASM-{today_str}-{master_manifest.mastermanifest_id}"
+
+      # update the instance with the generated number:
+      master_manifest.mastermanifest_number = manifest_number
+      master_manifest.save(update_fields=["mastermanifest_number"])
 
   except Voyage.DoesNotExist:
     return JsonResponse({"error": "Voyage not found"}, status=404)
