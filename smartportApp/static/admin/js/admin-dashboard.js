@@ -12,15 +12,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ------------------------------- SIDEBAR TOGGLE ------------------------------- */
-function initSidebarToggle() {
+const initSidebarToggle = () => {
   const collapseBtn = document.querySelector(".collapse-btn");
-  const charts = Chart.instances ? Object.values(Chart.instances) : [];
 
   collapseBtn?.addEventListener("click", (e) => {
     e.preventDefault();
     setTimeout(() => {
       window.dispatchEvent(new Event("resize"));
-      charts.forEach((chart) => {
+      Object.values(Chart.instances || {}).forEach((chart) => {
         chart.resize();
         chart.render();
       });
@@ -28,25 +27,25 @@ function initSidebarToggle() {
   });
 
   window.addEventListener("resize", () => {
-    charts.forEach((chart) => chart.resize());
+    Object.values(Chart.instances || {}).forEach((chart) => chart.resize());
   });
-}
+};
 
 /* ------------------------------- TABLE SORTING ------------------------------- */
-function initTableSorting() {
+const initTableSorting = () => {
   const sortButtons = document.querySelectorAll(".sort-btn");
 
   sortButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      const columnIndex = parseInt(btn.dataset.column);
+      const columnIndex = +btn.dataset.column;
       const currentOrder = btn.dataset.order;
       const newOrder = currentOrder === "asc" ? "desc" : "asc";
       const icon = btn.querySelector("i");
 
-      sortButtons.forEach((otherBtn) => {
-        if (otherBtn !== btn) {
-          otherBtn.dataset.order = "none";
-          otherBtn.querySelector("i").className = "fas fa-sort";
+      sortButtons.forEach((b) => {
+        if (b !== btn) {
+          b.dataset.order = "none";
+          b.querySelector("i").className = "fas fa-sort";
         }
       });
 
@@ -69,21 +68,19 @@ function initTableSorting() {
       rows.forEach((row) => tbody.appendChild(row));
     });
   });
-}
+};
 
 /* ------------------------------- SHIPMENT BAR CHART ------------------------------- */
 let shipmentChart;
 
-function initShipmentChart() {
+const initShipmentChart = () => {
   const ctx = document.getElementById("shipmentChart")?.getContext("2d");
   const filterSelect = document.getElementById("shipmentFilter");
 
-  async function updateShipmentChart(filter = "this_month") {
+  const updateShipmentChart = async (filter = "this_month") => {
     try {
-      const response = await fetch(
-        `/api/chart/shipment-data/?filter=${filter}`
-      );
-      const { labels, data: values, comparison_stat } = await response.json();
+      const res = await fetch(`/api/chart/shipment-data/?filter=${filter}`);
+      const { labels, data: values, comparison_stat } = await res.json();
 
       if (shipmentChart) {
         shipmentChart.data.labels = labels;
@@ -107,52 +104,55 @@ function initShipmentChart() {
               legend: {
                 display: true,
                 position: "bottom",
-                labels: {
-                  color: "#0a1f44",
-                  font: { size: 12 },
-                },
+                labels: { color: "#0a1f44", font: { size: 12 } },
               },
             },
           },
         });
       }
 
+      const { percent_change, comparison_label } = comparison_stat;
       const statValueEl = document.querySelector(".stat-value");
       const statLabelEl = document.querySelector(".stat-label");
-      const change = comparison_stat.percent_change;
-      const label = comparison_stat.comparison_label;
 
-      statValueEl.textContent = `${change >= 0 ? "+" : ""}${change.toFixed(
-        1
-      )}%`;
-      statValueEl.style.color = change < 0 ? "#d14343" : "#2d9c5a";
-      statLabelEl.textContent = label;
+      statValueEl.textContent = `${
+        percent_change >= 0 ? "+" : ""
+      }${percent_change.toFixed(1)}%`;
+      statValueEl.style.color = percent_change < 0 ? "#d14343" : "#2d9c5a";
+      statLabelEl.textContent = comparison_label;
     } catch (err) {
       console.error("Error fetching shipment chart data:", err);
     }
-  }
+  };
 
   filterSelect?.addEventListener("change", (e) =>
     updateShipmentChart(e.target.value)
   );
   updateShipmentChart();
-}
+};
 
 /* ------------------------------- VESSEL DOUGHNUT CHART ------------------------------- */
 let vesselChart;
 
-function initVesselChart() {
+const initVesselChart = () => {
   const ctx = document.getElementById("vesselChart")?.getContext("2d");
 
-  async function updateVesselChart() {
+  const updateVesselChart = async () => {
     try {
       const res = await fetch("/api/vessel-status-chart/");
       const { labels, data: values, colors } = await res.json();
 
       if (vesselChart) {
-        vesselChart.data.labels = labels;
-        vesselChart.data.datasets[0].data = values;
-        vesselChart.data.datasets[0].backgroundColor = colors;
+        Object.assign(vesselChart.data, {
+          labels,
+          datasets: [
+            {
+              ...vesselChart.data.datasets[0],
+              data: values,
+              backgroundColor: colors,
+            },
+          ],
+        });
         vesselChart.update();
       } else {
         vesselChart = new Chart(ctx, {
@@ -191,42 +191,30 @@ function initVesselChart() {
       statsGrid.innerHTML = "";
 
       labels.forEach((label, i) => {
-        const item = document.createElement("div");
-        item.className = "stat-item";
-
-        const valueDiv = document.createElement("div");
-        valueDiv.className = "stat-value";
-        valueDiv.style.color = colors[i];
-        valueDiv.textContent = `${values[i]}%`;
-
-        const labelDiv = document.createElement("div");
-        labelDiv.className = "stat-label";
-        labelDiv.textContent = label;
-
-        item.appendChild(valueDiv);
-        item.appendChild(labelDiv);
-        statsGrid.appendChild(item);
+        statsGrid.innerHTML += `
+          <div class="stat-item">
+            <div class="stat-value" style="color: ${colors[i]}">${values[i]}%</div>
+            <div class="stat-label">${label}</div>
+          </div>`;
       });
     } catch (err) {
       console.error("Error fetching vessel chart data:", err);
     }
-  }
+  };
 
   updateVesselChart();
-}
+};
 
 /* ------------------------------- INCIDENT LINE CHART ------------------------------- */
 let incidentChart;
 
 const initIncidentChart = () => {
-  const ctx = document.getElementById("incidentChart").getContext("2d");
-  let incidentChart;
+  const ctx = document.getElementById("incidentChart")?.getContext("2d");
+  const filterSelect = document.getElementById("incidentFilter");
 
-  const fetchIncidentChartData = async (filter = "last_6_months") => {
+  const updateIncidentChart = async (filter = "last_6_months") => {
     try {
       const res = await fetch(`/api/chart/incident-data/?filter=${filter}`);
-      if (!res.ok) throw new Error("Failed to fetch");
-
       const data = await res.json();
 
       if (incidentChart) {
@@ -269,7 +257,6 @@ const initIncidentChart = () => {
         });
       }
 
-      // Update footer stat
       document.querySelector(
         ".chart-stat .stat-value"
       ).textContent = `+${data.this_month_count}`;
@@ -278,27 +265,19 @@ const initIncidentChart = () => {
     }
   };
 
-  // Initial load
-  fetchIncidentChartData();
-
-  // Bind filter
-  const filterDropdown = document.getElementById("incidentFilter");
-  filterDropdown?.addEventListener("change", () => {
-    fetchIncidentChartData(filterDropdown.value);
-  });
+  filterSelect?.addEventListener("change", (e) =>
+    updateIncidentChart(e.target.value)
+  );
+  updateIncidentChart();
 };
 
 /* ------------------------------- NOTIFICATION BADGE ------------------------------- */
-function updateNotificationBadge() {
+const updateNotificationBadge = () => {
   const unreadCount = document.querySelectorAll(
     ".notification-item.unread"
   ).length;
   const badge = document.querySelector(".notification-badge");
 
-  if (unreadCount > 0) {
-    badge.textContent = unreadCount;
-    badge.style.display = "inline-block";
-  } else {
-    badge.style.display = "none";
-  }
-}
+  badge.style.display = unreadCount > 0 ? "inline-block" : "none";
+  if (unreadCount > 0) badge.textContent = unreadCount;
+};
