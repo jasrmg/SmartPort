@@ -149,7 +149,7 @@ def get_vessels_for_map(request):
 
 
 from django.db.models.functions import TruncMonth
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from dateutil.relativedelta import relativedelta
 # ========================== END POINT FOR THE CHARTS ==========================
 def aware(dt):
@@ -247,6 +247,55 @@ def vessel_status_distribution(request):
     "labels": ["Operational", "Under Maintenance"],
     "data": [operational_percent, maintenance_percent],
     "colors": ["#2d9c5a", "#fcddb0"]
+  })
+
+def incident_chart_data(request):
+  filter_range = request.GET.get("filter", "last_6_months")
+  now = timezone.now()
+
+  if filter_range == "this_month":
+    start_date = now.replace(day=1)
+  elif filter_range == "last_3_months":
+    start_date = (now - relativedelta(months=2)).replace(day=1)
+  elif filter_range == "last_6_months":
+    start_date = (now - relativedelta(months=5)).replace(day=1)
+  elif filter_range == "ytd":
+    start_date = now.replace(month=1, day=1)
+  elif filter_range == "last_year":
+    start_date = (now - relativedelta(years=1)).replace(month=1, day=1)
+  elif filter_range == "all_time":
+    earliest = IncidentReport.objects.order_by("incident_datetime").first()
+    start_date = earliest.incident_datetime.replace(day=1) if earliest else now.replace(day=1)
+  else:
+    start_date = (now - relativedelta(months=5)).replace(day=1)  # fallback
+
+  end_date = now.replace(day=1)
+
+  queryset = (
+    IncidentReport.objects.filter(incident_datetime__gte=start_date, incident_datetime__lte=now)
+    .annotate(month=TruncMonth("incident_datetime"))
+    .values("month")
+    .annotate(count=Count("incident_id"))
+    .order_by("month")
+  )
+
+  data = {}
+  current = start_date
+  while current <= end_date:
+    data[current.strftime("%b %Y")] = 0
+    current += relativedelta(months=1)
+
+  for item in queryset:
+    label = item["month"].strftime("%b %Y")
+    data[label] = item["count"]
+
+  this_month_label = now.strftime("%b %Y")
+  this_month_count = data.get(this_month_label, 0)
+
+  return JsonResponse({
+    "labels": list(data.keys()),
+    "counts": list(data.values()),
+    "this_month_count": this_month_count
   })
 
 def admin_all_vessels_view(request):

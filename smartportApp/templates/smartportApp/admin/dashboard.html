@@ -356,10 +356,12 @@
           <div class="card-header">
             <h3 class="card-title">Incident Reports</h3>
             <div class="chart-actions">
-              <select class="chart-filter">
-                <option>Last 6 Months</option>
-                <option>Last Year</option>
-                <option>All Time</option>
+              <select class="chart-filter" id="incident_filter">
+                <option value="this_month">This Month</option>
+                <option value="last_3_months">Last 3 Months</option>
+                <option value="last_6_months">Last 6 Months</option>
+                <option value="ytd">Year to Date</option>
+                <option value="last_year">Last Year</option>
               </select>
             </div>
           </div>
@@ -368,7 +370,7 @@
           </div>
           <div class="chart-footer">
             <div class="chart-stat">
-              <span class="stat-value" style="color: #d14343">+8</span>
+              <span class="stat-value" style="color: #d14343">+0</span>
               <span class="stat-label">new reports this month</span>
             </div>
             <div class="chart-legend">

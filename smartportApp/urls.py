@@ -26,6 +26,7 @@ urlpatterns = [
   # ENDPOINT FOR THE CHARTS
   path('api/chart/shipment-data/', views.cargo_shipment_volume_data, name='shipment_volume_data'),
   path('api/vessel-status-chart/', views.vessel_status_distribution, name='vessel_status_chart'),
+  path("api/chart/incident-data/", views.incident_chart_data, name="incident_chart_data"),
 
 
   # PORTS ENDPOINT FOR NAME AND ID ONLY (assign route)
