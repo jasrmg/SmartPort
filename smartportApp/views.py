@@ -90,28 +90,40 @@ def admin_dashboard(request):
     return redirect("/")
 
   # 1. count active vessels
-  active_vessel_count = Vessel.objects.excclu (status=Vessel.VesselStatus.UNDER_MAINTENANCE).count()
+  active_vessel_count = Vessel.objects.exclude(status=Vessel.VesselStatus.UNDER_MAINTENANCE).count()
   # 2. count pending submanifests
   pending_submanifest_count = SubManifest.objects.filter(status="pending_admin").count()
   # 3. count incidents in the last 30 days
-  thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
+  thirty_days_ago = timezone.localdate() - timedelta(days=30)
   recent_incident_count = IncidentReport.objects.filter(created_at__gte=thirty_days_ago).count();
   # 4. get 5 active voyages (in transit) for table
   active_voyages = (
     Voyage.objects
-    .filter(status=Voyage.VoyageStatus.IN_TRANSIT)
+    .filter(Q(status=Voyage.VoyageStatus.IN_TRANSIT) | Q(status=Voyage.VoyageStatus.ASSIGNED))
     .select_related("vessel", "departure_port", "arrival_port")
     .order_by("eta")[:5]
   )
 
+
+
+  today = timezone.localdate()
+  arrivals_today_count = Voyage.objects.filter(arrival_date__date=today).count()
+
+  # Incident reports created today
+  incidents_today_count = IncidentReport.objects.filter(created_at__date=today).count()
+  print("INCIDENT: ", incidents_today_count)
   context = {
     "active_vessel_count": active_vessel_count,
     "pending_submanifest_count": pending_submanifest_count,
     "recent_incident_count": recent_incident_count,
-    "active_voyages": active_voyages
+    "active_voyages": active_voyages,
+    "arrivals_today_count": arrivals_today_count,
+    "incidents_today_count": incidents_today_count,
   }
 
   return render(request, "smartportApp/admin/dashboard.html", context)
+
+# ENDPOINT TO FILL THE VESSEL ON THE DASHBOARD MAP
 
 
 def admin_all_vessels_view(request):

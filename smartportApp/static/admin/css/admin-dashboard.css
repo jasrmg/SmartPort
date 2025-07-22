@@ -143,6 +143,10 @@
   max-width: 100%;
   overflow-x: hidden;
 }
+.no-underline {
+  text-decoration: none;
+}
+
 /* REMOVE BORDER RADIUS OF THE MAP CONTAINER */
 #mapSection {
   border-bottom-left-radius: 0;
@@ -225,18 +229,17 @@
 }
 
 .status-badge.arrived {
-  background-color: rgba(45, 156, 90, 0.1);
-  color: var(--accent);
+  background-color: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
 }
 
-.status-badge.docked {
-  background-color: rgba(70, 130, 180, 0.1);
-  color: var(--light-blue);
+.status-badge.assigned {
+  background-color: rgba(3, 169, 244, 0.15);
+  color: #03a9f4;
 }
-
-.status-badge.in-transit {
-  background-color: rgba(212, 175, 55, 0.1);
-  color: var(--highlight);
+.status-badge.in_transit {
+  background-color: rgba(255, 152, 0, 0.15);
+  color: #ffc107;
 }
 .filter-wrapper {
   position: relative;
