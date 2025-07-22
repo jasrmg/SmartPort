@@ -88,7 +88,30 @@ def format_duration_string(duration_str):
 def admin_dashboard(request):
   if not request.user.is_authenticated:
     return redirect("/")
-  return render(request, "smartportApp/admin/dashboard.html")
+
+  # 1. count active vessels
+  active_vessel_count = Vessel.objects.excclu (status=Vessel.VesselStatus.UNDER_MAINTENANCE).count()
+  # 2. count pending submanifests
+  pending_submanifest_count = SubManifest.objects.filter(status="pending_admin").count()
+  # 3. count incidents in the last 30 days
+  thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
+  recent_incident_count = IncidentReport.objects.filter(created_at__gte=thirty_days_ago).count();
+  # 4. get 5 active voyages (in transit) for table
+  active_voyages = (
+    Voyage.objects
+    .filter(status=Voyage.VoyageStatus.IN_TRANSIT)
+    .select_related("vessel", "departure_port", "arrival_port")
+    .order_by("eta")[:5]
+  )
+
+  context = {
+    "active_vessel_count": active_vessel_count,
+    "pending_submanifest_count": pending_submanifest_count,
+    "recent_incident_count": recent_incident_count,
+    "active_voyages": active_voyages
+  }
+
+  return render(request, "smartportApp/admin/dashboard.html", context)
 
 
 def admin_all_vessels_view(request):
