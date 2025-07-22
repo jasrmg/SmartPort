@@ -24,7 +24,8 @@ urlpatterns = [
   path('get-ports/', views.get_ports, name='get_ports'),
   path("api/vessels-on-map/", views.get_vessels_for_map, name="vessels-map-api"),
   # ENDPOINT FOR THE CHARTS
-  path('chart-data/shipment-volume/', views.cargo_shipment_volume_data, name='shipment-volume-data'),
+  path('api/chart/shipment-data/', views.cargo_shipment_volume_data, name='shipment_volume_data'),
+  path('api/vessel-status-chart/', views.vessel_status_distribution, name='vessel_status_chart'),
 
 
   # PORTS ENDPOINT FOR NAME AND ID ONLY (assign route)

@@ -150,26 +150,104 @@ def get_vessels_for_map(request):
 
 from django.db.models.functions import TruncMonth
 from django.db.models import Sum
+from dateutil.relativedelta import relativedelta
 # ========================== END POINT FOR THE CHARTS ==========================
+def aware(dt):
+  return make_aware(dt) if is_naive(dt) else dt
+
 def cargo_shipment_volume_data(request):
-  current_year = now().year
-  monthly_data = (
-    Cargo.objects
-    .filter(submanifest__created_at__year=current_year)
-    .annotate(month=TruncMonth('submanifest__created_at'))
-    .values('month')
-    .annotate(total_quantity=Sum('quantity'))
-    .order_by('month')
+  filter_option = request.GET.get("filter", "this_month")
+  today = now().date()
+  current_year = today.year
+
+  if filter_option == "this_month":
+    start_date = aware(datetime(today.year, today.month, 1))
+    end_date = now()
+    compare_start = aware((start_date - relativedelta(months=1)).replace(day=1))
+    compare_end = start_date - timedelta(days=1)
+    label = "vs last month"
+
+  elif filter_option == "last_3_months":
+    start_date = aware(datetime.today() - relativedelta(months=3))
+    end_date = now()
+    compare_start = aware(datetime.today() - relativedelta(months=6))
+    compare_end = start_date - timedelta(days=1)
+    label = "vs previous 3 months"
+
+  elif filter_option == "last_6_months":
+    start_date = aware(datetime.today() - relativedelta(months=6))
+    end_date = now()
+    compare_start = aware(datetime.today() - relativedelta(months=12))
+    compare_end = start_date - timedelta(days=1)
+    label = "vs previous 6 months"
+
+  elif filter_option == "ytd":
+    start_date = aware(datetime(current_year, 1, 1))
+    end_date = now()
+    compare_start = aware(datetime(current_year - 1, 1, 1))
+    compare_end = aware(datetime(current_year - 1, today.month, today.day))
+    label = "vs YTD last year"
+
+  elif filter_option == "last_year":
+    start_date = aware(datetime(current_year - 1, 1, 1))
+    end_date = aware(datetime(current_year - 1, 12, 31))
+    compare_start = aware(datetime(current_year - 2, 1, 1))
+    compare_end = aware(datetime(current_year - 2, 12, 31))
+    label = "vs year before"
+
+  else:
+    return JsonResponse({"error": "Invalid filter"}, status=400)
+
+  current_data = Cargo.objects.filter(
+    submanifest__created_at__range=(start_date, end_date)
+  ).annotate(
+    month=TruncMonth("submanifest__created_at")
+  ).values("month").annotate(
+    total_quantity=Sum("quantity")
+  ).order_by("month")
+
+  current_total = sum(item["total_quantity"] or 0 for item in current_data)
+  previous_total = Cargo.objects.filter(
+    submanifest__created_at__range=(compare_start, compare_end)
+  ).aggregate(total_quantity=Sum("quantity"))["total_quantity"] or 0
+
+  percent_change = (
+    ((current_total - previous_total) / previous_total) * 100
+    if previous_total > 0 else 0
   )
 
-  # Convert to format usable by JS (e.g., "Jan", "Feb", ...)
-  result = {
-    'labels': [entry['month'].strftime('%b') for entry in monthly_data],
-    'data': [entry['total_quantity'] or 0 for entry in monthly_data],
+  response = {
+    "labels": [entry["month"].strftime("%b") for entry in current_data],
+    "data": [entry["total_quantity"] or 0 for entry in current_data],
+    "comparison_stat": {
+      "percent_change": round(percent_change, 1),
+      "comparison_label": label,
+    }
   }
-  return JsonResponse(result)
 
+  return JsonResponse(response)
 
+def vessel_status_distribution(request):
+  operational_count = Vessel.objects.filter(status__in=["available", "assigned"]).count()
+  maintenance_count = Vessel.objects.filter(status="maintenance").count()
+  total = operational_count + maintenance_count
+
+  # Handle division by zero
+  if total == 0:
+    return JsonResponse({
+      "labels": ["Operational", "Under Maintenance"],
+      "data": [0, 0],
+      "colors": ["#2d9c5a", "#fcddb0"]
+    })
+
+  operational_percent = round((operational_count / total) * 100)
+  maintenance_percent = round((maintenance_count / total) * 100)
+
+  return JsonResponse({
+    "labels": ["Operational", "Under Maintenance"],
+    "data": [operational_percent, maintenance_percent],
+    "colors": ["#2d9c5a", "#fcddb0"]
+  })
 
 def admin_all_vessels_view(request):
   vessels = get_vessels_data()
@@ -222,7 +300,7 @@ def activity_log_view(request):
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
-from django.utils.timezone import make_aware
+from django.utils.timezone import make_aware, is_naive
 def admin_manifest_view(request):
   vessel_type = request.GET.get("vessel_type", "all")
   origin = request.GET.get("origin_port", "all")
