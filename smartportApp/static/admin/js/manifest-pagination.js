@@ -167,15 +167,36 @@ document.addEventListener("DOMContentLoaded", () => {
     select.addEventListener("change", () => loadPage(1));
   });
 
-  flatpickr("#dateFilter", {
+  const dateFilterElement = document.getElementById("dateFilter");
+  const hiddenDateInput = document.getElementById("selectedDate");
+
+  let dateSelected = false;
+
+  flatpickr(dateFilterElement, {
     clickOpens: true,
     dateFormat: "Y-m-d",
     allowInput: false,
-    onChange: (dates, dateStr) => {
-      document.getElementById("dateFilter").textContent =
-        dateStr || "Select Date";
-      document.getElementById("selectedDate").value = dateStr;
+    defaultDate: null,
+    onChange: (selectedDates, dateStr) => {
+      dateSelected = true;
+      dateFilterElement.textContent = dateStr || "Select Date";
+      hiddenDateInput.value = dateStr;
       loadPage(1); // reload with filter
+    },
+    onOpen: () => {
+      dateSelected = false; // Reset when calendar is opened
+    },
+    onClose: (selectedDates, dateStr) => {
+      if (!dateSelected) {
+        // Reset if user clicked out without choosing a date
+        dateFilterElement.textContent = "Select Date";
+        const selectedDay = document.querySelector(".flatpickr-day.selected");
+        if (selectedDay) {
+          selectedDay.classList.remove("selected");
+        }
+        hiddenDateInput.value = "";
+        loadPage(1); // Reset filter
+      }
     },
   });
 

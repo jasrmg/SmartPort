@@ -309,6 +309,20 @@ body {
 .hidden {
   display: none;
 }
+.btn-clear {
+  background-color: var(--danger);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.btn-clear:hover {
+  background-color: #b03030; /* slightly darker than --danger */
+}
 
 /* ---------- START OF TABLE ---------- */
 .table-responsive {
