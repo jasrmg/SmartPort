@@ -301,6 +301,15 @@ body {
   font-size: 0.95rem;
 }
 
+.no-voyage {
+  display: flex;
+  width: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
 /* ---------- START OF TABLE ---------- */
 .table-responsive {
   max-height: 380px;

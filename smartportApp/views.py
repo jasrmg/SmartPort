@@ -142,10 +142,44 @@ def activity_log_view(request):
 def admin_users_view(request):
   return render(request, "smartportApp/admin/admin-users.html")
 
+from django.utils.timezone import make_aware
 def admin_manifest_view(request):
+  vessel_type = request.GET.get("vessel_type", "all")
+  origin = request.GET.get("origin_port", "all")
+  destination = request.GET.get("destination_port", "all")
+  departure_date = request.GET.get("departure_date", "")
+
+
   voyages = Voyage.objects.select_related(
     "vessel", "departure_port", "arrival_port"
-  ).order_by("-departure_date")
+  )
+
+  # Apply filters
+  if vessel_type != "all":
+    voyages = voyages.filter(vessel__vessel_type=vessel_type)
+  
+  if origin != "all":
+    voyages = voyages.filter(departure_port_id=origin)
+
+  if destination != "all":
+    voyages = voyages.filter(arrival_port_id=destination)
+
+  if departure_date:
+    try:
+      parsed_date = datetime.strptime(departure_date, "%Y-%m-%d")
+      start = make_aware(datetime.combine(parsed_date, datetime.min.time()))
+      end = make_aware(datetime.combine(parsed_date, datetime.max.time()))
+
+      print("Start of day:", start)
+      print("End of day:", end)
+
+      voyages = voyages.filter(
+        Q(departure_date__range=(start, end)) |
+        Q(arrival_date__range=(start, end))
+      )
+    except ValueError:
+      print("Invalid date input:", departure_date)
+  voyages = voyages.order_by("-departure_date")
 
   paginator = Paginator(voyages, 1)  # Adjust page size as needed
   page_number = request.GET.get("page", 1)
@@ -158,12 +192,20 @@ def admin_manifest_view(request):
   page_obj = paginator.get_page(page_number)
   parsed_voyages = parse_manifest_page(page_obj)
 
+  logger.debug(f"Final voyage count after filters: {voyages.count()}")
+
   context = {
     "page_obj": parsed_voyages,
     "paginator": paginator,
     "current_page": page_obj.number,
     "has_next": page_obj.has_next(),
     "has_prev": page_obj.has_previous(),
+    "filters": {
+      "vessel_type": vessel_type,
+      "origin": origin,
+      "destination": destination,
+      "departure_date": departure_date,
+    },
   }
 
   return render(request, "smartportApp/admin/manifest.html", context)
@@ -192,7 +234,7 @@ def master_manifest_detail_view(request, mastermanifest_id):
   }
   return render(request, "smartportApp/admin/mastermanifest.html", context)
 
-from django.db.models import F
+from django.db.models import F, Q
 def report_feed_view(request):
   sort = request.GET.get("sort", "newest")
   incidents = IncidentReport.objects.all()

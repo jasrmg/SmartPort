@@ -4,6 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationContainer = document.getElementById("pagination-container");
   if (!paginationContainer) return;
 
+  const originSelect = document.getElementById("originPortSelect");
+  const destinationSelect = document.getElementById("destinationPortSelect");
+  const vesselTypeSelect = document.getElementById("vesselTypeSelect");
+
   let totalPages = parseInt(paginationContainer.dataset.totalPages);
   let currentPage = parseInt(paginationContainer.dataset.currentPage);
 
@@ -49,9 +53,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  const getFilterParams = () => {
+    const vesselType = vesselTypeSelect.value;
+    const originPort = originSelect.value;
+    const destinationPort = destinationSelect.value;
+    const date = document.getElementById("selectedDate").value;
+    // console.log("get filter params: ", date);
+
+    const params = new URLSearchParams();
+    if (vesselType && vesselType !== "all")
+      params.append("vessel_type", vesselType);
+    if (originPort && originPort !== "all")
+      params.append("origin_port", originPort);
+    if (destinationPort && destinationPort !== "all")
+      params.append("destination_port", destinationPort);
+    if (date) params.append("departure_date", date);
+
+    return params.toString();
+  };
+
   const loadPage = async (page) => {
     try {
-      const res = await fetch(`?page=${page}`);
+      const filters = getFilterParams();
+      const res = await fetch(`?page=${page}&${filters}`);
       const html = await res.text();
       const doc = new DOMParser().parseFromString(html, "text/html");
 
@@ -138,6 +162,22 @@ document.addEventListener("DOMContentLoaded", () => {
     newNextBtn?.addEventListener("click", handleNext);
     newPaginationWindow?.addEventListener("click", handleClick);
   };
+
+  document.querySelectorAll(".search-filter select").forEach((select) => {
+    select.addEventListener("change", () => loadPage(1));
+  });
+
+  flatpickr("#dateFilter", {
+    clickOpens: true,
+    dateFormat: "Y-m-d",
+    allowInput: false,
+    onChange: (dates, dateStr) => {
+      document.getElementById("dateFilter").textContent =
+        dateStr || "Select Date";
+      document.getElementById("selectedDate").value = dateStr;
+      loadPage(1); // reload with filter
+    },
+  });
 
   initPagination();
 });

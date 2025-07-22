@@ -93,7 +93,8 @@
   <div class="voyage-list-container" id="voyage-list-section">
     <div class="voyage-header">
       <div class="search-filter">
-        <select class="form-select">
+        <!--VESSEL TYPE-->
+        <select class="form-select" id="vesselTypeSelect">
           <option value="all">All Vessel Types</option>
           <option value="container">Container Ships</option>
           <option value="ro_ro">Ro-Ro</option>
@@ -101,18 +102,21 @@
         </select>
       </div>
 
+      <!--ORIGIN PORT-->
       <div class="search-filter">
         <select class="form-select" id="originPortSelect">
           <option value="all">Origin Port</option>
         </select>
       </div>
 
+      <!--DESTINATION PORT-->
       <div class="search-filter">
         <select class="form-select" id="destinationPortSelect">
           <option value="all">Destination Port</option>
         </select>
       </div>
 
+      <!--DATE-->
       <div class="search-filter">
         <div class="form-select" id="dateFilter" tabindex="0">Select Date</div>
         <input type="hidden" id="selectedDate" name="selected_date" />
@@ -156,24 +160,20 @@
       </div>
       <!---->
       {% empty %}
-      <p>No voyages found.</p>
+      <p class="no-voyage">No voyages found.</p>
       {% endfor %}
     </div>
 
-    {% if paginator.num_pages > 1 %}
     <div
-      class="pagination-container"
+      class="pagination-container {% if paginator.num_pages <= 1 %}hidden{% endif %}"
       id="pagination-container"
       data-total-pages="{{ paginator.num_pages }}"
       data-current-page="{{ current_page }}"
     >
       <button class="pagination-btn" id="prev-page-btn">«</button>
-
       <div id="pagination-window"></div>
-
       <button class="pagination-btn" id="next-page-btn">»</button>
     </div>
-    {% endif %}
   </div>
 
   <div class="voyage-submanifest" style="display: none">
