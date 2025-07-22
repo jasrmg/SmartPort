@@ -77,58 +77,52 @@ sortButtons.forEach((btn) => {
 function initCharts() {
   // Shipment Volume Bar Chart
   const shipmentCtx = document.getElementById("shipmentChart").getContext("2d");
-  const shipmentChart = new Chart(shipmentCtx, {
-    type: "bar",
-    data: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      datasets: [
-        {
-          label: "Current",
-          data: [500, 700, 600, 800, 750, 900],
-          backgroundColor: "#1E3A8A",
-          borderRadius: 4,
+
+  const renderShipmentChart = async () => {
+    try {
+      const res = await fetch("/chart-data/shipment-volume/");
+      const { labels, data } = await res.json();
+
+      new Chart(shipmentCtx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Total Quantity",
+              data: data,
+              backgroundColor: "#2d9c5a", // match --accent
+            },
+          ],
         },
-        {
-          label: "Previous",
-          data: [450, 650, 550, 700, 650, 800],
-          backgroundColor: "#8CA6DB",
-          borderRadius: 4,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 300,
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          mode: "index",
-          intersect: false,
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: {
-            color: "#f0f0f0",
-            drawBorder: false,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            },
+            tooltip: {
+              mode: "index",
+              intersect: false,
+            },
           },
-          ticks: {
-            stepSize: 200,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Quantity",
+              },
+            },
           },
         },
-        x: {
-          grid: { display: false },
-          ticks: {
-            color: "#6B7280",
-          },
-        },
-      },
-    },
-  });
+      });
+    } catch (err) {
+      console.error("Failed to load shipment volume chart:", err);
+    }
+  };
+
+  renderShipmentChart();
 
   // Vessel Status Doughnut Chart
   const vesselCtx = document.getElementById("vesselChart").getContext("2d");

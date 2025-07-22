@@ -124,6 +124,51 @@ def admin_dashboard(request):
   return render(request, "smartportApp/admin/dashboard.html", context)
 
 # ENDPOINT TO FILL THE VESSEL ON THE DASHBOARD MAP
+def get_vessels_for_map(request):
+  voyages = Voyage.objects.select_related('vessel', 'departure_port', 'arrival_port').filter(
+    status__in=[Voyage.VoyageStatus.ASSIGNED, Voyage.VoyageStatus.IN_TRANSIT]
+  )
+
+  data = []
+  for v in voyages:
+    data.append({
+      "voyage_number": v.voyage_number,
+      "vessel_name": v.vessel.name,
+      "status": v.status,
+      "departure": {
+        "lat": v.departure_port.latitude,
+        "lng": v.departure_port.longitude
+      },
+      "arrival": {
+        "lat": v.arrival_port.latitude,
+        "lng": v.arrival_port.longitude
+      }
+    })
+
+  return JsonResponse(data, safe=False)
+
+
+from django.db.models.functions import TruncMonth
+from django.db.models import Sum
+# ========================== END POINT FOR THE CHARTS ==========================
+def cargo_shipment_volume_data(request):
+  current_year = now().year
+  monthly_data = (
+    Cargo.objects
+    .filter(submanifest__created_at__year=current_year)
+    .annotate(month=TruncMonth('submanifest__created_at'))
+    .values('month')
+    .annotate(total_quantity=Sum('quantity'))
+    .order_by('month')
+  )
+
+  # Convert to format usable by JS (e.g., "Jan", "Feb", ...)
+  result = {
+    'labels': [entry['month'].strftime('%b') for entry in monthly_data],
+    'data': [entry['total_quantity'] or 0 for entry in monthly_data],
+  }
+  return JsonResponse(result)
+
 
 
 def admin_all_vessels_view(request):

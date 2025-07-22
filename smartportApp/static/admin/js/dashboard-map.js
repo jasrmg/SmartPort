@@ -1,98 +1,16 @@
-// Initialize map centered on Philippines
+// Initialize Leaflet map
 const map = L.map("vessel-map").setView([12.8797, 121.774], 6);
-
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {}).addTo(
   map
 );
 
-// ---------- NEW ----------
-const fetchPorts = async () => {
-  try {
-    const response = await fetch("/get-ports/");
-    const data = await response.json();
-    const portIcon = L.icon({
-      iconUrl: "/static/port2.png",
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
-    });
-
-    data.ports.forEach((port) => {
-      const marker = L.marker([port.latitude, port.longitude], {
-        icon: portIcon,
-      }).addTo(map);
-      marker.bindPopup(`
-        <strong>${port.name} (${port.code})</strong><br />
-        ${port.description || "No description"}
-        `);
-    });
-  } catch (error) {
-    console.error("Error loading port data: ", error);
-  }
-};
-
-fetchPorts();
-
-// Define Philippine territorial waters boundary (simplified polygon)
-// This is an approximate boundary for demonstration purposes
-const philTerritorialWaters = [
-  // Northern bounds
-  [21.1, 119.0],
-  [21.1, 127.0],
-  // Eastern bounds
-  [21.1, 127.0],
-  [4.2, 127.0],
-  // Southern bounds
-  [4.2, 127.0],
-  [4.2, 114.0],
-  // Western bounds
-  [4.2, 114.0],
-  [21.1, 119.0],
-];
-
-// Add vessel markers for Philippine locations
-const vesselMarkers = [
-  {
-    name: "Manila Bay Express",
-    position: [14.5995, 120.9842], // Manila
-    status: "arrived",
-    icon: L.divIcon({
-      html: '<i class="fas fa-ship" style="color: #2D9C5A; font-size: 24px;"></i>',
-      className: "vessel-marker",
-      iconSize: [24, 24],
-    }),
-  },
-  {
-    name: "Cebu Pearl",
-    position: [10.3157, 123.9054], // Cebu
-    status: "docked",
-    icon: L.divIcon({
-      html: '<i class="fas fa-ship" style="color: #4682B4; font-size: 24px;"></i>',
-      className: "vessel-marker",
-      iconSize: [24, 24],
-    }),
-  },
-  {
-    name: "Mindanao Explorer",
-    position: [12.5, 123.0], // Off Samar coast
-    status: "in-transit",
-    icon: L.divIcon({
-      html: '<i class="fas fa-ship" style="color: #D4AF37; font-size: 24px;"></i>',
-      className: "vessel-marker",
-      iconSize: [24, 24],
-    }),
-  },
-  {
-    name: "Visayas Navigator",
-    position: [11.2, 123.7], // Between Panay and Negros
-    status: "in-transit",
-    icon: L.divIcon({
-      html: '<i class="fas fa-ship" style="color: #D4AF37; font-size: 24px;"></i>',
-      className: "vessel-marker",
-      iconSize: [24, 24],
-    }),
-  },
-];
+// Icons
+const portIcon = L.icon({
+  iconUrl: "/static/port2.png",
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+});
 
 const vesselIcon = L.icon({
   iconUrl: "/static/vessel.png",
@@ -100,105 +18,101 @@ const vesselIcon = L.icon({
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
 });
-// Add vessel markers to the map
-vesselMarkers.forEach((vessel) => {
-  const marker = L.marker(vessel.position, {
-    icon: vesselIcon,
-    title: vessel.name,
-  }).addTo(map);
 
-  // Add popup with vessel info
-  marker.bindPopup(
-    `<div style="font-family: 'Montserrat', sans-serif;">
-                    <h4 style="margin: 0 0 5px 0; font-family: 'Montserrat', sans-serif;">${
-                      vessel.name
-                    }</h4>
-                    <p style="margin: 0 0 3px 0; font-size: 0.9em;">
-                        <strong>Status:</strong> 
-                        <span style="color: ${
-                          vessel.status === "arrived"
-                            ? "#2D9C5A"
-                            : vessel.status === "docked"
-                            ? "#4682B4"
-                            : "#D4AF37"
-                        }">
-                            ${
-                              vessel.status === "arrived"
-                                ? "Arrived"
-                                : vessel.status === "docked"
-                                ? "Docked"
-                                : "In Transit"
-                            }
-                        </span>
-                    </p>
-                    <p style="margin: 0; font-size: 0.9em;">
-                        <strong>Location:</strong> 
-                        ${vessel.position[0].toFixed(
-                          4
-                        )}°N, ${vessel.position[1].toFixed(4)}°E
-                    </p>
-                </div>`
-  );
-});
+// Load all ports
+const fetchPorts = async () => {
+  try {
+    const response = await fetch("/get-ports/");
+    const data = await response.json();
 
-// Add port markers
-// Object.entries(philippinePorts).forEach(([portName, coords]) => {
-//   L.marker(coords, {
-//     icon: L.divIcon({
-//       html: '<i class="fas fa-anchor" style="color: #1E3A8A; font-size: 20px;"></i>',
-//       className: "port-marker",
-//       iconSize: [20, 20],
-//     }),
-//   })
-//     .addTo(map)
-//     .bindPopup(`<b>${portName} Port</b>`);
-// });
+    data.ports.forEach((port) => {
+      const marker = L.marker([port.latitude, port.longitude], {
+        icon: portIcon,
+      }).addTo(map);
 
-// Add territorial waters polygon
-L.polygon(philTerritorialWaters, {
-  color: "#1E3A8A",
-  fillColor: "#1E3A8A",
-  fillOpacity: 0.1,
-  weight: 1,
-  dashArray: "5, 5",
-})
+      marker.bindPopup(`
+        <strong>${port.name} (${port.code})</strong><br />
+        ${port.description || "No description"}
+      `);
+    });
+  } catch (err) {
+    console.error("Port loading failed", err);
+  }
+};
+
+fetchPorts();
+fetchAndRenderVessels();
+
+// Draw simplified territorial waters polygon
+L.polygon(
+  [
+    [21.1, 119.0],
+    [21.1, 127.0],
+    [4.2, 127.0],
+    [4.2, 114.0],
+    [21.1, 119.0],
+  ],
+  {
+    color: "#1E3A8A",
+    fillColor: "#1E3A8A",
+    fillOpacity: 0.1,
+    weight: 1,
+    dashArray: "5,5",
+  }
+)
   .addTo(map)
-  .bindPopup("<b>Philippine Territorial Waters</b>");
+  .bindPopup("Philippine Territorial Waters");
 
-// Simulate vessel movement for demo purposes
-function simulateVesselMovement() {
-  // Move Mindanao Explorer eastward
-  const mindanaoExplorer = vesselMarkers.find(
-    (v) => v.name === "Mindanao Explorer"
-  );
-  if (mindanaoExplorer) {
-    mindanaoExplorer.position[1] += 0.05;
-    if (mindanaoExplorer.position[1] > 125.0) {
-      mindanaoExplorer.position[1] = 123.0;
-    }
-  }
+// Fetch real vessel data from backend
+async function fetchAndRenderVessels() {
+  try {
+    const res = await fetch("/api/vessels-on-map/");
+    const vessels = await res.json();
 
-  // Move Visayas Navigator northward
-  const visayasNavigator = vesselMarkers.find(
-    (v) => v.name === "Visayas Navigator"
-  );
-  if (visayasNavigator) {
-    visayasNavigator.position[0] += 0.03;
-    if (visayasNavigator.position[0] > 11.8) {
-      visayasNavigator.position[0] = 11.2;
-    }
-  }
-
-  // Update map markers
-  map.eachLayer((layer) => {
-    if (layer instanceof L.Marker && layer.options.title) {
-      const vessel = vesselMarkers.find((v) => v.name === layer.options.title);
-      if (vessel) {
-        layer.setLatLng(vessel.position);
+    vessels.forEach((vessel) => {
+      if (vessel.status === "assigned") {
+        // Static vessel at departure
+        L.marker([vessel.departure.lat, vessel.departure.lng], {
+          icon: vesselIcon,
+        })
+          .addTo(map)
+          .bindPopup(
+            `<strong>${vessel.vessel_name}</strong><br>Status: Assigned`
+          );
+      } else if (vessel.status === "in_transit") {
+        animateVessel(vessel);
       }
-    }
-  });
+    });
+  } catch (err) {
+    console.error("Vessel loading failed", err);
+  }
 }
 
-// Update vessel positions every 5 seconds
-setInterval(simulateVesselMovement, 5000);
+// Animate vessel from departure to arrival
+function animateVessel(vessel) {
+  const steps = 200;
+  const delay = 1000; // ms
+  let step = 0;
+
+  const latStep = (vessel.arrival.lat - vessel.departure.lat) / steps;
+  const lngStep = (vessel.arrival.lng - vessel.departure.lng) / steps;
+
+  let lat = vessel.departure.lat;
+  let lng = vessel.departure.lng;
+
+  const marker = L.marker([lat, lng], { icon: vesselIcon })
+    .addTo(map)
+    .bindPopup(`<strong>${vessel.vessel_name}</strong><br>Status: In Transit`);
+
+  const interval = setInterval(() => {
+    if (step >= steps) {
+      clearInterval(interval);
+      return;
+    }
+
+    lat += latStep;
+    lng += lngStep;
+    marker.setLatLng([lat, lng]);
+    step++;
+  }, delay);
+}

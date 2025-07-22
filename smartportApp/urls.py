@@ -22,6 +22,11 @@ urlpatterns = [
   # -------------------------------- END ADMIN TEMPLATES LOAD --------------------------------
   # PORTS ENDPOINT FOR THE LEAFLET MAP COMPLETE PORT DETAILS
   path('get-ports/', views.get_ports, name='get_ports'),
+  path("api/vessels-on-map/", views.get_vessels_for_map, name="vessels-map-api"),
+  # ENDPOINT FOR THE CHARTS
+  path('chart-data/shipment-volume/', views.cargo_shipment_volume_data, name='shipment-volume-data'),
+
+
   # PORTS ENDPOINT FOR NAME AND ID ONLY (assign route)
   path('get-port-options/', views.get_port_options, name="get_port_options"),
   # VESSEL LIST
