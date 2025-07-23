@@ -1,45 +1,14 @@
-/**/
-.voyage-cards-container {
-  max-height: 56vh;
-  overflow-y: auto;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1.5rem;
-  padding: 1rem;
-  overflow-x: hidden;
-}
-.pagination-container {
-  text-align: center;
-  margin-top: 1rem;
-}
-
-.pagination-btn {
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  margin: 0 0.25rem;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.pagination-btn.active {
-  background-color: var(--highlight);
-  color: black;
-}
-
-.voyage-header {
+.submanifest-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
-.voyage-header h2 {
+.submanifest-header h2 {
   font-size: 1.4rem;
   color: var(--primary);
   margin: 0;
 }
-
 .search-filter {
   width: 250px;
 }
@@ -73,8 +42,7 @@
   outline: none;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
 }
-
-.voyage-card {
+.submanifest-card {
   display: flex;
   flex-direction: column;
   background-color: white;
@@ -84,16 +52,16 @@
   transition: all 0.3s ease;
   cursor: pointer;
 }
-.voyage-card:hover {
+.submanifest-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
-.voyage-card-header {
+.submanifest-card-header {
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
 }
-.voyage-card-icon {
+.submanifest-card-icon {
   width: 40px;
   height: 40px;
   background: linear-gradient(135deg, var(--secondary), var(--light-blue));
@@ -104,26 +72,26 @@
   margin-right: 1rem;
   flex-shrink: 0;
 }
-.voyage-card-icon i {
+.submanifest-card-icon i {
   font-size: 1.3rem;
   color: white;
 }
-.voyage-card-title h3 {
+.submanifest-card-title h3 {
   margin: 0;
   font-size: 1.1rem;
   color: var(--primary);
 }
-.voyage-card-title p {
+.submanifest-card-title p {
   margin: 0.2rem 0 0;
   font-size: 0.85rem;
   color: var(--dark-gray);
 }
-.voyage-card-info {
+.submanifest-card-info {
   font-size: 0.9rem;
   color: var(--dark-gray);
   margin-bottom: 0.3rem;
 }
-.voyage-card-info strong {
+.submanifest-card-info strong {
   color: var(--primary);
 }
 
@@ -154,7 +122,7 @@
 }
 
 /* Voyage Report Detail Styles */
-.voyage-detail-container {
+.submanifest-detail-container {
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -171,23 +139,21 @@
   justify-content: flex-end;
   gap: 1rem;
 }
-
-/* NEW MANIFEST */
-.voyage-submanifest {
+.submanifest-cargo {
   background-color: white;
   padding: 2rem;
   border-radius: 1rem;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
-.voyage-details-header {
+.submanifest-details-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
 }
 
-.voyage-details-header h2 {
+.submanifest-details-header h2 {
   font-weight: 600;
   font-size: 1.5rem;
 }
@@ -201,85 +167,6 @@
   background-color: var(--gray);
   transform: translateY(-2px);
 }
-
-.generate-manifest-wrapper {
-  margin-top: 1.5rem;
-  text-align: right;
-}
-
-.generate-manifest-btn {
-  background-color: var(--accent);
-  color: white;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 0.4rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.view-manifest-btn {
-  background-color: var(--accent);
-  color: white;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.view-manifest-btn:hover {
-  background-color: #23874a; /* slightly darker shade of --accent */
-  transform: translateY(-1px);
-}
-
-.view-manifest-btn:active {
-  transform: translateY(1px);
-}
-
-.view-manifest-btn:disabled {
-  background-color: var(--gray);
-  color: var(--dark-gray);
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.generate-manifest-btn:disabled {
-  background-color: var(--gray);
-  cursor: not-allowed;
-}
-
-.manifest-warning {
-  margin-top: 0.5rem;
-  color: var(--danger);
-  font-size: 0.9rem;
-}
-
-#rejectForm {
-  display: flex;
-  flex-direction: column;
-}
-#rejectNote {
-  width: 100%;
-  padding: 0.75rem;
-  margin-top: 0.75rem;
-  border: 1px solid var(--gray);
-  border-radius: 4px;
-  resize: none;
-  font-family: "Montserrat", sans-serif;
-  font-size: 0.95rem;
-}
-
-.no-voyage {
-  display: flex;
-  width: 100%;
-}
-
-.hidden {
-  display: none;
-}
-
 /* ---------- START OF TABLE ---------- */
 .table-responsive {
   max-height: 380px;
@@ -431,48 +318,4 @@
 
 .custom-toast.fade-out {
   opacity: 0;
-}
-
-/* STATUS BADGE */
-.status-badge {
-  display: inline-block;
-  padding: 0.3rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-/* Pending Admin Review */
-.status-badge.pending_admin {
-  background-color: rgba(30, 58, 138, 0.1);
-  color: var(--secondary);
-  border: 1px solid var(--secondary);
-}
-
-/* Rejected by Admin */
-.status-badge.rejected_by_admin {
-  background-color: rgba(209, 67, 67, 0.1);
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
-
-/* Pending Customs Review */
-.status-badge.pending_customs {
-  background-color: rgba(212, 175, 55, 0.15);
-  color: var(--highlight);
-  border: 1px solid var(--highlight);
-}
-
-/* Rejected by Customs */
-.status-badge.rejected_by_customs {
-  background-color: rgba(209, 67, 67, 0.1);
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
-
-/* Approved */
-.status-badge.approved {
-  background-color: rgba(45, 156, 90, 0.15);
-  color: var(--accent);
-  border: 1px solid var(--accent);
 }
