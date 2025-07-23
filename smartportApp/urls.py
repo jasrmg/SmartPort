@@ -96,6 +96,7 @@ urlpatterns = [
   # -------------------------------- SHIPPER TEMPLATES LOAD --------------------------------
   path("shipper-dashboard/", views_shipper.shipper_dashboard, name="shipper-dashboard"),
   path("vessel-info/", views_shipper.shipper_vessel_info_view, name="vessel-info"),
+  path("confirm-cargo/", views_shipper.shipper_confirm_cargo_view, name="confirm-cargo"),
   # -------------------------------- END OF SHIPPER TEMPLATES LOAD --------------------------------
   # HELPER FOR THE VESSEL INFO VIEW:
   path("shipper/vessel/<int:vessel_id>/details/", views_shipper.get_vessel_details, name="vessel-details"),

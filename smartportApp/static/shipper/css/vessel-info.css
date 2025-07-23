@@ -223,12 +223,12 @@ tbody tr:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 14px;
   background-color: var(--secondary);
   color: white;
   border-radius: 6px;
-  font-size: 14px;
-  text-decoration: none;
+  font-size: 0.9rem;
+  border: none;
   transition: background-color 0.2s ease;
 }
 

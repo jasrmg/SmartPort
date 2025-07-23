@@ -1,12 +1,10 @@
-document.addEventListener("DOMContentLoaded", function () {
-  console.log("hello world");
+document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("vesselDetailsModal");
   const closeBtn = document.getElementById("closeVesselModal");
   const modalBody = document.getElementById("vesselDetailsBody");
 
   document.querySelectorAll(".view-details-btn").forEach((btn) => {
-    console.log("click");
-    btn.addEventListener("click", function () {
+    btn.addEventListener("click", () => {
       const vesselId = this.getAttribute("data-vessel-id");
 
       fetch(`/shipper/vessel/${vesselId}/details/`)

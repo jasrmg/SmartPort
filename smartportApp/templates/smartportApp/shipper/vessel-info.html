@@ -35,13 +35,13 @@
       </a>
       <ul class="nav-sub-menu" style="height: auto">
         <li>
-          <a href="view-vessels.html" class="nav-sub-link active">
+          <a href="" class="nav-sub-link active">
             <i class="fas fa-list-ul"></i>
             <span>Vessels Info</span>
           </a>
         </li>
         <li>
-          <a href="" class="nav-sub-link">
+          <a href="{% url 'confirm-cargo' %}" class="nav-sub-link">
             <i class="fas fa-check-circle"></i>
             <span>Confirm Cargo</span>
           </a>
@@ -144,6 +144,7 @@
         <div class="vessel-name">{{ vessel.name }}</div>
         <div class="vessel-imo">{{ vessel.imo }}</div>
         <div class="vessel-action">
+          side
           <button
             class="vessel-action-btn view-details-btn"
             data-vessel-id="{{ vessel.vessel_id }}"
