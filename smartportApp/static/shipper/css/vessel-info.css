@@ -1,0 +1,247 @@
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: var(--light);
+  border-bottom: 2px solid var(--gray);
+}
+
+th,
+td {
+  padding: 1rem;
+  text-align: left;
+}
+
+th {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+tbody tr {
+  border-bottom: 1px solid var(--gray);
+  transition: all 0.3s;
+}
+
+tbody tr:hover {
+  background-color: rgba(70, 130, 180, 0.05);
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-badge.arrived {
+  background-color: rgba(45, 156, 90, 0.1);
+  color: var(--accent);
+}
+
+.status-badge.docked {
+  background-color: rgba(70, 130, 180, 0.1);
+  color: var(--light-blue);
+}
+
+.status-badge.in-transit {
+  background-color: rgba(212, 175, 55, 0.1);
+  color: var(--highlight);
+}
+
+/* Filter Section */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+}
+
+.filter-label {
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+  color: var(--dark-gray);
+}
+
+.filter-select {
+  padding: 0.5rem;
+  border: 1px solid var(--gray);
+  border-radius: 4px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.9rem;
+  background-color: white;
+  min-width: 120px;
+}
+
+/* Button styles */
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-family: "Exo 2", sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}
+
+.btn-outline:hover {
+  background-color: rgba(10, 31, 68, 0.1);
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.7;
+  transition: all 0.3s;
+}
+
+.action-btn:hover {
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+  }
+
+  .main-content {
+    margin-left: 80px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .nav-link span {
+    display: none;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+}
+
+.vessels-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
+  justify-content: flex-start;
+}
+.vessel-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07);
+  width: 320px;
+  min-width: 260px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+  position: relative;
+}
+.vessel-card:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.13);
+}
+.vessel-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: #e5e7eb;
+  display: block;
+}
+.vessel-info {
+  width: 100%;
+  padding: 1.2rem 1rem 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.vessel-name {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 0.7rem;
+  margin-bottom: 0.3rem;
+  text-align: center;
+}
+.vessel-imo {
+  font-size: 0.98rem;
+  color: var(--dark-gray);
+  margin-bottom: 0.7rem;
+  text-align: center;
+}
+.vessel-action {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: end;
+  width: 100%;
+}
+.vessel-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--secondary);
+  color: white;
+  border-radius: 6px;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.vessel-action-btn:hover,
+.vessel-action-btn:focus {
+  background-color: var(--primary);
+}
+@media (max-width: 900px) {
+  .vessels-card-grid {
+    gap: 1.2rem;
+  }
+  .vessel-card {
+    width: 100%;
+    min-width: 0;
+  }
+}

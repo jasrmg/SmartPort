@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views_shipper
 
 urlpatterns = [
   path("", views.auth_view, name="auth_view"),
@@ -88,12 +89,18 @@ urlpatterns = [
   path("incident/resolve/<int:incident_id>/", views.resolve_incident, name="resolve_incident"),
 
 
-  # -------------------------------- CUSTOM --------------------------------
+  # -------------------------------- CUSTOM USING DIFFERENT VIEW --------------------------------
   path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),
 
-  # -------------------------------- SHIPPER --------------------------------
-  path("shipper-dashboard/", views.shipper_dashboard, name="shipper-dashboard"),
+  # -------------------------------- SHIPPER USING DIFFERENT VIEW --------------------------------
+  # -------------------------------- SHIPPER TEMPLATES LOAD --------------------------------
+  path("shipper-dashboard/", views_shipper.shipper_dashboard, name="shipper-dashboard"),
+  path("vessel-info/", views_shipper.shipper_vessel_info_view, name="vessel-info"),
+  # -------------------------------- END OF SHIPPER TEMPLATES LOAD --------------------------------
+  # HELPER FOR THE VESSEL INFO VIEW:
+  path("shipper/vessel/<int:vessel_id>/details/", views_shipper.get_vessel_details, name="vessel-details"),
 
-  # -------------------------------- EMPLOYEE --------------------------------
+
+  # -------------------------------- EMPLOYEE USING DIFFERENT VIEW --------------------------------
   path("employee-dashboard/", views.employee_dashboard, name="employee-dashboard"),
 ]

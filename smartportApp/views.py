@@ -1711,12 +1711,7 @@ def customs_dashboard(request):
 
 
 # --------------------------------- SHIPPER ---------------------------------
-@login_required
-def shipper_dashboard(request):
-  return render(request, "smartportApp/shipper/dashboard.html")
-
-
-
+# NAA SA views_shippers.py
 
 # --------------------------------- EMPLOYEE ---------------------------------
 @login_required
