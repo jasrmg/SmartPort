@@ -319,3 +319,19 @@
 .custom-toast.fade-out {
   opacity: 0;
 }
+.form-group {
+  margin-bottom: 1rem;
+}
+.form-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--gray);
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+textarea.form-input {
+  resize: none;
+  min-height: 100px;
+  font-family: Montserrat;
+}

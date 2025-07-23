@@ -204,9 +204,7 @@
 
   <div class="submanifest-cargo" style="display: none">
     <div class="submanifest-details-header">
-      <h2>
-        Submanifests for Voyage <span id="submanifest-number-display"></span>
-      </h2>
+      <h2>Cargos for <span id="submanifest-number-display"></span></h2>
       <button class="btn back-to-list-btn" id="back-to-list-btn">
         <i class="fas fa-arrow-left"></i>
         Back to Reports List
@@ -217,13 +215,13 @@
       <table class="submanifest-table">
         <thead>
           <tr>
-            <th>Submanifest ID</th>
-            <th>Item Count</th>
-            <th>Status</th>
+            <th>Item Number</th>
+            <th>Description</th>
+            <th>Quantity</th>
             <th>Action</th>
           </tr>
         </thead>
-        <tbody id="submanifest-tbody">
+        <tbody id="cargo-tbody">
           <tr>
             <td></td>
             <td></td>
@@ -231,49 +229,109 @@
               <span class="status-badge warning"></span>
             </td>
             <td>
-              <button class="btn-icon view" title="View">
-                <i class="fas fa-eye"></i>
-              </button>
-              <button class="btn-icon approve" title="Approve">
+              <button class="btn-icon approve" title="Mark As Delivered">
                 <i class="fas fa-check"></i>
-              </button>
-              <button class="btn-icon reject" title="Reject">
-                <i class="fas fa-times"></i>
               </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-
-    <div class="generate-manifest-wrapper">
-      <button
-        id="generate-manifest-btn"
-        class="btn generate-manifest-btn"
-        disabled
-      >
-        Generate Master Manifest
-      </button>
-      <button
-        id="view-master-manifest-btn"
-        class="btn view-manifest-btn"
-        style="display: none"
-      >
-        View Master Manifest
-      </button>
-      <p id="manifest-warning" class="manifest-warning">
-        <strong
-          >*Cannot generate master manifest. Some submanifests are still
-          pending.</strong
-        >
-      </p>
-    </div>
   </div>
 </div>
 {% endblock %}
 <!---->
-{% block modal %} {% endblock %}
+{% block modal %}
+<div class="modal-overlays" id="confirmDeliveryModal">
+  <div class="modal">
+    <div
+      class="modal-header"
+      style="position: sticky; top: 0; background-color: white"
+    >
+      <h2 class="modal-title">
+        <i class="fas fa-box-open" style="margin-right: 0.5rem"></i>
+        Confirm Cargo Delivery
+      </h2>
+      <button class="modal-close" id="closeConfirmDeliveryModal">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <!-- Warning Message -->
+      <div
+        class="warning-text"
+        style="color: var(--danger); font-weight: bold; margin-bottom: 1rem"
+      >
+        <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem"></i>
+        Confirm delivery only if the consignee has acknowledged receipt of the
+        cargo.
+      </div>
+
+      <div class="form-group">
+        <label>Description:</label>
+        <p id="deliveryDescription">
+          <i class="fas fa-info-circle"></i>
+          <span class="inline-text">No description loaded</span>
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label>Quantity:</label>
+        <p id="deliveryQuantity">
+          <i class="fas fa-boxes"></i>
+          <span class="inline-text">0</span>
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label>Vessel:</label>
+        <p id="deliveryVessel">
+          <i class="fas fa-ship"></i>
+          <span class="inline-text">N/A</span>
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label>Status:</label>
+        <p id="deliveryStatus">
+          <i class="fas fa-clipboard-check"></i>
+          <span class="inline-text">Pending</span>
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="deliveryRemarks">Remarks (Optional):</label>
+        <textarea
+          id="deliveryRemarks"
+          class="form-input"
+          rows="4"
+          placeholder="Enter remarks (e.g. confirmed via call)..."
+        ></textarea>
+      </div>
+
+      <div
+        class="modal-footer"
+        style="
+          display: flex;
+          justify-content: flex-end;
+          gap: 1rem;
+          padding-top: 1rem;
+        "
+      >
+        <button class="btn btn-cancel" id="cancelConfirmDelivery">
+          Cancel
+        </button>
+        <button class="btn btn-confirm" id="confirmDeliveryBtn">
+          <span class="btn-text">Confirm Delivery</span>
+          <span class="spinner" style="display: none"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
 <!---->
 {% block script %}
-<script src="/static/SHIPPER/js/confirm-cargo.js"></script>
+<script src="{% static 'shipper/js/confirm-cargo.js' %}"></script>
 {% endblock %}
