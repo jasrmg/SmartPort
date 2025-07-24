@@ -19,7 +19,7 @@ def shipper_vessel_info_view(request):
   }
   return render(request, "smartportApp/shipper/vessel-info.html", context)
 
-def shipper_confirm_cargo_view(request):
+def deliveries_view(request):
   return render(request, "smartportApp/shipper/deliveries.html")
 
 # --------------------  END OF TEMPLATES --------------------
