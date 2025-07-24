@@ -9,6 +9,16 @@
   color: var(--primary);
   margin: 0;
 }
+.submanifest-cards-container {
+  max-height: 56vh;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.5rem;
+  padding: 1rem;
+  overflow-x: hidden;
+}
+
 .search-filter {
   width: 250px;
 }
