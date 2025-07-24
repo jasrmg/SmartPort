@@ -42,12 +42,24 @@ def shipper_vessel_info_view(request):
 
 def shipper_deliveries_view(request):
   # check if authenticated and role is shipper
-  auth_check = is_shipper_is_authenticated(request)
+  auth_check = enforce_shipper_access(request)
   if auth_check:
     return auth_check
 
+  shipper = request.user.userprofile
 
-  return render(request, "smartportApp/shipper/deliveries.html")
+  # Get submanifests created by this shipper
+  submanifests = SubManifest.objects.select_related(
+    'voyage__vessel',
+    'voyage__departure_port',
+    'voyage__arrival_port'
+  ).filter(created_by=shipper).order_by('-created_at')
+
+  context = {
+    'submanifests': submanifests,
+  }
+
+  return render(request, "smartportApp/shipper/deliveries.html", context)
 
 # --------------------  END OF TEMPLATES --------------------
 
