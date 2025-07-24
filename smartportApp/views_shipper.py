@@ -4,36 +4,25 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
 
-from accounts.firebase import verify_firebase_token
-from accounts . models import UserProfile
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
 
-def shipper(request):
-  try:
-    token = request.headers.get("Authorization", "").replace("Bearer ", "")
-    if not token:
-      return HttpResponseForbidden("Missing auth token")
-
-    decoded_token = verify_firebase_token(token)
-    firebase_uid = decoded_token["uid"]
-
-    user_profile = UserProfile.objects.get(firebase_uid=firebase_uid)
-
-    if user_profile.role != UserProfile.Role.SHIPPER:
-      return HttpResponseForbidden("You are not allowed to access this page")
-
-    # proceed with view logic
-    return render(request, "your_template.html", {"user": user_profile})
-
-  except UserProfile.DoesNotExist:
-    return HttpResponseForbidden("User does not exist")
-  except Exception as e:
-    return HttpResponseForbidden(f"Error: {str(e)}")
+def isShipper(request):
+  userprofile = request.user.userprofile
+  role = userprofile.role
+  return role == "shipper"
 
 # --------------------------------- SHIPPER ---------------------------------
 # -------------------- TEMPLATES --------------------
 @login_required
 def shipper_dashboard(request):
+  if not request.user.is_authenticated:
+    return HttpResponseForbidden("You are not authorized to view this page.")   
+  
+  if not isShipper(request):
+    print("IM NOT SHIPPER")
+    return HttpResponseForbidden("You are not a shipper and authorized to view this page.")
+
+
   return render(request, "smartportApp/shipper/dashboard.html")
 
 def shipper_vessel_info_view(request):
