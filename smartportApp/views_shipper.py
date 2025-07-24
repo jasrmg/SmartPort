@@ -59,7 +59,8 @@ def shipper_deliveries_view(request):
   vessel_type = request.GET.get("vessel_type", "all")
   origin = request.GET.get("origin_port", "all")
   destination = request.GET.get("destination_port", "all")
-  departure_date = request.GET.get("departure_date", "")
+  date = request.GET.get("date", "")
+  parsed_date = None
 
   submanifests = SubManifest.objects.select_related(
     "voyage__vessel",
@@ -79,22 +80,24 @@ def shipper_deliveries_view(request):
   if destination != "all":
     submanifests = submanifests.filter(voyage__arrival_port__port_id=destination) 
 
-  if departure_date:
+  if date:
     try:
-      parsed_date = datetime.strptime(departure_date, "%Y-%m-%d").date()
-      start = make_aware(datetime.combine(parsed_date, datetime.min.time()))
-      end = make_aware(datetime.combine(parsed_date, datetime.max.time()))
+      parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
 
-      submanifests = submanifests.filter(
-        Q(voyage__departure_date__range=(start, end)) |
-        Q(voyage__arrival_date__range=(start, end))
-      )
     except ValueError:
-      logger.warning(f"Invalid departure_date: {departure_date}")
+      logger.warning(f"Invalid date: {date}")
+  
+  if parsed_date:
+    submanifests = submanifests.filter(
+      Q(voyage__departure_date__date=parsed_date) |
+      Q(voyage__arrival_date__date=parsed_date) 
+    )
 
   # Order results by departure date descending
   submanifests = submanifests.order_by("-voyage__departure_date")
-
+  print("PARSED DATE: ", parsed_date)
+  print(f"Submanifests count after filters: {submanifests.count()}")
+  logger.debug(f"Final queryset count after date filter: {submanifests.count()}")
 
   # TODO: ordering by departure date
 
@@ -110,12 +113,13 @@ def shipper_deliveries_view(request):
   page_obj = paginator.get_page(page_number)
 
   # Convert to display-friendly format (adjust or customize this)
-  parsed_results = parse_manifest_page(page_obj)  # You can customize this per shipper
+  parsed_results = parse_manifest_page(page_obj)  
 
   logger.debug(f"Total filtered submanifests for shipper: {submanifests.count()}")
 
   context = {
-    "page_obj": parsed_results,
+    "page_obj": page_obj,
+    "submanifests": parsed_results,
     "paginator": paginator,
     "current_page": page_obj.number,
     "has_next": page_obj.has_next(),
@@ -124,7 +128,7 @@ def shipper_deliveries_view(request):
       "vessel_type": vessel_type,
       "origin": origin,
       "destination": destination,
-      "departure_date": departure_date,
+      "date": date,
     },
   }
 

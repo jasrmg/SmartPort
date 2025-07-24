@@ -1,18 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const paginationContainer = document.getElementById("pagination-container");
+  let paginationContainer = document.getElementById("pagination-container");
   if (!paginationContainer) return;
 
   const originSelect = document.getElementById("originPortSelect");
   const destinationSelect = document.getElementById("destinationPortSelect");
   const vesselTypeSelect = document.getElementById("vesselTypeSelect");
   const dateFilterElement = document.getElementById("dateFilter");
-  const hiddenDateInput = document.getElementById("selectedDate");
 
   let totalPages = parseInt(paginationContainer.dataset.totalPages);
   let currentPage = parseInt(paginationContainer.dataset.currentPage);
-
-  const prevBtn = document.getElementById("prev-page-btn");
-  const nextBtn = document.getElementById("next-page-btn");
 
   const updatePaginationUI = () => {
     const paginationWindow = document.getElementById("pagination-window");
@@ -21,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationWindow.innerHTML = "";
 
     const windowSize = 2;
-
     let start = Math.max(1, currentPage - windowSize + 1);
     let end = Math.min(start + windowSize - 1, totalPages);
 
@@ -32,37 +27,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     for (let i = start; i <= end; i++) {
       const btn = document.createElement("button");
-      btn.className = `pagination-btn ${i === currentPage ? "active" : ""}`;
+      btn.classList.add("pagination-btn");
+      if (i === currentPage) btn.classList.add("active");
       btn.textContent = i;
       btn.dataset.page = i;
       paginationWindow.appendChild(btn);
     }
 
-    // Update prev/next disabled state
-    prevBtn.disabled = currentPage === 1;
-    nextBtn.disabled = currentPage === totalPages;
+    document.getElementById("prev-page-btn").disabled = currentPage === 1;
+    document.getElementById("next-page-btn").disabled =
+      currentPage === totalPages;
   };
 
   const getFilterParams = () => {
     const params = new URLSearchParams();
-
     const vesselType = vesselTypeSelect.value;
     const originPort = originSelect.value;
     const destinationPort = destinationSelect.value;
-    const date = hiddenDateInput.value;
+    const date = dateFilterElement.value;
 
-    if (vesselType && vesselType !== "all") {
+    if (vesselType && vesselType !== "all")
       params.append("vessel_type", vesselType);
-    }
-    if (originPort && originPort !== "all") {
-      console.log("Origin Port:", originPort);
+    if (originPort && originPort !== "all")
       params.append("origin_port", originPort);
-    }
-    if (destinationPort && destinationPort !== "all") {
-      console.log("Destination Port:", destinationPort);
+    if (destinationPort && destinationPort !== "all")
       params.append("destination_port", destinationPort);
-    }
-    if (date) params.append("departure_date", date);
+    if (date) params.append("date", date);
 
     return params.toString();
   };
@@ -70,8 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadPage = async (page) => {
     try {
       const filters = getFilterParams();
-      const res = await fetch(`?page=${page}&${filters}`);
-      const html = await res.text();
+      const response = await fetch(`?page=${page}&${filters}`);
+      const html = await response.text();
       const doc = new DOMParser().parseFromString(html, "text/html");
 
       const newCards = doc.querySelector(".submanifest-cards-container");
@@ -85,20 +75,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (newPagination) {
-        document
-          .querySelector("#pagination-container")
-          ?.replaceWith(newPagination);
+        paginationContainer.replaceWith(newPagination);
+        paginationContainer = document.getElementById("pagination-container");
+        initPagination();
       }
-
-      initPagination(); // Re-bind and re-render
     } catch (err) {
       console.error("Pagination load error:", err);
     }
   };
 
   const handleClick = (e) => {
-    const page = parseInt(e.target.dataset.page);
-    if (!isNaN(page)) {
+    const btn = e.target.closest(".pagination-btn");
+    if (!btn) return;
+
+    const page = parseInt(btn.dataset.page);
+    if (!isNaN(page) && page !== currentPage) {
       currentPage = page;
       loadPage(currentPage);
     }
@@ -119,28 +110,20 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const initPagination = () => {
-    const newPaginationContainer = document.getElementById(
-      "pagination-container"
-    );
-    if (!newPaginationContainer) return;
+    totalPages = parseInt(paginationContainer.dataset.totalPages);
+    currentPage = parseInt(paginationContainer.dataset.currentPage);
 
-    totalPages = parseInt(newPaginationContainer.dataset.totalPages);
-    currentPage = parseInt(newPaginationContainer.dataset.currentPage);
+    const prevBtn = document.getElementById("prev-page-btn");
+    const nextBtn = document.getElementById("next-page-btn");
+    const paginationWindow = document.getElementById("pagination-window");
+
+    prevBtn?.replaceWith(prevBtn.cloneNode(true));
+    nextBtn?.replaceWith(nextBtn.cloneNode(true));
+    paginationWindow?.replaceWith(paginationWindow.cloneNode(true));
 
     const newPrevBtn = document.getElementById("prev-page-btn");
     const newNextBtn = document.getElementById("next-page-btn");
     const newPaginationWindow = document.getElementById("pagination-window");
-
-    if (totalPages <= 1) {
-      newPaginationContainer.style.display = "none";
-      return;
-    } else {
-      newPaginationContainer.style.display = "flex";
-    }
-
-    newPrevBtn?.removeEventListener("click", handlePrev);
-    newNextBtn?.removeEventListener("click", handleNext);
-    newPaginationWindow?.removeEventListener("click", handleClick);
 
     updatePaginationUI();
 
@@ -148,42 +131,23 @@ document.addEventListener("DOMContentLoaded", () => {
     newNextBtn?.addEventListener("click", handleNext);
     newPaginationWindow?.addEventListener("click", handleClick);
 
-    // Update button disabled state
-    if (newPrevBtn) newPrevBtn.disabled = currentPage <= 1;
-    if (newNextBtn) newNextBtn.disabled = currentPage >= totalPages;
+    paginationContainer.style.display = totalPages <= 1 ? "none" : "flex";
   };
 
-  // Bind filter changes
-  document.querySelectorAll(".search-filter select").forEach((select) => {
-    select.addEventListener("change", () => loadPage(1));
+  [originSelect, destinationSelect, vesselTypeSelect].forEach((select) => {
+    select.addEventListener("change", () => {
+      currentPage = 1;
+      loadPage(currentPage);
+    });
   });
 
-  // Flatpickr setup for date selection
-  let dateSelected = false;
-
   flatpickr(dateFilterElement, {
-    clickOpens: true,
     dateFormat: "Y-m-d",
     allowInput: false,
-    defaultDate: null,
     onChange: (selectedDates, dateStr) => {
-      dateSelected = true;
-      dateFilterElement.textContent = dateStr || "Select Date";
-      hiddenDateInput.value = dateStr;
-      loadPage(1);
-    },
-    onOpen: () => {
-      dateSelected = false;
-    },
-    onClose: () => {
-      if (!dateSelected) {
-        dateFilterElement.textContent = "Select Date";
-        document
-          .querySelector(".flatpickr-day.selected")
-          ?.classList.remove("selected");
-        hiddenDateInput.value = "";
-        loadPage(1);
-      }
+      dateFilterElement.value = dateStr;
+      currentPage = 1;
+      loadPage(currentPage);
     },
   });
 

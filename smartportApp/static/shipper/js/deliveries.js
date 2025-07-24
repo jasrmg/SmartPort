@@ -3,7 +3,6 @@ const destinationSelect = document.getElementById("destinationPortSelect");
 
 document.addEventListener("DOMContentLoaded", () => {
   populatePorts();
-  setupFlatpickr();
 });
 
 // OUTSIDE DOM
@@ -24,17 +23,4 @@ const populatePorts = async () => {
   } catch (err) {
     console.error("❌ Error loading port options:", err);
   }
-};
-
-const setupFlatpickr = () => {
-  flatpickr("#dateFilter", {
-    clickOpens: true,
-    dateFormat: "Y-m-d",
-    allowInput: false,
-    onChange: (dates, dateStr) => {
-      document.getElementById("dateFilter").textContent =
-        dateStr || "Select Date";
-      document.getElementById("selectedDate").value = dateStr;
-    },
-  });
 };
