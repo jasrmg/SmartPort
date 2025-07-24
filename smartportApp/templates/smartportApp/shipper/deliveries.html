@@ -170,7 +170,7 @@
 
     <div class="submanifest-cards-container">
       <!---->
-      {% for sub in submanifests %}
+      {% for sub in page_obj %}
       <div
         class="submanifest-card"
         data-submanifest-id="{{ sub.submanifest_id }}"
@@ -181,31 +181,27 @@
           </div>
           <div class="submanifest-card-title">
             <h3>{{ sub.submanifest_number }}</h3>
-            <p>{{ sub.get_status_display }}</p>
+            <p>{{ sub.status_display }}</p>
             <!--submanifest status-->
           </div>
         </div>
         <p class="submanifest-card-info">
           <strong>Route:</strong>
           <!---->
-          {{ sub.voyage.departure_port.port_name }} ➞
+          {{ sub.origin_port }} ➞
           <!---->
-          {{ sub.voyage.arrival_port.port_name }}
+          {{ sub.destination_port }}
         </p>
         <p class="submanifest-card-info">
-          <strong>Arrival:</strong>
+          <strong>Consignee:</strong>
           <!---->
-          {% if sub.voyage.arrival_date %}
-          <!---->
-          {{ sub.voyage.arrival_date|date:"M d, Y @ h:i A" }} {% else %}
-          <!---->
-          (ETA) {{ sub.voyage.eta|date:"M d, Y" }} {% endif %}
+          {{ sub.consignee }}
         </p>
 
         <p class="submanifest-card-info">
-          <strong>Departure:</strong>
+          <strong>Consignor:</strong>
           <!---->
-          {{ sub.voyage.departure_date|date:"M d, Y @ h:i A" }}
+          {{ sub.consignor }}
         </p>
       </div>
       <!---->

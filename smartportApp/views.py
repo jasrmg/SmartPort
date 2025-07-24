@@ -1410,8 +1410,6 @@ def generate_master_manifest(request, voyage_id):
 def get_master_manifest_id(request, voyage_id):
   try:
     manifest = MasterManifest.objects.get(voyage_id=voyage_id)
-    print("MASMAN: ", manifest.mastermanifest_id)
-    print("MASMANsss: ", manifest.pk)
     return JsonResponse({"manifest_id": manifest.mastermanifest_id})
   except MasterManifest.DoesNotExist:
     return JsonResponse({"error": "No master manifest found for this voyage."}, status=404)

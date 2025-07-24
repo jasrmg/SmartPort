@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
@@ -5,6 +6,13 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
 
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
+
+from django.utils.timezone import make_aware, is_naive
+from django.db.models import F, Q
+import logging
+from django.core.paginator import Paginator
+
+logger = logging.getLogger(__name__)
 
 def enforce_shipper_access(request):
   ''' Check if the user is authenticated and has the shipper role. '''
@@ -48,15 +56,76 @@ def shipper_deliveries_view(request):
 
   shipper = request.user.userprofile
 
-  # Get submanifests created by this shipper
+  vessel_type = request.GET.get("vessel_type", "all")
+  origin = request.GET.get("origin_port", "all")
+  destination = request.GET.get("destination_port", "all")
+  departure_date = request.GET.get("departure_date", "")
+
   submanifests = SubManifest.objects.select_related(
-    'voyage__vessel',
-    'voyage__departure_port',
-    'voyage__arrival_port'
-  ).filter(created_by=shipper).order_by('-created_at')
+    "voyage__vessel",
+    "voyage__departure_port",
+    "voyage__arrival_port"
+    ).filter(created_by=shipper)
+  
+  # TODO: apply filters
+
+  # APPLY FILTERS:
+  if vessel_type != "all":
+    submanifest = submanifest.filter(voyage__vessel__vessel_type=vessel_type)
+  
+  if origin != "all":
+    submanifest = submanifest.filter(voyage__departure_port__port_name=origin)
+
+  if destination != "all":
+    submanifest = submanifest.filter(voyage__arrival_port__port_name=destination) 
+
+  if departure_date:
+    try:
+      parsed_date = datetime.strptime(departure_date, "%Y-%m-%d").date()
+      start = make_aware(datetime.combine(parsed_date, datetime.min.time()))
+      end = make_aware(datetime.combine(parsed_date, datetime.max.time()))
+
+      submanifests = submanifests.filter(
+        Q(voyage__departure_date__range=(start, end)) |
+        Q(voyage__arrival_date__range=(start, end))
+      )
+    except ValueError:
+      logger.warning(f"Invalid departure_date: {departure_date}")
+
+  # Order results by departure date descending
+  submanifests = submanifests.order_by("-voyage__departure_date")
+
+
+  # TODO: ordering by departure date
+
+  # TODO: pagination
+  paginator = Paginator(submanifests, 1)
+  page_number = request.GET.get("page", 1)
+
+  try:
+    page_number = int(page_number)
+  except (TypeError, ValueError):
+    page_number = 1
+
+  page_obj = paginator.get_page(page_number)
+
+  # Convert to display-friendly format (adjust or customize this)
+  parsed_results = parse_manifest_page(page_obj)  # You can customize this per shipper
+
+  logger.debug(f"Total filtered submanifests for shipper: {submanifests.count()}")
 
   context = {
-    'submanifests': submanifests,
+    "page_obj": parsed_results,
+    "paginator": paginator,
+    "current_page": page_obj.number,
+    "has_next": page_obj.has_next(),
+    "has_prev": page_obj.has_previous(),
+    "filters": {
+      "vessel_type": vessel_type,
+      "origin": origin,
+      "destination": destination,
+      "departure_date": departure_date,
+    },
   }
 
   return render(request, "smartportApp/shipper/deliveries.html", context)
@@ -93,3 +162,29 @@ def get_vessel_details(request, vessel_id):
 
   except ObjectDoesNotExist:
     return JsonResponse({"error": "Vessel not found"}, status=404)
+
+
+# HELPER FOR THE SHIPPER DELIVERIES VIEW:
+def parse_manifest_page(page_obj):
+  parsed = []
+
+  for sm in page_obj.object_list:
+    parsed.append({
+      "submanifest_id": sm.submanifest_id,
+      "submanifest_number": sm.submanifest_number,
+      "status": sm.status,
+      "status_display": sm.get_status_display(),
+      "container_no": sm.container_no,
+      "seal_no": sm.seal_no,
+      "bill_of_lading_no": sm.bill_of_lading_no,
+      "consignee": sm.consignee_name,
+      "consignor": sm.consignor_name,
+      "vessel_name": sm.voyage.vessel.name,
+      "vessel_type": sm.voyage.vessel.vessel_type,
+      "origin_port": sm.voyage.departure_port.port_name,
+      "destination_port": sm.voyage.arrival_port.port_name,
+      "departure_date": sm.voyage.departure_date.strftime("%b %d, %Y @ %I:%M %p"),
+      "arrival_date": sm.voyage.arrival_date.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.arrival_date else "",
+      "eta": sm.voyage.eta.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.eta else "",
+    })
+  return parsed
