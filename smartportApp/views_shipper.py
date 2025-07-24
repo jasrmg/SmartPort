@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
 
-def is_shipper_is_authenticated(request):
+def enforce_shipper_access(request):
   ''' Check if the user is authenticated and has the shipper role. '''
   if not request.user.is_authenticated:
     return HttpResponseForbidden("You are not authorized to view this page.")
@@ -21,7 +21,7 @@ def is_shipper_is_authenticated(request):
 @login_required
 def shipper_dashboard(request):
   # check if authenticated and role is shipper
-  auth_check = is_shipper_is_authenticated(request)
+  auth_check = enforce_shipper_access(request)
   if auth_check:
     return auth_check
 
@@ -30,7 +30,7 @@ def shipper_dashboard(request):
 
 def shipper_vessel_info_view(request):
   # check if authenticated and role is shipper
-  auth_check = is_shipper_is_authenticated(request)
+  auth_check = enforce_shipper_access(request)
   if auth_check:
     return auth_check
   
