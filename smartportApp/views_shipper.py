@@ -6,26 +6,34 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
 
-def isShipper(request):
-  userprofile = request.user.userprofile
-  role = userprofile.role
-  return role == "shipper"
+def is_shipper_is_authenticated(request):
+  ''' Check if the user is authenticated and has the shipper role. '''
+  if not request.user.is_authenticated:
+    return HttpResponseForbidden("You are not authorized to view this page.")
+  
+  if request.user.userprofile.role != "shipper":
+    return HttpResponseForbidden("You are not a shipper and authorized to view this page.")
+  
+  return None
 
 # --------------------------------- SHIPPER ---------------------------------
 # -------------------- TEMPLATES --------------------
 @login_required
 def shipper_dashboard(request):
-  if not request.user.is_authenticated:
-    return HttpResponseForbidden("You are not authorized to view this page.")   
-  
-  if not isShipper(request):
-    print("IM NOT SHIPPER")
-    return HttpResponseForbidden("You are not a shipper and authorized to view this page.")
+  # check if authenticated and role is shipper
+  auth_check = is_shipper_is_authenticated(request)
+  if auth_check:
+    return auth_check
 
 
   return render(request, "smartportApp/shipper/dashboard.html")
 
 def shipper_vessel_info_view(request):
+  # check if authenticated and role is shipper
+  auth_check = is_shipper_is_authenticated(request)
+  if auth_check:
+    return auth_check
+  
   vessels = Vessel.objects.all().order_by('name')
   context = {
     'vessels': vessels,
@@ -33,6 +41,11 @@ def shipper_vessel_info_view(request):
   return render(request, "smartportApp/shipper/vessel-info.html", context)
 
 def shipper_deliveries_view(request):
+  # check if authenticated and role is shipper
+  auth_check = is_shipper_is_authenticated(request)
+  if auth_check:
+    return auth_check
+
 
   return render(request, "smartportApp/shipper/deliveries.html")
 
