@@ -55,9 +55,11 @@ document.addEventListener("DOMContentLoaded", () => {
       params.append("vessel_type", vesselType);
     }
     if (originPort && originPort !== "all") {
+      console.log("Origin Port:", originPort);
       params.append("origin_port", originPort);
     }
     if (destinationPort && destinationPort !== "all") {
+      console.log("Destination Port:", destinationPort);
       params.append("destination_port", destinationPort);
     }
     if (date) params.append("departure_date", date);

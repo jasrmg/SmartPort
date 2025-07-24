@@ -64,9 +64,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (vesselType && vesselType !== "all")
       params.append("vessel_type", vesselType);
     if (originPort && originPort !== "all")
-      params.append("origin_port", originPort);
+      console.log("Origin Port:", originPort);
+    params.append("origin_port", originPort);
     if (destinationPort && destinationPort !== "all")
-      params.append("destination_port", destinationPort);
+      console.log("Destination Port:", destinationPort);
+    params.append("destination_port", destinationPort);
     if (date) params.append("departure_date", date);
 
     return params.toString();

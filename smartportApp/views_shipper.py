@@ -74,10 +74,10 @@ def shipper_deliveries_view(request):
     submanifests = submanifests.filter(voyage__vessel__vessel_type=vessel_type)
   
   if origin != "all":
-    submanifests = submanifests.filter(voyage__departure_port__port_name=origin)
+    submanifests = submanifests.filter(voyage__departure_port__port_id=origin)
 
   if destination != "all":
-    submanifests = submanifests.filter(voyage__arrival_port__port_name=destination) 
+    submanifests = submanifests.filter(voyage__arrival_port__port_id=destination) 
 
   if departure_date:
     try:
