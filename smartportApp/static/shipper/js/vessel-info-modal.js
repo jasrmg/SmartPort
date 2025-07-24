@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalBody = document.getElementById("vesselDetailsBody");
 
   document.querySelectorAll(".view-details-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", function () {
       const vesselId = this.getAttribute("data-vessel-id");
 
       fetch(`/shipper/vessel/${vesselId}/details/`)
