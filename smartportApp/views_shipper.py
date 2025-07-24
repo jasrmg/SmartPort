@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
@@ -71,13 +71,13 @@ def shipper_deliveries_view(request):
 
   # APPLY FILTERS:
   if vessel_type != "all":
-    submanifest = submanifest.filter(voyage__vessel__vessel_type=vessel_type)
+    submanifests = submanifests.filter(voyage__vessel__vessel_type=vessel_type)
   
   if origin != "all":
-    submanifest = submanifest.filter(voyage__departure_port__port_name=origin)
+    submanifests = submanifests.filter(voyage__departure_port__port_name=origin)
 
   if destination != "all":
-    submanifest = submanifest.filter(voyage__arrival_port__port_name=destination) 
+    submanifests = submanifests.filter(voyage__arrival_port__port_name=destination) 
 
   if departure_date:
     try:
@@ -154,7 +154,7 @@ def get_vessel_details(request, vessel_id):
       data.update({
         "departure_port": latest_voyage.departure_port.port_name if latest_voyage.departure_port else "N/A",
         "arrival_port": latest_voyage.arrival_port.port_name if latest_voyage.arrival_port else "N/A",
-        "departure_date": latest_voyage.departure_date.strftime("%Y-%m-%d %H:%M"),
+        "departure_date": latest_voyage.departure_date.strptime("%Y-%m-%d %H:%M"),
         "eta": latest_voyage.eta.strftime("%Y-%m-%d %H:%M") if latest_voyage.eta else "N/A"
       })
 
