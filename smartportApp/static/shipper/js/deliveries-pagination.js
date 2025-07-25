@@ -219,16 +219,45 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Flatpickr
-  flatpickr(dateFilterElement, {
+  const clearDateBtn = document.getElementById("clearDateBtn");
+
+  const datePicker = flatpickr(dateFilterElement, {
     dateFormat: "Y-m-d",
     allowInput: false,
     onChange: (selectedDates, dateStr) => {
-      dateFilterElement.value = dateStr;
-      currentPage = 1;
-      loadPage(currentPage);
+      if (dateStr) {
+        dateFilterElement.value = dateStr;
+        currentPage = 1;
+        loadPage(currentPage);
+      }
+      toggleClearBtn();
+    },
+    onClose: () => {
+      toggleClearBtn();
     },
   });
+
+  // Show/hide clear button based on value
+  const toggleClearBtn = () => {
+    if (dateFilterElement.value.trim() !== "") {
+      clearDateBtn.style.display = "block";
+    } else {
+      clearDateBtn.style.display = "none";
+    }
+  };
+
+  // Manual clear handler
+  clearDateBtn.addEventListener("click", () => {
+    console.log("Clear date filter clicked");
+    datePicker.clear();
+    dateFilterElement.value = "";
+    toggleClearBtn();
+    currentPage = 1;
+    loadPage(currentPage); // reload without date filter
+  });
+
+  // Show clear button on load if date exists
+  toggleClearBtn();
 
   // Init
   initPagination();

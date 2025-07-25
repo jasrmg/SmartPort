@@ -658,12 +658,12 @@ h6 {
   justify-content: center;
   align-items: flex-start;
   z-index: 1000;
-  padding-top: 80px;
+  padding-top: 40px;
   overflow-y: auto;
 }
 
 .modal-title {
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--primary);
   margin-bottom: 0.25rem;
@@ -687,8 +687,8 @@ h6 {
 }
 
 .modal-label {
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: bold;
   color: var(--secondary);
 }
 
@@ -742,7 +742,7 @@ h6 {
 .modal-close {
   background: none;
   border: none;
-  font-size: 1.2rem;
+  font-size: 2rem;
   color: var(--dark-gray);
   cursor: pointer;
   opacity: 0.7;

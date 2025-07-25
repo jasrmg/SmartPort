@@ -47,6 +47,31 @@
   background-image: none;
 }
 
+.date-clear-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.date-clear-wrapper .form-select {
+  padding-right: 30px;
+}
+
+.clear-date {
+  position: absolute;
+  top: 50%;
+  right: 18%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  color: var(--dark-gray);
+  cursor: pointer;
+  user-select: none;
+  display: none; /* hidden by default */
+}
+
+.clear-date:hover {
+  color: var(--danger);
+}
+
 .form-select:focus {
   border-color: #2563eb;
   outline: none;
@@ -433,4 +458,14 @@ i.icon {
 .modal-details-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+}
+
+.info-container {
+  background-color: var(--lighter-blue);
+  padding: 1rem;
+  border-radius: 0.8rem;
+  min-width: 10rem;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
 }
