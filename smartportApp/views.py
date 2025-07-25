@@ -10,7 +10,6 @@ from accounts.models import UserProfile
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_exempt
-import json
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Case, When, IntegerField
 

@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
 
-from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
+from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo, CargoDelivery
 
 from django.utils.timezone import make_aware, is_naive
 from django.db.models import F, Q
@@ -13,6 +13,8 @@ import logging
 from django.core.paginator import Paginator
 
 logger = logging.getLogger(__name__)
+
+import json
 
 def enforce_shipper_access(request):
   ''' Check if the user is authenticated and has the shipper role. '''
@@ -167,7 +169,6 @@ def get_vessel_details(request, vessel_id):
   except ObjectDoesNotExist:
     return JsonResponse({"error": "Vessel not found"}, status=404)
 
-
 # HELPER FOR THE SHIPPER DELIVERIES VIEW:
 def parse_manifest_page(page_obj):
   parsed = []
@@ -216,17 +217,56 @@ from django.views.decorators.http import require_POST, require_GET
 @require_GET
 def get_cargo_items(request, submanifest_id):
   try:
-    sm = SubManifest.objects.get(pk=submanifest_id)
+    sm = SubManifest.objects.select_related(
+      'voyage__vessel'  # Optimize DB access
+    ).get(pk=submanifest_id)
+
+    vessel_name = sm.voyage.vessel.name if sm.voyage.vessel else "N/A"
     cargo_items = sm.cargo_items.all()
     data = [
       {
+        "id": c.cargo_id,
         "item_number": c.item_number,
         "description": c.description,
         "quantity": c.quantity,
         "value": format_currency(c.value),
+        "vessel": vessel_name
       }
       for c in cargo_items
     ]
     return JsonResponse({"cargo": data})
   except SubManifest.DoesNotExist:
     return JsonResponse({"error": "SubManifest not found"}, status=404)
+
+# ENDPOINT TO CONFIRM DELIVERY:
+@login_required
+@require_POST
+def confirm_delivery_view(request, cargo_id):
+  # check if authenticated and role is shipper
+  auth_check = enforce_shipper_access(request)
+  if auth_check:
+    return auth_check
+  
+  try:
+    data = json.loads(request.body)
+    remarks = data.get("remarks", "")
+
+    cargo = Cargo.objects.get(pk=cargo_id)
+
+    # Check if already delivered
+    if hasattr(cargo, "delivery"):
+      return JsonResponse({"error": "Cargo already marked as delivered."}, status=400)
+
+    CargoDelivery.objects.create(
+      cargo=cargo,
+      confirmed_by=request.user.userprofile,
+      remarks=remarks
+    )
+
+    return JsonResponse({"message": "Delivery confirmed."})
+  
+  except Cargo.DoesNotExist:
+    return JsonResponse({"error": "Cargo not found."}, status=404)
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
+  

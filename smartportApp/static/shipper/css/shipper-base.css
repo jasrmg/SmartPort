@@ -739,12 +739,6 @@ h6 {
   border-bottom: 1px solid var(--gray);
 }
 
-.modal-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--primary);
-}
-
 .modal-close {
   background: none;
   border: none;

@@ -1,3 +1,5 @@
+import { bindDeliveryButtons } from "./deliveries.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   let paginationContainer = document.getElementById("pagination-container");
   if (!paginationContainer) return;
@@ -78,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (newCards && cardsContainer) {
         cardsContainer.replaceChildren(...newCards.children);
         bindCardClickEvents(); // rebind click after DOM changes
+        bindDeliveryButtons();
       }
 
       if (newPagination) {
@@ -113,16 +116,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const tbody = document.getElementById("cargo-tbody");
       tbody.innerHTML = ""; // clear previous
-
       data.cargo.forEach((item) => {
         const row = `
         <tr>
           <td>${item.item_number}</td>
-          <td>${item.description}</td>
-          <td>${item.quantity}</td>
-          <td>${item.value}</td>
+          <td class="desc">${item.description}</td>
+          <td class="qty">${item.quantity}</td>
+          <td class="value">${item.value}</td>
           <td>
-            <button class="btn-icon approve" title="Mark As Delivered">
+            <button 
+            class="btn-icon approve"
+            data-cargo-id="${item.id}"
+            data-description="${item.description}"
+            data-quantity="${item.quantity}"
+            data-vessel="${item.vessel}"
+            title="Mark As Delivered">
               <i class="fas fa-check"></i>
             </button>
           </td>
@@ -132,6 +140,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       document.querySelector(".submanifest-cargo").style.display = "block";
+
+      bindDeliveryButtons();
     } catch (err) {
       console.error("Failed to load cargo:", err);
     }

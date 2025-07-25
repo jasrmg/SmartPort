@@ -13,6 +13,7 @@
   href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
 />
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<style></style>
 {% endblock %}
 <!---->
 {% block sidebar %}
@@ -179,6 +180,8 @@
     <div class="submanifest-cards-container">
       <!---->
       {% for sub in submanifests %}
+      <!-- <pre>{{ sub|safe }}</pre> -->
+
       <div
         class="submanifest-card"
         data-submanifest-id="{{ sub.submanifest_id }}"
@@ -251,14 +254,22 @@
           </tr>
         </thead>
         <tbody id="cargo-tbody">
+          <!-- <pre>{{ submanifests.0.cargo|safe }}</pre> -->
+
           {% for item in submanifests.0.cargo %}
           <tr>
             <td>{{ item.item_number }}</td>
-            <td>{{ item.description }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.value }}</td>
+            <td class="desc">{{ item.description }}</td>
+            <td class="qty">{{ item.quantity }}</td>
+            <td class="value">{{ item.value }}</td>
             <td>
-              <button class="btn-icon approve" title="Mark As Delivered">
+              <button
+                class="btn-icon approve"
+                title="Mark As Delivered"
+                data-cargo-id="{{ item.id }}"
+                data-description="{{ item.description }}"
+                data-quantity="{{ item.quantity }}"
+              >
                 <i class="fas fa-check"></i>
               </button>
             </td>
@@ -269,89 +280,95 @@
     </div>
   </div>
 </div>
+<div id="toast-container"></div>
 {% endblock %}
 <!---->
 {% block modal %}
+<!-- Confirm Delivery Modal -->
 <div class="modal-overlay" id="confirmDeliveryModal">
   <div class="modal">
-    <div
-      class="modal-header"
-      style="position: sticky; top: 0; background-color: white"
-    >
+    <!-- Modal Header -->
+    <div class="modal-header sticky-top">
       <h2 class="modal-title">
-        <i class="fas fa-box-open" style="margin-right: 0.5rem"></i>
+        <i class="fas fa-box-open icon" style="margin-right: 0.5rem"></i>
         Confirm Cargo Delivery
       </h2>
-      <button class="modal-close" id="closeConfirmDeliveryModal">
+      <button
+        class="modal-close"
+        id="closeConfirmDeliveryModal"
+        aria-label="Close Modal"
+      >
         &times;
       </button>
     </div>
+
+    <!-- Modal Body -->
     <div class="modal-body">
-      <!-- Warning Message -->
-      <div
-        class="warning-text"
-        style="color: var(--danger); font-weight: bold; margin-bottom: 1rem"
-      >
-        <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem"></i>
+      <!-- Warning -->
+      <div class="modal-warning">
+        <i class="fas fa-exclamation-triangle icon"></i>
         Confirm delivery only if the consignee has acknowledged receipt of the
         cargo.
       </div>
 
-      <div class="form-group">
-        <label>Description:</label>
+      <!-- Delivery Details -->
+      <div class="modal-details-grid"></div>
+      <div class="modal-detail">
+        <span class="modal-label">Description:</span>
         <p id="deliveryDescription">
-          <i class="fas fa-info-circle"></i>
+          <i class="fas fa-info-circle icon"></i>
           <span class="inline-text">No description loaded</span>
         </p>
       </div>
 
-      <div class="form-group">
-        <label>Quantity:</label>
-        <p id="deliveryQuantity">
-          <i class="fas fa-boxes"></i>
-          <span class="inline-text">0</span>
-        </p>
+      <div
+        style="
+          display: flex;
+          justify-content: rows;
+          align-items: center;
+          justify-content: space-between;
+        "
+      >
+        <div class="modal-detail">
+          <span class="modal-label">Quantity:</span>
+          <p id="deliveryQuantity">
+            <i class="fas fa-boxes icon"></i>
+            <span class="inline-text">0</span>
+          </p>
+        </div>
+
+        <div class="modal-detail">
+          <span class="modal-label">Vessel:</span>
+          <p id="deliveryVessel">
+            <i class="fas fa-ship icon"></i>
+            <span class="inline-text">N/A</span>
+          </p>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Vessel:</label>
-        <p id="deliveryVessel">
-          <i class="fas fa-ship"></i>
-          <span class="inline-text">N/A</span>
-        </p>
-      </div>
-
-      <div class="form-group">
-        <label>Status:</label>
-        <p id="deliveryStatus">
-          <i class="fas fa-clipboard-check"></i>
-          <span class="inline-text">Pending</span>
-        </p>
-      </div>
-
-      <div class="form-group">
-        <label for="deliveryRemarks">Remarks (Optional):</label>
+      <!-- Optional Remarks -->
+      <div class="modal-detail" style="margin-top: 1rem">
+        <label class="modal-label" for="deliveryRemarks"
+          >Remarks (Optional):</label
+        >
         <textarea
           id="deliveryRemarks"
           class="form-input"
           rows="4"
           placeholder="Enter remarks (e.g. confirmed via call)..."
+          style="margin-top: 0.25rem"
         ></textarea>
       </div>
 
+      <!-- Modal Footer -->
       <div
-        class="modal-footer"
-        style="
-          display: flex;
-          justify-content: flex-end;
-          gap: 1rem;
-          padding-top: 1rem;
-        "
+        class="modal-actions"
+        style="display: flex; justify-content: flex-end; margin-top: 1.5rem"
       >
         <button class="btn btn-cancel" id="cancelConfirmDelivery">
           Cancel
         </button>
-        <button class="btn btn-confirm" id="confirmDeliveryBtn">
+        <button class="btn btn-confirm-delivery" id="confirmDeliveryBtn">
           <span class="btn-text">Confirm Delivery</span>
           <span class="spinner" style="display: none"></span>
         </button>
@@ -363,6 +380,9 @@
 {% endblock %}
 <!---->
 {% block script %}
-<script src="{% static 'shipper/js/deliveries.js' %}"></script>
-<script src="{% static 'shipper/js/deliveries-pagination.js' %}"></script>
+<script type="module" src="{% static 'shipper/js/deliveries.js' %}"></script>
+<script
+  type="module"
+  src="{% static 'shipper/js/deliveries-pagination.js' %}"
+></script>
 {% endblock %}

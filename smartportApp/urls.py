@@ -101,6 +101,7 @@ urlpatterns = [
   # HELPER FOR THE VESSEL INFO VIEW:
   path("shipper/vessel/<int:vessel_id>/details/", views_shipper.get_vessel_details, name="vessel-details"),
   path("get-cargo-items/<int:submanifest_id>/", views_shipper.get_cargo_items, name="get-cargo-items"),
+  path("shipper/confirm-delivery/<int:cargo_id>/", views_shipper.confirm_delivery_view, name="confirm-delivery"),
 
 
   # -------------------------------- EMPLOYEE USING DIFFERENT VIEW --------------------------------

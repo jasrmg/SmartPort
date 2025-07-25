@@ -235,20 +235,58 @@
 .btn {
   display: inline-flex;
   align-items: center;
-  color: var(--light);
+  justify-content: center;
+  gap: 0.5rem;
   padding: 0.7rem 1.2rem;
-  border: none;
-  border-radius: 6px;
   font-size: 0.95rem;
   font-weight: 500;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s;
   text-decoration: none;
+  transition: all 0.3s ease;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn i {
   margin-right: 0.5rem;
 }
+.btn-icon.approve {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--accent);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-icon.approve:hover {
+  background-color: #0e9b76;
+  transform: translateY(-1px);
+}
+
+.btn-icon.approve:active {
+  transform: scale(0.98);
+}
+
+.btn-icon.approve .fas {
+  font-size: 1rem;
+}
+
+.btn-icon.approve .label {
+  display: inline;
+}
+
 .btn-icon {
   background: none;
   border: none;
@@ -344,4 +382,50 @@ textarea.form-input {
   resize: none;
   min-height: 100px;
   font-family: Montserrat;
+}
+
+.btn-confirm-delivery {
+  background-color: var(--primary);
+  font-weight: 600;
+  min-width: 160px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  position: relative;
+  color: white;
+}
+
+.btn-confirm-delivery:hover {
+  background-color: #071837;
+  transform: translateY(-1px);
+}
+
+.btn-confirm-delivery:active {
+  transform: scale(0.98);
+}
+
+.modal-warning {
+  display: flex;
+  align-items: center;
+  background-color: #f8d7da; /* light red, standard for subtle danger alerts */
+  color: #842029; /* dark red for contrast */
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+}
+
+.modal-warning .icon {
+  font-size: 1.2rem;
+  margin-top: 2px;
+}
+
+i.icon {
+  margin-right: 1rem;
+}
+
+.modal-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 }
