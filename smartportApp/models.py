@@ -283,6 +283,26 @@ class Cargo(models.Model):
     return f"Item {self.item_number} in {self.submanifest.submanifest_number}"
 
 
+class CargoDelivery(models.Model):
+  cargo_delivery_id = models.AutoField(primary_key=True)
+  cargo = models.OneToOneField(
+    Cargo,
+    on_delete=models.CASCADE,
+    related_name="delivery"
+  )
+  confirmed_by = models.ForeignKey(
+    UserProfile,
+    on_delete=models.SET_NULL,
+    null=True,
+    limit_choices_to={"role": "shipper"}
+  )
+  confirmed_at = models.DateTimeField(auto_now_add=True)
+  remarks = models.TextField(blank=True, null=True)
+
+  def __str__(self):
+    return f"Delivery confirmation for {self.cargo}"
+
+
 class Document(models.Model):
   DOCUMENT_TYPE_CHOICES = [
     ('bill_of_lading', 'Bill of Lading'),
