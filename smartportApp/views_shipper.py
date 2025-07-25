@@ -169,30 +169,6 @@ def get_vessel_details(request, vessel_id):
 
 
 # HELPER FOR THE SHIPPER DELIVERIES VIEW:
-# def parse_manifest_page(page_obj):
-#   parsed = []
-
-#   for sm in page_obj.object_list:
-#     parsed.append({
-#       "submanifest_id": sm.submanifest_id,
-#       "submanifest_number": sm.submanifest_number,
-#       "status": sm.status,
-#       "status_display": sm.get_status_display(),
-#       "container_no": sm.container_no,
-#       "seal_no": sm.seal_no,
-#       "bill_of_lading_no": sm.bill_of_lading_no,
-#       "consignee": sm.consignee_name,
-#       "consignor": sm.consignor_name,
-#       "vessel_name": sm.voyage.vessel.name,
-#       "vessel_type": sm.voyage.vessel.vessel_type,
-#       "origin_port": sm.voyage.departure_port.port_name,
-#       "destination_port": sm.voyage.arrival_port.port_name,
-#       "departure_date": sm.voyage.departure_date.strftime("%b %d, %Y @ %I:%M %p"),
-#       "arrival_date": sm.voyage.arrival_date.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.arrival_date else "",
-#       "eta": sm.voyage.eta.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.eta else "",
-#     })
-#   return parsed
-
 def parse_manifest_page(page_obj):
   parsed = []
   for index, sm in enumerate(page_obj.object_list):
@@ -223,8 +199,34 @@ def parse_manifest_page(page_obj):
           "item_number": c.item_number,
           "description": c.description,
           "quantity": c.quantity,
-          "status": c.get_status_display(),  # or raw value
+          "value": format_currency(c.value),
         } for c in cargo_items
       ]
     parsed.append(entry)
   return parsed
+
+# helper function to format currency values
+from django.contrib.humanize.templatetags.humanize import intcomma
+
+def format_currency(value):
+  return f"₱{intcomma(value)}" if value == int(value) else f"₱{intcomma(value):s}"
+
+from django.views.decorators.http import require_POST, require_GET
+# HELPER ENDPOINT TO PREFILL THE CARGO TABLE ONCE CLICKED:
+@require_GET
+def get_cargo_items(request, submanifest_id):
+  try:
+    sm = SubManifest.objects.get(pk=submanifest_id)
+    cargo_items = sm.cargoitem_set.all()
+    data = [
+      {
+        "item_number": c.item_number,
+        "description": c.description,
+        "quantity": c.quantity,
+        "status": c.get_status_display(),
+      }
+      for c in cargo_items
+    ]
+    return JsonResponse({"cargo": data})
+  except SubManifest.DoesNotExist:
+    return JsonResponse({"error": "SubManifest not found"}, status=404)

@@ -1,6 +1,7 @@
 {% extends "smartportApp/shipper/shipper-base.html" %}
 <!---->
 {% load static %}
+
 <!---->
 {% block title %} Deliveries {% endblock %}
 <!---->
@@ -245,6 +246,7 @@
             <th>Item Number</th>
             <th>Description</th>
             <th>Quantity</th>
+            <th>Value</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -256,6 +258,7 @@
             <td>
               <span>{{ item.quantity }}</span>
             </td>
+            <td>{{ item.value }}</td>
             <td>
               <button class="btn-icon approve" title="Mark As Delivered">
                 <i class="fas fa-check"></i>
