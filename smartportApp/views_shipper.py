@@ -169,11 +169,34 @@ def get_vessel_details(request, vessel_id):
 
 
 # HELPER FOR THE SHIPPER DELIVERIES VIEW:
+# def parse_manifest_page(page_obj):
+#   parsed = []
+
+#   for sm in page_obj.object_list:
+#     parsed.append({
+#       "submanifest_id": sm.submanifest_id,
+#       "submanifest_number": sm.submanifest_number,
+#       "status": sm.status,
+#       "status_display": sm.get_status_display(),
+#       "container_no": sm.container_no,
+#       "seal_no": sm.seal_no,
+#       "bill_of_lading_no": sm.bill_of_lading_no,
+#       "consignee": sm.consignee_name,
+#       "consignor": sm.consignor_name,
+#       "vessel_name": sm.voyage.vessel.name,
+#       "vessel_type": sm.voyage.vessel.vessel_type,
+#       "origin_port": sm.voyage.departure_port.port_name,
+#       "destination_port": sm.voyage.arrival_port.port_name,
+#       "departure_date": sm.voyage.departure_date.strftime("%b %d, %Y @ %I:%M %p"),
+#       "arrival_date": sm.voyage.arrival_date.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.arrival_date else "",
+#       "eta": sm.voyage.eta.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.eta else "",
+#     })
+#   return parsed
+
 def parse_manifest_page(page_obj):
   parsed = []
-
-  for sm in page_obj.object_list:
-    parsed.append({
+  for index, sm in enumerate(page_obj.object_list):
+    entry = {
       "submanifest_id": sm.submanifest_id,
       "submanifest_number": sm.submanifest_number,
       "status": sm.status,
@@ -190,5 +213,18 @@ def parse_manifest_page(page_obj):
       "departure_date": sm.voyage.departure_date.strftime("%b %d, %Y @ %I:%M %p"),
       "arrival_date": sm.voyage.arrival_date.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.arrival_date else "",
       "eta": sm.voyage.eta.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.eta else "",
-    })
+    }
+
+    # Only include cargo details for the first card (initial render)
+    if index == 0:
+      cargo_items = sm.cargo_items.all()  # assuming related name is `cargoitem_set`
+      entry["cargo"] = [
+        {
+          "item_number": c.item_number,
+          "description": c.description,
+          "quantity": c.quantity,
+          "status": c.get_status_display(),  # or raw value
+        } for c in cargo_items
+      ]
+    parsed.append(entry)
   return parsed

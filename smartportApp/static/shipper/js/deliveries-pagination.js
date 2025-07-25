@@ -7,6 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const vesselTypeSelect = document.getElementById("vesselTypeSelect");
   const dateFilterElement = document.getElementById("dateFilter");
 
+  const cardsContainer = document.getElementById("submanifest-list-section");
+  const cargoContainer = document.querySelector(".submanifest-cargo");
+  const numberDisplay = document.getElementById("submanifest-number-display");
+  const backBtn = document.getElementById("back-to-list-btn");
+
   let totalPages = parseInt(paginationContainer.dataset.totalPages);
   let currentPage = parseInt(paginationContainer.dataset.currentPage);
 
@@ -72,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       if (newCards && cardsContainer) {
         cardsContainer.replaceChildren(...newCards.children);
+        bindCardClickEvents(); // rebind click after DOM changes
       }
 
       if (newPagination) {
@@ -84,29 +90,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const handleClick = (e) => {
-    const btn = e.target.closest(".pagination-btn");
-    if (!btn) return;
+  const bindCardClickEvents = () => {
+    const cards = document.querySelectorAll(".submanifest-card");
 
-    const page = parseInt(btn.dataset.page);
-    if (!isNaN(page) && page !== currentPage) {
-      currentPage = page;
-      loadPage(currentPage);
-    }
-  };
+    cards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const submanifestId = card.dataset.submanifestId;
+        const submanifestNumber = card.querySelector("h3")?.textContent || "";
 
-  const handlePrev = () => {
-    if (currentPage > 1) {
-      currentPage--;
-      loadPage(currentPage);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentPage < totalPages) {
-      currentPage++;
-      loadPage(currentPage);
-    }
+        numberDisplay.textContent = submanifestNumber;
+        cardsContainer.style.display = "none";
+        cargoContainer.style.display = "grid";
+      });
+    });
   };
 
   const initPagination = () => {
@@ -134,6 +130,40 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationContainer.style.display = totalPages <= 1 ? "none" : "flex";
   };
 
+  const handleClick = (e) => {
+    const btn = e.target.closest(".pagination-btn");
+    if (!btn) return;
+
+    const page = parseInt(btn.dataset.page);
+    if (!isNaN(page) && page !== currentPage) {
+      currentPage = page;
+      loadPage(currentPage);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentPage > 1) {
+      currentPage--;
+      loadPage(currentPage);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      loadPage(currentPage);
+    }
+  };
+
+  // ✅ Bind back button only once
+  if (backBtn) {
+    backBtn.addEventListener("click", () => {
+      cardsContainer.style.display = "grid";
+      cargoContainer.style.display = "none";
+    });
+  }
+
+  // ✅ Init filter change
   [originSelect, destinationSelect, vesselTypeSelect].forEach((select) => {
     select.addEventListener("change", () => {
       currentPage = 1;
@@ -141,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ✅ Flatpickr
   flatpickr(dateFilterElement, {
     dateFormat: "Y-m-d",
     allowInput: false,
@@ -151,5 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   });
 
+  // ✅ Init
   initPagination();
+  bindCardClickEvents(); // needed if cards are already rendered on first load
 });
