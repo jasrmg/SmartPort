@@ -21,8 +21,16 @@ def enforce_shipper_access(request):
   if not request.user.is_authenticated:
     return HttpResponseForbidden("You are not authorized to view this page.")
   
-  if request.user.userprofile.role != "shipper":
-    return HttpResponseForbidden("You are not a shipper and authorized to view this page.")
+  role = request.user.userprofile.role
+
+  if role != "shipper":
+    if role == "admin":
+      return render(request, "smartportApp/unauthorized.html", {"text": "Admins cannot access shipper pages.", "link": "admin-dashboard"})
+    elif role == "custom":
+      return render(request, "smartportApp/unauthorized.html", {"text": "Customs officers cannot access shipper pages.", "link": "customs-dashboard"})
+    elif role == "employee":
+      return render(request, "smartportApp/unauthorized.html", {"text": "Employees cannot access shipper pages.", "link": "employee-dashboard"})  
+    return render(request, "smartportApp/unauthorized.html", {"text": "Only shippers can access this page."})
   
   return None
 
