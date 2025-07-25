@@ -124,15 +124,21 @@ document.addEventListener("DOMContentLoaded", () => {
           <td class="qty">${item.quantity}</td>
           <td class="value">${item.value}</td>
           <td>
-            <button 
-            class="btn-icon approve"
-            data-cargo-id="${item.id}"
-            data-description="${item.description}"
-            data-quantity="${item.quantity}"
-            data-vessel="${item.vessel}"
-            title="Mark As Delivered">
-              <i class="fas fa-check"></i>
-            </button>
+            ${
+              item.delivered
+                ? '<span class="status-label delivered">Delivered</span>'
+                : `
+                  <button 
+                    class="btn-icon approve"
+                    data-cargo-id="${item.id}"
+                    data-description="${item.description}"
+                    data-quantity="${item.quantity}"
+                    data-vessel="${item.vessel}"
+                    title="Mark As Delivered">
+                    <i class="fas fa-check"></i>
+                  </button>
+                `
+            }
           </td>
         </tr>
       `;

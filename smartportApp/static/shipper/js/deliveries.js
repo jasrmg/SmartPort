@@ -86,7 +86,7 @@ document
 
     try {
       const response = await fetch(
-        `/shipper/confirm-delivery/${selectedCargoId}`,
+        `/shipper/confirm-delivery/${selectedCargoId}/`,
         {
           method: "POST",
           headers: {
@@ -105,6 +105,15 @@ document
       if (response.ok) {
         showToast("Delivery confirmed!");
         document.getElementById("confirmDeliveryModal").style.display = "none";
+
+        // find the button that matches the selectedCargoId
+        const deliveredBtn = document.querySelector(
+          `.btn-icon.approve[data-cargo-id="${selectedCargoId}"]`
+        );
+        if (deliveredBtn) {
+          const actionCell = deliveredBtn.closest("td");
+          actionCell.innerHTML = `<span class="status-label delivered">Delivered</span>`;
+        }
       } else {
         showToast(data.error || "Failed to confirm delivery.", true);
       }

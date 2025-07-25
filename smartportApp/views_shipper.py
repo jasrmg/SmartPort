@@ -195,14 +195,19 @@ def parse_manifest_page(page_obj):
     # Only include cargo details for the first card (initial render)
     if index == 0:
       cargo_items = sm.cargo_items.all()  # assuming related name is `cargoitem_set`
+      cargo_items = sm.cargo_items.select_related("delivery").all()
       entry["cargo"] = [
         {
+          "id": c.cargo_id,  # ensure you have this field
           "item_number": c.item_number,
           "description": c.description,
           "quantity": c.quantity,
           "value": format_currency(c.value),
-        } for c in cargo_items
+          "delivered": hasattr(c, "delivery")
+        }
+        for c in cargo_items
       ]
+
     parsed.append(entry)
   return parsed
 
@@ -230,7 +235,8 @@ def get_cargo_items(request, submanifest_id):
         "description": c.description,
         "quantity": c.quantity,
         "value": format_currency(c.value),
-        "vessel": vessel_name
+        "vessel": vessel_name,
+        "delivered": hasattr(c, "delivery")
       }
       for c in cargo_items
     ]

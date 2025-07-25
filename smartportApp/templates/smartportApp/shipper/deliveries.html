@@ -263,6 +263,9 @@
             <td class="qty">{{ item.quantity }}</td>
             <td class="value">{{ item.value }}</td>
             <td>
+              {% if item.delivered %}
+              <span class="status-label delivered">Delivered</span>
+              {% else %}
               <button
                 class="btn-icon approve"
                 title="Mark As Delivered"
@@ -272,7 +275,12 @@
               >
                 <i class="fas fa-check"></i>
               </button>
+              {% endif %}
             </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5">No cargo available.</td>
           </tr>
           {% endfor %}
         </tbody>
