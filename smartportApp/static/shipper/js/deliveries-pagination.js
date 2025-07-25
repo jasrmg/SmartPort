@@ -96,6 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     cards.forEach((card) => {
       card.addEventListener("click", () => {
         const submanifestId = card.dataset.submanifestId;
+        loadCargoForSubmanifest(submanifestId);
         const submanifestNumber = card.querySelector("h3")?.textContent || "";
 
         numberDisplay.textContent = submanifestNumber;
@@ -103,6 +104,37 @@ document.addEventListener("DOMContentLoaded", () => {
         cargoContainer.style.display = "grid";
       });
     });
+  };
+
+  const loadCargoForSubmanifest = async (submanifestId) => {
+    try {
+      const response = await fetch(`/get-cargo-items/${submanifestId}/`);
+      const data = await response.json();
+
+      const tbody = document.getElementById("cargo-tbody");
+      tbody.innerHTML = ""; // clear previous
+
+      data.cargo.forEach((item) => {
+        const row = `
+        <tr>
+          <td>${item.item_number}</td>
+          <td>${item.description}</td>
+          <td>${item.quantity}</td>
+          <td>${item.value}</td>
+          <td>
+            <button class="btn-icon approve" title="Mark As Delivered">
+              <i class="fas fa-check"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+        tbody.insertAdjacentHTML("beforeend", row);
+      });
+
+      document.querySelector(".submanifest-cargo").style.display = "block";
+    } catch (err) {
+      console.error("Failed to load cargo:", err);
+    }
   };
 
   const initPagination = () => {
@@ -155,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // ✅ Bind back button only once
+  // Bind back button only once
   if (backBtn) {
     backBtn.addEventListener("click", () => {
       cardsContainer.style.display = "grid";
@@ -163,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ Init filter change
+  // Init filter change
   [originSelect, destinationSelect, vesselTypeSelect].forEach((select) => {
     select.addEventListener("change", () => {
       currentPage = 1;
@@ -171,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ✅ Flatpickr
+  // Flatpickr
   flatpickr(dateFilterElement, {
     dateFormat: "Y-m-d",
     allowInput: false,
@@ -182,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   });
 
-  // ✅ Init
+  // Init
   initPagination();
   bindCardClickEvents(); // needed if cards are already rendered on first load
 });

@@ -217,13 +217,13 @@ from django.views.decorators.http import require_POST, require_GET
 def get_cargo_items(request, submanifest_id):
   try:
     sm = SubManifest.objects.get(pk=submanifest_id)
-    cargo_items = sm.cargoitem_set.all()
+    cargo_items = sm.cargo_items.all()
     data = [
       {
         "item_number": c.item_number,
         "description": c.description,
         "quantity": c.quantity,
-        "status": c.get_status_display(),
+        "value": format_currency(c.value),
       }
       for c in cargo_items
     ]
