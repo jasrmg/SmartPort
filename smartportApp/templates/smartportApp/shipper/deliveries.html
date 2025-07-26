@@ -195,25 +195,23 @@
           </div>
           <div class="submanifest-card-title">
             <h3>{{ sub.submanifest_number }}</h3>
-            <p>{{ sub.status_display }}</p>
+            <p>{{ sub.consignee }}</p>
             <!--submanifest status-->
           </div>
         </div>
         <p class="submanifest-card-info">
-          <strong>Route:</strong>
+          <strong>Created At:</strong>
           <!---->
-          {{ sub.origin_port }} ➞
-          <!---->
-          {{ sub.destination_port }}
+          {{ sub.created_at }}
         </p>
         <p class="submanifest-card-info">
-          <strong>Consignee:</strong>
+          <strong>Status:</strong>
           <!---->
-          {{ sub.consignee }}
+          {{ sub.status_display }}
         </p>
 
         <p class="submanifest-card-info">
-          <strong>Consignor:</strong>
+          <strong>Custom Clearance:</strong>
           <!---->
           {{ sub.consignor }}
         </p>

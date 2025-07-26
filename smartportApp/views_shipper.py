@@ -19,7 +19,7 @@ import json
 def enforce_shipper_access(request):
   ''' Check if the user is authenticated and has the shipper role. '''
   if not request.user.is_authenticated:
-    return HttpResponseForbidden("You are not authorized to view this page.")
+    return HttpResponseForbidden("401 You are not authorized to view this page.")
   
   role = request.user.userprofile.role
 
@@ -186,6 +186,7 @@ def parse_manifest_page(page_obj):
       "submanifest_number": sm.submanifest_number,
       "status": sm.status,
       "status_display": sm.get_status_display(),
+      "created_at": sm.created_at.strftime("%b %d, %Y @ %I:%M %p"),
       "container_no": sm.container_no,
       "seal_no": sm.seal_no,
       "bill_of_lading_no": sm.bill_of_lading_no,

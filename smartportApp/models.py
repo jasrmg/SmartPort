@@ -260,6 +260,29 @@ class SubManifest(models.Model):
       # save again to update the number
       SubManifest.objects.filter(pk=self.pk).update(submanifest_number=self.submanifest_number)
 
+class CustomClearance(models.Model):
+  class ClearanceStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    PASSED = "passed", "Passed"
+    FAILED = "failed", "Failed"
+  
+  clearance_id = models.AutoField(primary_key=True)
+  submanifest = models.OneToOneField("SubManifest", on_delete=models.CASCADE, related_name="custom_clearance")
+  clearance_status = models.CharField(max_length=20, choices=ClearanceStatus.choices, default=ClearanceStatus.PENDING)
+  inspection_date = models.DateTimeField(null=True, blank=True)
+  remarks = models.TextField(blank=True)
+  clearance_file = models.FileField(upload_to="custom_clearances/", blank=True, null=True)
+
+  created_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name="created_clearances")
+  reviewed_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name="reviewed_clearances")
+  
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  def __str__(self):
+    return f"Clearance for {self.submanifest.submanifest_number} - {self.clearance_status}"
+
+
 class Cargo(models.Model):
   cargo_id = models.AutoField(primary_key=True)
   submanifest = models.ForeignKey(
