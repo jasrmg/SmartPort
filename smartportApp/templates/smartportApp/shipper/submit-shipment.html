@@ -1,0 +1,699 @@
+{% extends "smartportApp/shipper/shipper-base.html" %}
+<!---->
+{% load static %}
+
+<!---->
+{% block title %} Submit Shipment {% endblock %}
+<!---->
+{% block head %}
+<link rel="stylesheet" href="{% static 'shipper/css/submit-shipment.css' %}" />
+{% endblock %}
+<!---->
+{% block sidebar %}
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-anchor logo-icon"></i>
+      <span class="logo-text">SmartPort</span>
+      <button class="collapse-btn">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+  <ul class="nav-menu">
+    <li class="nav-item">
+      <a href="{% url 'shipper-dashboard' %}" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li class="nav-item expanded">
+      <a href="" class="nav-link">
+        <i class="fas fa-ship"></i>
+        <span>Vessels</span>
+      </a>
+      <ul class="nav-sub-menu" style="height: auto">
+        <li>
+          <a href="{% url 'vessel-info' %}" class="nav-sub-link">
+            <i class="fas fa-list-ul"></i>
+            <span>Vessels Info</span>
+          </a>
+        </li>
+        <li>
+          <a href="" class="nav-sub-link">
+            <i class="fas fa-truck-fast"></i>
+
+            <span>Deliveries</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'submit-shipment' %}" class="nav-link active">
+        <i class="fas fa-upload"></i>
+        <span>Submit Shipment</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-clipboard-check"></i>
+        <span>Custom Clearance</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="" class="nav-sub-link">
+            <i class="fas fa-eye"></i>
+            <span>Clearance Status</span></a
+          >
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-chart-bar"></i>
+        <span>View Incident Feed</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+<!-- Main Content -->
+
+{% block content %}
+<!-- Page Content -->
+<div class="dashboard-content">
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Submit Shipment</h1>
+      <p>Fill in the shipment details to create a new submanifest</p>
+    </div>
+  </div>
+
+  <form class="form-container">
+    <!-- Voyage Selection -->
+    <div class="form-section">
+      <h2 class="form-section-title">Voyage Information</h2>
+      <div class="form-group">
+        <label class="form-label" for="voyageSelect">Voyage Number</label>
+        <select
+          class="form-control"
+          id="voyageSelect"
+          name="voyage_id"
+          required
+        >
+          <option value="">-- Select a Voyage --</option>
+          <option value="1">VYG-20250724-001 | Manila ➝ Cebu</option>
+          <option value="2">VYG-20250725-002 | Davao ➝ Subic</option>
+          <option value="3">VYG-20250726-003 | Batangas ➝ Iloilo</option>
+        </select>
+        <small class="form-helper">
+          *Choose the voyage associated with this shipment.
+        </small>
+      </div>
+    </div>
+
+    <!-- Shipper Details -->
+    <div class="form-section">
+      <h2 class="form-section-title">Consignor Details</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="consignorName">Consignor's Name</label>
+          <input type="text" class="form-control" id="shipperName" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="consignorEmail">Consignor Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="consignorEmail"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="consignorAddress"
+            >Consignor's Address</label
+          >
+          <input
+            type="texdt"
+            class="form-control"
+            id="consignorAddress"
+            required
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Consignee Details -->
+    <div class="form-section">
+      <h2 class="form-section-title">Consignee Details</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="consigneeName">Consignee Name</label>
+          <input type="text" class="form-control" id="consigneeName" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="consigneeEmail">Consignee Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="consigneeEmail"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="consigneeAddress"
+            >Consignee's Address</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="consigneeAddress"
+            required
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- everything you posted goes here, but IDs must be NAME-based and avoid duplication -->
+    <h2 class="form-section-title">Cargo Details</h2>
+    <div id="cargoContainer">
+      <!-- Cargo Entry Template -->
+      <div class="cargo-entry">
+        <!-- Circular number indicator -->
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+          "
+        >
+          <!-- Remove button positioned on the right -->
+          <div class="cargo-number">1</div>
+          <span class="btn-remove-cargo" title="Delete Cargo">&times;</span>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+          "
+        >
+          <div class="form-group" style="width: 100%">
+            <label class="form-label">Cargo Description</label>
+            <textarea
+              class="form-control"
+              name="cargo_description[]"
+              placeholder="e.g. Blue denim jeans, men's size 32"
+              required
+            ></textarea>
+            <small class="form-helper"
+              >*Describe the item clearly — include type, material, size, or
+              variant.</small
+            >
+          </div>
+          <div class="form-group" style="width: 100%">
+            <label class="form-label">Additional Info</label>
+            <textarea
+              class="form-control"
+              name="additional_info[]"
+              placeholder="e.g. Fragile item, handle with care. Requires temperature control."
+            ></textarea>
+            <small class="form-helper"
+              >*Optional notes for special handling, delivery instructions, or
+              safety concerns.</small
+            >
+          </div>
+        </div>
+
+        <div style="position: relative">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Quantity</label>
+              <input
+                type="number"
+                class="form-control"
+                name="quantity[]"
+                min="1"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Weight (kg)</label>
+              <input
+                type="number"
+                class="form-control"
+                name="weight[]"
+                min="0"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Value (₱)</label>
+              <input
+                type="number"
+                class="form-control"
+                name="value[]"
+                min="0"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">
+                HS Code
+                <div class="tooltip-wrapper">
+                  <span class="tooltip-trigger">?</span>
+                  <div class="tooltip-box">
+                    <p>
+                      The HS Code is usually found in the Bill of Lading or
+                      Packing List.
+                    </p>
+                    <p>If it's not available:</p>
+                    <ul style="padding-left: 1.2rem; margin: 0">
+                      <li>You may enter it manually if you know it,</li>
+                      <li>
+                        Or
+                        <a
+                          href="https://www.census.gov/foreign-trade/schedules/b/2025/index.html"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          click here to look it up </a
+                        >,
+                      </li>
+                      <li>
+                        Or simply leave it blank, and customs will review it for
+                        you.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </label>
+
+              <input type="text" class="form-control" name="hscode[]" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Cargo Button - positioned at bottom right -->
+        <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
+          <button type="button" class="btn-confirm-delivery addCargoBtn">
+            + Add Another Cargo
+          </button>
+        </div>
+      </div>
+    </div>
+    <!--TEMPLATE TO CLONE USING JS-->
+    <template id="cargoTemplate">
+      <div class="cargo-entry">
+        <div class="cargo-header">
+          <div class="cargo-number"></div>
+          <span class="btn-remove-cargo" title="Delete Cargo">&times;</span>
+        </div>
+
+        <div class="cargo-details">
+          <div class="form-group" style="width: 100%">
+            <label class="form-label">Cargo Description</label>
+            <textarea
+              class="form-control"
+              name="cargo_description[]"
+              required
+            ></textarea>
+            <small class="form-helper">*Describe the item clearly.</small>
+          </div>
+          <div class="form-group" style="width: 100%">
+            <label class="form-label">Additional Info</label>
+            <textarea class="form-control" name="additional_info[]"></textarea>
+            <small class="form-helper">*Optional notes for handling.</small>
+          </div>
+        </div>
+
+        <div class="cargo-details-two">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Quantity</label>
+              <input
+                type="number"
+                class="form-control"
+                name="quantity[]"
+                min="1"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Weight (kg)</label>
+              <input
+                type="number"
+                class="form-control"
+                name="weight[]"
+                min="0"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Value (₱)</label>
+              <input
+                type="number"
+                class="form-control"
+                name="value[]"
+                min="0"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">HS Code</label>
+              <input type="text" class="form-control" name="hscode[]" />
+            </div>
+          </div>
+        </div>
+
+        <div class="cargo-btn-container">
+          <button type="button" class="btn-confirm-delivery addCargoBtn">
+            + Add Another Cargo
+          </button>
+        </div>
+      </div>
+    </template>
+
+    <!-- Special Instructions -->
+    <div class="form-section">
+      <h2 class="form-section-title">Special Instructions</h2>
+      <div class="form-group">
+        <label class="form-label" for="handlingInstructions"
+          >Handling Instructions</label
+        >
+        <textarea
+          class="form-control"
+          id="handlingInstructions"
+          rows="4"
+          placeholder="e.g. Fragile – handle with care. Keep upright at all times. Avoid exposure to direct sunlight or moisture. Use forklift from bottom only."
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Document Cards Section -->
+    <div class="document-types">
+      <div
+        class="document-type-card"
+        id="billOfLadingCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-file-alt document-type-icon"></i>
+        <div class="document-type-title">Bill of Lading</div>
+        <div class="document-type-desc">
+          Transport document that serves as a receipt of goods, evidence of the
+          contract of carriage, and a document of title.
+        </div>
+      </div>
+
+      <div
+        class="document-type-card"
+        id="commercialInvoiceCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-file-invoice-dollar document-type-icon"></i>
+        <div class="document-type-title">Commercial Invoice</div>
+        <div class="document-type-desc">
+          Document containing details of the sale transaction including item,
+          quantity, and value.
+        </div>
+      </div>
+
+      <div
+        class="document-type-card"
+        id="packingListCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-list-ol document-type-icon"></i>
+        <div class="document-type-title">Packing List</div>
+        <div class="document-type-desc">
+          Document detailing the contents of a shipment, including item counts,
+          dimensions, and weights.
+        </div>
+      </div>
+
+      <div
+        class="document-type-card"
+        id="certificateOriginCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-certificate document-type-icon"></i>
+        <div class="document-type-title">Certificate of Origin</div>
+        <div class="document-type-desc">
+          Document certifying the country of origin of the goods being shipped.
+        </div>
+      </div>
+      <div
+        class="document-type-card others-card"
+        id="othersCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-ellipsis-h document-type-icon"></i>
+        <div class="document-type-title">Others</div>
+        <div class="document-type-desc">
+          Other supporting documents as required for the shipment.
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div style="display: flex; justify-content: end">
+      <button type="submit" class="btn-submit">
+        <i class="fas fa-paper-plane"></i>
+        Submit Submanifest
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %} {% block modal %}
+<!-- Confirmation Modal -->
+<div
+  id="confirmationModal"
+  style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 31, 68, 0.25);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  "
+>
+  <div
+    style="
+      background: white;
+      border-radius: 12px;
+      max-width: 90vw;
+      width: 350px;
+      margin: auto;
+      box-shadow: 0 8px 32px rgba(10, 31, 68, 0.18);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      position: relative;
+    "
+  >
+    <button
+      id="closeModalBtn"
+      style="
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        color: #6b7280;
+        cursor: pointer;
+      "
+    >
+      <i class="fas fa-times"></i>
+    </button>
+    <div style="margin-bottom: 1.2rem">
+      <i
+        class="fas fa-check-circle"
+        style="color: var(--accent); font-size: 2.5rem"
+      ></i>
+    </div>
+    <h3
+      style="
+        font-family: 'Exo 2', sans-serif;
+        font-size: 1.2rem;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+      "
+    >
+      Submanifest Saved!
+    </h3>
+    <p style="color: var(--dark-gray); font-size: 1rem">
+      Your shipment details have been successfully saved.
+    </p>
+    <button
+      id="modalOkBtn"
+      class="btn-submit"
+      style="margin-top: 1.5rem; width: 100%; justify-content: center"
+    >
+      OK
+    </button>
+  </div>
+</div>
+
+<!-- Others Modal -->
+<div id="othersModal" class="custom-modal-bg" style="display: none">
+  <div class="custom-modal">
+    <button class="custom-modal-close" id="closeOthersModal" title="Close">
+      <i class="fas fa-times"></i>
+    </button>
+    <h3 class="custom-modal-title">Upload Other Document</h3>
+    <div class="custom-modal-body">
+      <label for="otherDocLabel" class="custom-modal-label">Label</label>
+      <input
+        type="text"
+        id="otherDocLabel"
+        class="custom-modal-input"
+        placeholder="Enter document label..."
+      />
+      <div
+        class="custom-modal-upload"
+        style="flex-direction: row; align-items: center; gap: 0.7rem"
+      >
+        <label
+          for="otherDocFile"
+          class="custom-modal-upload-label"
+          style="
+            height: 42px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+          "
+        >
+          <i class="fas fa-upload"></i> Upload file/s
+        </label>
+        <input
+          type="file"
+          id="otherDocFile"
+          class="custom-modal-file"
+          multiple
+          style="display: none"
+        />
+        <button
+          type="button"
+          id="submitOtherDocBtn"
+          class="custom-modal-submit-btn"
+          style="
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 500;
+            font-size: 0.97rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            height: 42px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <i class="fas fa-paper-plane"></i> Submit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modals for Main Documents -->
+<div id="uploadModal" class="custom-modal-bg" style="display: none">
+  <div class="custom-modal">
+    <button class="custom-modal-close" id="closeUploadModal" title="Close">
+      <i class="fas fa-times"></i>
+    </button>
+    <h3 class="custom-modal-title" id="uploadModalTitle">Upload Document</h3>
+    <div class="custom-modal-body">
+      <div
+        class="custom-modal-upload"
+        style="flex-direction: row; align-items: center; gap: 0.7rem"
+      >
+        <label
+          for="mainDocFile"
+          class="custom-modal-upload-label"
+          style="
+            height: 42px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+          "
+        >
+          <i class="fas fa-upload"></i> Upload file/s
+        </label>
+        <input
+          type="file"
+          id="mainDocFile"
+          class="custom-modal-file"
+          multiple
+          style="display: none"
+        />
+        <button
+          type="button"
+          id="submitMainDocBtn"
+          class="custom-modal-submit-btn"
+          style="
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 500;
+            font-size: 0.97rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            height: 42px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <i class="fas fa-paper-plane"></i> Submit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<!---->
+{% block script %}
+<script src="{% static 'shipper/js/submit-shipment.js' %}"></script>
+{% endblock %}
