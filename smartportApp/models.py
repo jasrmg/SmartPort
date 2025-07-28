@@ -263,8 +263,8 @@ class SubManifest(models.Model):
 class CustomClearance(models.Model):
   class ClearanceStatus(models.TextChoices):
     PENDING = "pending", "Pending"
-    PASSED = "passed", "Passed"
-    FAILED = "failed", "Failed"
+    CLEARED = "cleared", "Cleared"
+    REJECTED = "rejected", "Rejected"
   
   clearance_id = models.AutoField(primary_key=True)
   submanifest = models.OneToOneField("SubManifest", on_delete=models.CASCADE, related_name="custom_clearance")

@@ -204,16 +204,16 @@
           <!---->
           {{ sub.created_at }}
         </p>
-        <p class="submanifest-card-info">
+        <p class="submanifest-card-info {{ sub.status }}">
           <strong>Status:</strong>
           <!---->
           {{ sub.status_display }}
         </p>
 
-        <p class="submanifest-card-info">
+        <p class="submanifest-card-info {{ sub.clearance_status }}">
           <strong>Custom Clearance:</strong>
           <!---->
-          {{ sub.consignor }}
+          {{ sub.clearance_status|title }}
         </p>
       </div>
       <!---->

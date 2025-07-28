@@ -75,7 +75,8 @@ def shipper_deliveries_view(request):
   submanifests = SubManifest.objects.select_related(
     "voyage__vessel",
     "voyage__departure_port",
-    "voyage__arrival_port"
+    "voyage__arrival_port",
+    "custom_clearance",
     ).filter(created_by=shipper)
   
   # TODO: apply filters
@@ -199,6 +200,9 @@ def parse_manifest_page(page_obj):
       "departure_date": sm.voyage.departure_date.strftime("%b %d, %Y @ %I:%M %p"),
       "arrival_date": sm.voyage.arrival_date.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.arrival_date else "",
       "eta": sm.voyage.eta.strftime("%b %d, %Y @ %I:%M %p") if sm.voyage.eta else "",
+      "has_clearance": hasattr(sm, "custom_clearance"),
+      "clearance_status": sm.custom_clearance.clearance_status if hasattr(sm, "custom_clearance") else "pending",
+      # "clearance_date": sm.custom_clearance.inspection_date.strftime("%b %d, %Y @ %I:%M %p") if hasattr(sm, "custom_clearance") and sm.custom_clearance.clearance_date else "",
     }
 
     # Only include cargo details for the first card (initial render)
