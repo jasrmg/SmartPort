@@ -13,7 +13,6 @@
   href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
 />
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<style></style>
 {% endblock %}
 <!---->
 {% block sidebar %}
@@ -58,9 +57,9 @@
       </ul>
     </li>
     <li class="nav-item">
-      <a href="" class="nav-link">
-        <i class="fas fa-file-alt"></i>
-        <span>Shipping Details</span>
+      <a href="{% url 'submit-shipment' %}" class="nav-link">
+        <i class="fas fa-upload"></i>
+        <span>Submit Shipment</span>
       </a>
       <ul class="nav-sub-menu">
         <li>
