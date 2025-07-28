@@ -2,6 +2,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const cargoContainer = document.getElementById("cargoContainer");
   const cargoTemplate = document.getElementById("cargoTemplate");
 
+  const deleteModal = document.getElementById("confirmDeleteCargoModal");
+  const closeModalBtn = document.getElementById("closeDeleteCargoModal");
+  const cancelBtn = document.getElementById("cancelDeleteCargo");
+  const confirmBtn = document.getElementById("confirmDeleteCargoBtn");
+
+  let cargoToDelete = null;
+
   const renumberCargos = () => {
     document.querySelectorAll(".cargo-entry").forEach((entry, index) => {
       const number = entry.querySelector(".cargo-number");
@@ -9,53 +16,94 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  cargoContainer.addEventListener("click", (e) => {
-    // ADD CARGO
-    if (e.target.closest(".addCargoBtn")) {
-      // 1. Remove the add button from the current block
-      const currentEntry = e.target.closest(".cargo-entry");
-      if (currentEntry) {
-        const oldAddBtn = currentEntry.querySelector(".addCargoBtn");
-        if (oldAddBtn) oldAddBtn.remove();
+  const updateAddButtons = () => {
+    const cargoEntries = document.querySelectorAll(".cargo-entry");
+
+    cargoEntries.forEach((entry, index) => {
+      const btnContainer = entry.querySelector(".cargo-btn-container");
+      if (!btnContainer) return;
+
+      // Remove any existing button first
+      const existingBtn = btnContainer.querySelector(".addCargoBtn");
+      if (existingBtn) existingBtn.remove();
+
+      // Only add the button to the last entry
+      if (index === cargoEntries.length - 1) {
+        const newBtn = document.createElement("button");
+        newBtn.type = "button";
+        newBtn.className = "btn-confirm-delivery addCargoBtn";
+        newBtn.textContent = "+ Add Another Cargo";
+        btnContainer.appendChild(newBtn);
       }
+    });
+  };
 
-      // 2. Clone and append new cargo block
-      const clone = cargoTemplate.content.cloneNode(true);
-      cargoContainer.appendChild(clone);
+  const showModal = () => (deleteModal.style.display = "flex");
+  const closeModal = () => {
+    deleteModal.style.display = "none";
+    cargoToDelete = null;
+  };
 
-      // 3. Renumber all
-      renumberCargos();
+  const showToast = (msg, isError = false, duration = 2500) => {
+    const toast = document.createElement("div");
+    toast.className = `custom-toast ${isError ? "error" : ""}`;
+    toast.textContent = msg;
+
+    let container = document.getElementById("toast-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "toast-container";
+      document.body.appendChild(container);
     }
 
-    // REMOVE CARGO
-    if (e.target.closest(".btn-remove-cargo")) {
-      const entry = e.target.closest(".cargo-entry");
+    container.appendChild(toast);
 
-      // Safety: At least one entry must remain
-      const allEntries = document.querySelectorAll(".cargo-entry");
-      if (entry && allEntries.length > 1) {
-        entry.remove();
+    setTimeout(() => {
+      toast.classList.add("fade-out");
+      toast.addEventListener("transitionend", () => toast.remove());
+    }, duration);
+  };
 
-        // 1. If last entry has no add button, append it there
-        const lastEntry = cargoContainer.querySelector(
-          ".cargo-entry:last-child"
-        );
-        const hasAddBtn = lastEntry.querySelector(".addCargoBtn");
-        if (!hasAddBtn) {
-          const btnContainer = document.createElement("div");
-          btnContainer.className = "cargo-btn-container";
-          btnContainer.innerHTML = `
-            <button type="button" class="btn-confirm-delivery addCargoBtn">
-              + Add Another Cargo
-            </button>`;
-          lastEntry.appendChild(btnContainer);
-        }
+  // Delegated click handler
+  cargoContainer.addEventListener("click", (e) => {
+    const target = e.target;
 
-        // 2. Renumber
-        renumberCargos();
+    if (target.classList.contains("addCargoBtn")) {
+      const clone = cargoTemplate.content.cloneNode(true);
+      cargoContainer.appendChild(clone);
+      renumberCargos();
+      updateAddButtons();
+    }
+
+    if (target.classList.contains("btn-remove-cargo")) {
+      const entry = target.closest(".cargo-entry");
+      const total = document.querySelectorAll(".cargo-entry").length;
+
+      if (entry && total > 1) {
+        cargoToDelete = entry;
+        showModal();
+      } else {
+        showToast("At least one cargo entry is required", true);
       }
     }
   });
 
+  // Confirm delete button
+  confirmBtn.addEventListener("click", () => {
+    if (cargoToDelete) {
+      cargoToDelete.remove();
+      renumberCargos();
+      updateAddButtons();
+      showToast("Cargo entry deleted successfully");
+    }
+    closeModal();
+  });
+
+  // Modal close/cancel
+  closeModalBtn.addEventListener("click", closeModal);
+  cancelBtn.addEventListener("click", closeModal);
+
+  // Initialize on page load
   renumberCargos();
+  updateAddButtons();
 });

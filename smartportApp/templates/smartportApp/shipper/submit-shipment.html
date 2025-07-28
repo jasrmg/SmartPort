@@ -208,27 +208,12 @@
       <!-- Cargo Entry Template -->
       <div class="cargo-entry">
         <!-- Circular number indicator -->
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-          "
-        >
+        <div class="cargo-header">
           <!-- Remove button positioned on the right -->
           <div class="cargo-number">1</div>
-          <span class="btn-remove-cargo" title="Delete Cargo">&times;</span>
         </div>
 
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-          "
-        >
+        <div class="cargo-details">
           <div class="form-group" style="width: 100%">
             <label class="form-label">Cargo Description</label>
             <textarea
@@ -326,7 +311,7 @@
         </div>
 
         <!-- Add Cargo Button - positioned at bottom right -->
-        <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
+        <div class="cargo-btn-container">
           <button type="button" class="btn-confirm-delivery addCargoBtn">
             + Add Another Cargo
           </button>
@@ -495,202 +480,46 @@
     </div>
   </form>
 </div>
-{% endblock %} {% block modal %}
-<!-- Confirmation Modal -->
-<div
-  id="confirmationModal"
-  style="
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(10, 31, 68, 0.25);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-  "
->
-  <div
-    style="
-      background: white;
-      border-radius: 12px;
-      max-width: 90vw;
-      width: 350px;
-      margin: auto;
-      box-shadow: 0 8px 32px rgba(10, 31, 68, 0.18);
-      padding: 2rem 1.5rem;
-      text-align: center;
-      position: relative;
-    "
-  >
-    <button
-      id="closeModalBtn"
-      style="
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: none;
-        border: none;
-        font-size: 1.2rem;
-        color: #6b7280;
-        cursor: pointer;
-      "
-    >
-      <i class="fas fa-times"></i>
-    </button>
-    <div style="margin-bottom: 1.2rem">
-      <i
-        class="fas fa-check-circle"
-        style="color: var(--accent); font-size: 2.5rem"
-      ></i>
-    </div>
-    <h3
-      style="
-        font-family: 'Exo 2', sans-serif;
-        font-size: 1.2rem;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
-      "
-    >
-      Submanifest Saved!
-    </h3>
-    <p style="color: var(--dark-gray); font-size: 1rem">
-      Your shipment details have been successfully saved.
-    </p>
-    <button
-      id="modalOkBtn"
-      class="btn-submit"
-      style="margin-top: 1.5rem; width: 100%; justify-content: center"
-    >
-      OK
-    </button>
-  </div>
-</div>
-
-<!-- Others Modal -->
-<div id="othersModal" class="custom-modal-bg" style="display: none">
-  <div class="custom-modal">
-    <button class="custom-modal-close" id="closeOthersModal" title="Close">
-      <i class="fas fa-times"></i>
-    </button>
-    <h3 class="custom-modal-title">Upload Other Document</h3>
-    <div class="custom-modal-body">
-      <label for="otherDocLabel" class="custom-modal-label">Label</label>
-      <input
-        type="text"
-        id="otherDocLabel"
-        class="custom-modal-input"
-        placeholder="Enter document label..."
-      />
-      <div
-        class="custom-modal-upload"
-        style="flex-direction: row; align-items: center; gap: 0.7rem"
+<div id="toast-container"></div>
+{% endblock %}
+<!---->
+{% block modal %}
+<div class="modal-overlay" id="confirmDeleteCargoModal" style="display: none">
+  <div class="modal">
+    <div class="modal-header sticky-top">
+      <h2 class="modal-title">
+        <i class="fas fa-box-open icon" style="margin-right: 0.5rem"></i>
+        Confirm Cargo Deletion
+      </h2>
+      <button
+        class="modal-close"
+        id="closeDeleteCargoModal"
+        aria-label="Close Modal"
       >
-        <label
-          for="otherDocFile"
-          class="custom-modal-upload-label"
-          style="
-            height: 42px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 0;
-          "
-        >
-          <i class="fas fa-upload"></i> Upload file/s
-        </label>
-        <input
-          type="file"
-          id="otherDocFile"
-          class="custom-modal-file"
-          multiple
-          style="display: none"
-        />
-        <button
-          type="button"
-          id="submitOtherDocBtn"
-          class="custom-modal-submit-btn"
-          style="
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 0.6rem 1.2rem;
-            font-family: 'Exo 2', sans-serif;
-            font-weight: 500;
-            font-size: 0.97rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            height: 42px;
-            display: flex;
-            align-items: center;
-          "
-        >
-          <i class="fas fa-paper-plane"></i> Submit
+        &times;
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-warning">
+        <i class="fas fa-exclamation-triangle icon"></i>
+        Are you sure you want to delete this cargo detail?
+      </div>
+
+      <div
+        class="modal-actions"
+        style="display: flex; justify-content: flex-end; margin-top: 1.5rem"
+      >
+        <button class="btn btn-cancel" id="cancelDeleteCargo">Cancel</button>
+        <button class="btn btn-danger" id="confirmDeleteCargoBtn">
+          <span class="btn-text">Yes, Delete</span>
+          <span class="spinner" style="display: none"></span>
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Upload Modals for Main Documents -->
-<div id="uploadModal" class="custom-modal-bg" style="display: none">
-  <div class="custom-modal">
-    <button class="custom-modal-close" id="closeUploadModal" title="Close">
-      <i class="fas fa-times"></i>
-    </button>
-    <h3 class="custom-modal-title" id="uploadModalTitle">Upload Document</h3>
-    <div class="custom-modal-body">
-      <div
-        class="custom-modal-upload"
-        style="flex-direction: row; align-items: center; gap: 0.7rem"
-      >
-        <label
-          for="mainDocFile"
-          class="custom-modal-upload-label"
-          style="
-            height: 42px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 0;
-          "
-        >
-          <i class="fas fa-upload"></i> Upload file/s
-        </label>
-        <input
-          type="file"
-          id="mainDocFile"
-          class="custom-modal-file"
-          multiple
-          style="display: none"
-        />
-        <button
-          type="button"
-          id="submitMainDocBtn"
-          class="custom-modal-submit-btn"
-          style="
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 0.6rem 1.2rem;
-            font-family: 'Exo 2', sans-serif;
-            font-weight: 500;
-            font-size: 0.97rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            height: 42px;
-            display: flex;
-            align-items: center;
-          "
-        >
-          <i class="fas fa-paper-plane"></i> Submit
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 {% endblock %}
 
 <!---->
