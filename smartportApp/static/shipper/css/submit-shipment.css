@@ -243,11 +243,13 @@ textarea.form-control {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px;
   border: 1px solid var(--gray);
-  border-radius: 8px;
+  padding: 10px;
+  border-radius: 6px;
   background-color: var(--light);
-  margin-top: 8px;
+  min-height: 60px;
+  max-height: 200px;
+  overflow: hidden;
 }
 
 .file-preview-wrapper img,
