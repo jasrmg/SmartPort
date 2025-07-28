@@ -376,7 +376,37 @@
               />
             </div>
             <div class="form-group">
-              <label class="form-label">HS Code</label>
+              <label class="form-label">
+                HS Code
+                <div class="tooltip-wrapper">
+                  <span class="tooltip-trigger">?</span>
+                  <div class="tooltip-box">
+                    <p>
+                      The HS Code is usually found in the Bill of Lading or
+                      Packing List.
+                    </p>
+                    <p>If it's not available:</p>
+                    <ul style="padding-left: 1.2rem; margin: 0">
+                      <li>You may enter it manually if you know it,</li>
+                      <li>
+                        Or
+                        <a
+                          href="https://www.census.gov/foreign-trade/schedules/b/2025/index.html"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          click here to look it up </a
+                        >,
+                      </li>
+                      <li>
+                        Or simply leave it blank, and customs will review it for
+                        you.
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </label>
+
               <input type="text" class="form-control" name="hscode[]" />
             </div>
           </div>
@@ -408,6 +438,7 @@
 
     <!-- Document Cards Section -->
     <div class="document-types">
+      <!-- BILL OF LADING -->
       <div
         class="document-type-card"
         id="billOfLadingCard"
@@ -419,8 +450,10 @@
           Transport document that serves as a receipt of goods, evidence of the
           contract of carriage, and a document of title.
         </div>
+        <div class="uploaded-file-name" id="billOfLadingFileName"></div>
+        <div class="file-preview-area" id="billOfLadingPreview"></div>
       </div>
-
+      <!-- INVOICE -->
       <div
         class="document-type-card"
         id="commercialInvoiceCard"
@@ -432,8 +465,11 @@
           Document containing details of the sale transaction including item,
           quantity, and value.
         </div>
+        <div class="uploaded-file-name" id="commercialInvoiceFileName"></div>
+        <div class="file-preview-area" id="commercialInvoicePreview"></div>
       </div>
 
+      <!-- PACKING LIST -->
       <div
         class="document-type-card"
         id="packingListCard"
@@ -445,8 +481,11 @@
           Document detailing the contents of a shipment, including item counts,
           dimensions, and weights.
         </div>
+        <div class="uploaded-file-name" id="packingListFileName"></div>
+        <div class="file-preview-area" id="packingListPreview"></div>
       </div>
 
+      <!-- CERTIFICATE OF ORIGIN -->
       <div
         class="document-type-card"
         id="certificateOriginCard"
@@ -457,7 +496,10 @@
         <div class="document-type-desc">
           Document certifying the country of origin of the goods being shipped.
         </div>
+        <div class="uploaded-file-name" id="certificateOriginFileName"></div>
+        <div class="file-preview-area" id="certificateOriginPreview"></div>
       </div>
+      <!-- OTHERS -->
       <div
         class="document-type-card others-card"
         id="othersCard"
@@ -468,7 +510,25 @@
         <div class="document-type-desc">
           Other supporting documents as required for the shipment.
         </div>
+        <div class="uploaded-file-name" id="othersFileName"></div>
+        <div class="file-preview-area" id="othersPreview"></div>
       </div>
+
+      <input type="file" name="bill_of_lading" id="billOfLadingInput" hidden />
+      <input
+        type="file"
+        name="commercial_invoice"
+        id="commercialInvoiceInput"
+        hidden
+      />
+      <input type="file" name="packing_list" id="packingListInput" hidden />
+      <input
+        type="file"
+        name="certificate_origin"
+        id="certificateOriginInput"
+        hidden
+      />
+      <input type="file" name="other_documents" id="othersInput" hidden />
     </div>
 
     <!-- Submit Button -->
@@ -503,7 +563,8 @@
     <div class="modal-body">
       <div class="modal-warning">
         <i class="fas fa-exclamation-triangle icon"></i>
-        Are you sure you want to delete this cargo detail?
+        Are you sure you want to remove this cargo detail? This action cannot be
+        undone.
       </div>
 
       <div
@@ -512,7 +573,60 @@
       >
         <button class="btn btn-cancel" id="cancelDeleteCargo">Cancel</button>
         <button class="btn btn-danger" id="confirmDeleteCargoBtn">
-          <span class="btn-text">Yes, Delete</span>
+          <span class="btn-text">Remove</span>
+          <span class="spinner" style="display: none"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--OTHER FILE-->
+<div class="modal-overlay" id="othersDocumentModal" style="display: none">
+  <div class="modal">
+    <div class="modal-header sticky-top">
+      <h2 class="modal-title">
+        <i class="fas fa-ellipsis-h icon" style="margin-right: 0.5rem"></i>
+        Upload Other Document
+      </h2>
+      <button
+        class="modal-close"
+        id="closeOthersModal"
+        aria-label="Close Modal"
+      >
+        &times;
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="othersDocumentName">Document Name</label>
+        <input
+          type="text"
+          id="othersDocumentName"
+          class="form-control"
+          placeholder="e.g. Insurance Certificate"
+        />
+      </div>
+
+      <div class="form-group" style="margin-top: 1rem">
+        <label for="othersInput">Select File</label>
+        <input type="file" id="othersModalInput" class="form-control" />
+      </div>
+
+      <div
+        class="file-preview-area"
+        id="othersModalPreview"
+        style="margin-top: 1rem"
+      ></div>
+
+      <div
+        class="modal-actions"
+        style="display: flex; justify-content: flex-end; margin-top: 1.5rem"
+      >
+        <button class="btn btn-cancel" id="cancelOthersUpload">Cancel</button>
+        <button class="btn btn-confirm" id="confirmOthersUpload">
+          <span class="btn-text">Upload</span>
           <span class="spinner" style="display: none"></span>
         </button>
       </div>

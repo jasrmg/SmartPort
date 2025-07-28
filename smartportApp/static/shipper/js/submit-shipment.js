@@ -1,4 +1,140 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // === Document Upload Logic ===
+
+  console.log("Document upload script loaded");
+  const fileMappings = [
+    {
+      cardId: "billOfLadingCard",
+      inputId: "billOfLadingInput",
+      fileNameId: "billOfLadingFileName",
+      previewId: "billOfLadingPreview",
+    },
+    {
+      cardId: "commercialInvoiceCard",
+      inputId: "commercialInvoiceInput",
+      fileNameId: "commercialInvoiceFileName",
+      previewId: "commercialInvoicePreview",
+    },
+    {
+      cardId: "packingListCard",
+      inputId: "packingListInput",
+      fileNameId: "packingListFileName",
+      previewId: "packingListPreview",
+    },
+    {
+      cardId: "certificateOriginCard",
+      inputId: "certificateOriginInput",
+      fileNameId: "certificateOriginFileName",
+      previewId: "certificateOriginPreview",
+    },
+    {
+      cardId: "othersCard", // handled separately later
+    },
+  ];
+
+  // Preview file helper
+  function previewFile(inputEl, previewContainer, fileNameContainer) {
+    const file = inputEl.files[0];
+    previewContainer.innerHTML = "";
+    fileNameContainer.textContent = "";
+
+    if (!file) return;
+
+    const fileType = file.type;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "file-preview-wrapper";
+
+    // Common elements
+    const nameLabel = document.createElement("span");
+    nameLabel.textContent = file.name;
+    nameLabel.className = "file-name-label";
+
+    const removeBtn = document.createElement("button");
+    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+    removeBtn.className = "remove-preview-btn";
+    removeBtn.title = "Remove file";
+
+    removeBtn.addEventListener("click", () => {
+      inputEl.value = ""; // clear file input
+      previewContainer.innerHTML = ""; // remove preview
+      fileNameContainer.textContent = ""; // clear name label
+    });
+
+    // Type-specific preview
+    if (fileType.startsWith("image/")) {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.className = "file-preview-image";
+      img.onload = () => URL.revokeObjectURL(img.src);
+
+      wrapper.appendChild(img);
+    } else if (fileType === "application/pdf") {
+      const pdfIcon = document.createElement("i");
+      pdfIcon.className = "fas fa-file-pdf pdf-icon";
+      wrapper.appendChild(pdfIcon);
+    } else if (
+      fileType === "application/msword" ||
+      fileType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      console.log("Word document detected");
+      const wordIcon = document.createElement("i");
+      wordIcon.className = "fas fa-file-word word-icon";
+      wrapper.appendChild(wordIcon);
+    } else if (fileType.startsWith("text/") || file.name.endsWith(".txt")) {
+      console.log("Text file detected");
+      const txtIcon = document.createElement("i");
+      txtIcon.className = "fas fa-file-alt txt-icon";
+      wrapper.appendChild(txtIcon);
+    } else {
+      console.log("Unsupported file type:", fileType);
+      const fallback = document.createElement("div");
+      fallback.innerHTML =
+        '<i class="fas fa-file file-icon"></i> Unsupported file type';
+      fallback.className = "file-preview-unknown";
+      wrapper.appendChild(fallback);
+    }
+
+    wrapper.appendChild(nameLabel);
+    wrapper.appendChild(removeBtn);
+    previewContainer.appendChild(wrapper);
+    // fileNameContainer.textContent = file.name;
+  }
+
+  fileMappings.forEach(({ cardId, inputId, fileNameId, previewId }) => {
+    const card = document.getElementById(cardId);
+
+    // Skip card if it's the "othersCard" for now
+    if (cardId === "othersCard") {
+      card.addEventListener("click", () => {
+        showToast("Modal for 'Others' not implemented yet", true);
+        // Placeholder for future modal open
+      });
+      return;
+    }
+
+    const fileInput = document.getElementById(inputId);
+    const fileNameContainer = document.getElementById(fileNameId);
+    const previewContainer = document.getElementById(previewId);
+
+    // Trigger input on card click
+    card.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    // Handle file input
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      fileNameContainer.textContent = file.name;
+      previewFile(fileInput, previewContainer, fileNameContainer);
+    });
+  });
+
+  // === Adding Cargo Detail Logic ===
+
   const cargoContainer = document.getElementById("cargoContainer");
   const cargoTemplate = document.getElementById("cargoTemplate");
 
