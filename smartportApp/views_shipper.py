@@ -145,6 +145,7 @@ def shipper_deliveries_view(request):
 
   return render(request, "smartportApp/shipper/deliveries.html", context)
 
+# pull
 def shipper_submit_shipment_view(request):
   # check if authenticated and role is shipper
   auth_check = enforce_shipper_access(request)
