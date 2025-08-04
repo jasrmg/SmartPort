@@ -97,12 +97,14 @@ urlpatterns = [
   path("shipper-dashboard/", views_shipper.shipper_dashboard, name="shipper-dashboard"),
   path("vessel-info/", views_shipper.shipper_vessel_info_view, name="vessel-info"),
   path("deliveries/", views_shipper.shipper_deliveries_view, name="deliveries"),
-  path("submit-shipment/", views_shipper.shipper_submit_shipment_view, name="submit-shipment"),
+  path("submit-shipment-view/", views_shipper.shipper_submit_shipment_view, name="submit-shipment-view"),
   # -------------------------------- END OF SHIPPER TEMPLATES LOAD --------------------------------
   # HELPER FOR THE VESSEL INFO VIEW:
   path("shipper/vessel/<int:vessel_id>/details/", views_shipper.get_vessel_details, name="vessel-details"),
   path("get-cargo-items/<int:submanifest_id>/", views_shipper.get_cargo_items, name="get-cargo-items"),
   path("shipper/confirm-delivery/<int:cargo_id>/", views_shipper.confirm_delivery_view, name="confirm-delivery"),
+  # SUBMIT SHIPMENT
+  path("submit-shipment/", views_shipper.submit_shipment, name="submit-shipment"),
 
 
   # -------------------------------- EMPLOYEE USING DIFFERENT VIEW --------------------------------

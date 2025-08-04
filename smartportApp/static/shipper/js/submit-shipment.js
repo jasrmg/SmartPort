@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
       previewId: "certificateOriginPreview",
     },
     {
-      cardId: "othersCard", // handled separately later
+      cardId: "othersCard",
     },
   ];
 
@@ -104,15 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fileMappings.forEach(({ cardId, inputId, fileNameId, previewId }) => {
     const card = document.getElementById(cardId);
-
-    // Skip card if it's the "othersCard" for now
-    if (cardId === "othersCard") {
-      card.addEventListener("click", () => {
-        showToast("Modal for 'Others' not implemented yet", true);
-        // Placeholder for future modal open
-      });
-      return;
-    }
 
     const fileInput = document.getElementById(inputId);
     const fileNameContainer = document.getElementById(fileNameId);
@@ -248,6 +239,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!form) return;
 
+  const containerInput = document.getElementById("containerNumber");
+  if (containerInput) {
+    containerInput.addEventListener("input", (e) => {
+      e.target.value = e.target.value.toUpperCase();
+    });
+  }
+
   const validateFormFields = () => {
     let isValid = true;
     let firstInvalidField = null;
@@ -285,6 +283,35 @@ document.addEventListener("DOMContentLoaded", () => {
         field.classList.remove("input-error");
       }
     });
+
+    // === Container and Seal Number Specific Validation ===
+    const containerField = form.querySelector('[name="container_number"]');
+    const sealField = form.querySelector('[name="seal_no"]');
+
+    if (containerField) {
+      // convert to uppercase
+      const containerValue = containerField.value.trim().toUpperCase();
+      // console.log("container value: ", containerValue);
+      const containerRegex = /^[A-Z]{4}\d{7}$/;
+
+      console.log("test: ", containerRegex.test(containerValue));
+
+      if (!containerRegex.test(containerValue)) {
+        showFieldError(
+          containerField,
+          "Container number must follow the ISO 6346 format: 4 letters + 7 digits (e.g., MSCU1234567)."
+        );
+      }
+    }
+
+    if (sealField) {
+      const sealValue = sealField.value.trim();
+      const sealRegex = /^\d{6,10}$/;
+
+      if (!sealRegex.test(sealValue)) {
+        showFieldError(sealField, "Seal number must be 6 to 10 digits long.");
+      }
+    }
 
     // Handle cargo entries
     const cargoEntries = form.querySelectorAll(".cargo-entry");
@@ -375,7 +402,67 @@ document.addEventListener("DOMContentLoaded", () => {
     showSpinnerOnButton();
     disableForm();
 
-    const formData = new FormData(form);
+    const formData = new FormData();
+
+    // base fields
+    const baseFields = [
+      "voyage_id",
+      "consignee_name",
+      "consignee_email",
+      "consignee_address",
+      "consignor_name",
+      "consignor_email",
+      "consignor_address",
+      "container_no",
+      "seal_no",
+      "bill_of_lading_no",
+      "handling_instruction",
+    ];
+
+    baseFields.forEach((field) => {
+      const el = form.querySelector(`[name="${field}"]`);
+      if (el) {
+        formData.append(field, el.value.trim());
+      }
+    });
+
+    // === Cargos ===
+    const cargoEntries = form.querySelectorAll(".cargo-entry");
+    cargoEntries.forEach((entry, index) => {
+      const description = entry.querySelector(
+        `textarea[name='cargo_description[]']`
+      );
+      const quantity = entry.querySelector(`input[name='quantity[]']`);
+      const weight = entry.querySelector(`input[name='weight[]']`);
+      const value = entry.querySelector(`input[name='value[]']`);
+      const hsCode = entry.querySelector(`input[name='hs_code[]']`);
+      const additionalInfo = entry.querySelector(
+        `textarea[name='additional_info[]']`
+      );
+
+      formData.append("cargo_description[]", description?.value || "");
+      formData.append("quantity[]", quantity?.value || "0");
+      formData.append("weight[]", weight?.value || "0");
+      formData.append("value[]", value?.value || "0");
+      formData.append("hs_code[]", hsCode?.value || "");
+      formData.append("additional_info[]", additionalInfo?.value || "");
+    });
+
+    // === Documents ===
+    const docInputs = [
+      { name: "bill_of_lading", id: "billOfLadingInput" },
+      { name: "invoice", id: "commercialInvoiceInput" },
+      { name: "packing_list", id: "packingListInput" },
+      { name: "other", id: "certificateOriginInput" }, // rename or expand if needed
+    ];
+
+    docInputs.forEach(({ name, id }) => {
+      const input = document.getElementById(id);
+      if (input && input.files.length > 0) {
+        const file = input.files[0];
+        formData.append("documents", file, file.name); // Django expects `documents` as a list
+      }
+    });
 
     try {
       const response = await fetch(form.action, {
@@ -389,14 +476,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       if (response.ok) {
-        alert("Shipment submitted successfully.");
-        // window.location.href = result.redirect_url || "/shipper/shipments";
+        showToast("Shipment submitted successfully.", false);
+        // redirect or something...
       } else {
-        alert(result.error || "Something went wrong. Please try again.");
+        showToast(
+          result.error || "Something went wrong. Please try again.",
+          true
+        );
       }
     } catch (error) {
       console.error("Submission error:", error);
-      alert("A network error occurred. Please check your connection.");
+      showToast(
+        "A network error occurred. Please check your connection.",
+        true
+      );
     } finally {
       resetButton();
       enableForm();

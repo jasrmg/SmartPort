@@ -215,7 +215,7 @@ class SubManifest(models.Model):
 
   # Shipment Details
   container_no = models.CharField(max_length=11) # 4 LETTERS 6 DIGITS 1 CHECK DIGIT (ex. MSKU1234567)
-  seal_no = models.CharField(max_length=15) #
+  seal_no = models.CharField(max_length=15) 
   bill_of_lading_no = models.CharField(max_length=17)
   handling_instruction = models.TextField(blank=True)
 

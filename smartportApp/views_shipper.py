@@ -9,6 +9,7 @@ from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentIm
 
 from django.utils.timezone import make_aware, is_naive
 from django.db.models import F, Q
+from django.db import transaction
 import logging
 from django.core.paginator import Paginator
 
@@ -304,3 +305,93 @@ def confirm_delivery_view(request, cargo_id):
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
   
+
+# ENDPOINT TO SUBMIT THE SHIPMENT(SUBMANIFEST DETAIL)
+@require_POST
+def submit_shipment(request):
+  # check if authenticated and role is shipper
+  auth_check = enforce_shipper_access(request)
+  if auth_check:
+    return auth_check
+  
+  if request.method != "POST":
+    return JsonResponse({"error":"Invalid request method"}, status=400)
+  
+  try:
+    payload = request.POST
+    files = request.FILES
+
+    user = request.user.userprofile
+
+    # validate required fields
+    required_fields = [
+      'voyage_id', 'consignee_name', 'consignee_email', 'consignee_address',
+      'consignor_name', 'consignor_email', 'consignor_address',
+      'container_no', 'seal_no', 'bill_of_lading_no'
+    ]
+    for field in required_fields:
+      if not payload.get(field):
+        return JsonResponse({'error': f"Missing field: {field}"}, status=400)
+      
+    # transaction safe block
+    with transaction.atomic():
+      voyage = Voyage.objects.get(pk=payload.get("voyage_id"))
+
+      # Create SubManifest (shipment)
+      submanifest = SubManifest.objects.create(
+        voyage=voyage,
+        created_by=user,
+        consignee_name=payload.get("consignee_name"),
+        consignee_email=payload.get("consignee_email"),
+        consignee_address=payload.get("consignee_address"),
+        consignor_name=payload.get("consignor_name"),
+        consignor_email=payload.get("consignor_email"),
+        consignor_address=payload.get("consignor_address"),
+        container_no=payload.get("container_no"),
+        seal_no=payload.get("seal_no"),
+        bill_of_lading_no=payload.get("bill_of_lading_no"),
+        handling_instruction=payload.get("handling_instruction", "")
+      )
+
+      # parse cargo items
+      cargo_json = payload.get("cargo_items")
+      if not cargo_json:
+        raise ValueError("No cargo items provided.")
+
+      cargo_items = json.loads(cargo_json)
+      for index, item in enumerate(cargo_items, start=1):
+        Cargo.objects.create(
+          submanifest=submanifest,
+          item_number=index,
+          description=item.get("description", ""),
+          quantity=item.get("quantity", 0),
+          value=item.get("value", 0),
+          weight=item.get("weight", 0),
+          additional_info=item.get("additional_info", ""),
+          hs_code=item.get("hs_code", "")
+        )
+      
+      # handle file uploads
+      for key in files:
+        file = files[key]
+        doc_type = payload.get(f"{key}_type") or "other"
+        custom_name = payload.get(f"{key}_name") or ""
+
+        Document.objects.create(
+          submanifest=submanifest,
+          file=file,
+          document_type=doc_type,
+          custom_filename=custom_name,
+          uploaded_by=user
+        )
+
+    return JsonResponse({"message": "Shipment submitted successfully."}, status=201)
+  
+  except Voyage.DoesNotExist:
+    return JsonResponse({'error': 'Voyage not found.'}, status=404)
+  
+  except ValueError as ve:
+    return JsonResponse({'error': str(ve)}, status=400)
+
+  except Exception as e:
+    return JsonResponse({'error': f"Unexpected error: {str(e)}"}, status=500)

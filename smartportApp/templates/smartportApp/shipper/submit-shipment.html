@@ -51,7 +51,7 @@
       </ul>
     </li>
     <li class="nav-item">
-      <a href="{% url 'submit-shipment' %}" class="nav-link active">
+      <a href="{% url 'submit-shipment-view' %}" class="nav-link active">
         <i class="fas fa-upload"></i>
         <span>Submit Shipment</span>
       </a>
@@ -117,7 +117,13 @@
     </div>
   </div>
 
-  <form class="form-container" id="submitShipmentForm" novalidate>
+  <form
+    class="form-container"
+    id="submitShipmentForm"
+    novalidate
+    method="POST"
+    enctype="multipart/form-data"
+  >
     <!-- Voyage Selection -->
     <div class="form-section">
       <h2 class="form-section-title">Voyage Information</h2>
@@ -139,6 +145,39 @@
         </select>
         <small class="form-helper">
           *Choose the voyage associated with this shipment.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="containerNumber">Container Number</label>
+        <input
+          type="text"
+          class="form-control"
+          id="containerNumber"
+          name="container_number"
+          placeholder="e.g. MSCU1234567"
+          data-required
+        />
+        <small class="form-helper">
+          *Must be 11 characters: 4-letter owner code + 7-digit serial (ISO 6346
+          format).
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="sealNumber">Seal Number</label>
+        <input
+          type="text"
+          class="form-control"
+          id="sealNumber"
+          name="seal_number"
+          placeholder="e.g. 12345678"
+          data-required
+        />
+        <small class="form-helper">
+          *Enter the numeric seal number (6-10 digits) found on the container’s
+          locking mechanism (e.g.,
+          <code>12345678</code>).
         </small>
       </div>
     </div>
@@ -563,6 +602,7 @@
 {% endblock %}
 <!---->
 {% block modal %}
+
 <div class="modal-overlay" id="confirmDeleteCargoModal" style="display: none">
   <div class="modal">
     <div class="modal-header sticky-top">
@@ -593,59 +633,6 @@
         <button class="btn btn-cancel" id="cancelDeleteCargo">Cancel</button>
         <button class="btn btn-danger" id="confirmDeleteCargoBtn">
           <span class="btn-text">Remove</span>
-          <span class="spinner" style="display: none"></span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!--OTHER FILE-->
-<div class="modal-overlay" id="othersDocumentModal" style="display: none">
-  <div class="modal">
-    <div class="modal-header sticky-top">
-      <h2 class="modal-title">
-        <i class="fas fa-ellipsis-h icon" style="margin-right: 0.5rem"></i>
-        Upload Other Document
-      </h2>
-      <button
-        class="modal-close"
-        id="closeOthersModal"
-        aria-label="Close Modal"
-      >
-        &times;
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <div class="form-group">
-        <label for="othersDocumentName">Document Name</label>
-        <input
-          type="text"
-          id="othersDocumentName"
-          class="form-control"
-          placeholder="e.g. Insurance Certificate"
-        />
-      </div>
-
-      <div class="form-group" style="margin-top: 1rem">
-        <label for="othersInput">Select File</label>
-        <input type="file" id="othersModalInput" class="form-control" />
-      </div>
-
-      <div
-        class="file-preview-area"
-        id="othersModalPreview"
-        style="margin-top: 1rem"
-      ></div>
-
-      <div
-        class="modal-actions"
-        style="display: flex; justify-content: flex-end; margin-top: 1.5rem"
-      >
-        <button class="btn btn-cancel" id="cancelOthersUpload">Cancel</button>
-        <button class="btn btn-confirm" id="confirmOthersUpload">
-          <span class="btn-text">Upload</span>
           <span class="spinner" style="display: none"></span>
         </button>
       </div>
