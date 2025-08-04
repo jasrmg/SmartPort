@@ -29,11 +29,19 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     {
       cardId: "othersCard",
+      inputId: "othersInput",
+      fileNameId: "othersFileName",
+      previewId: "othersPreview",
+      isOthers: true,
     },
   ];
 
   // Preview file helper
-  function previewFile(inputEl, previewContainer, fileNameContainer) {
+  const othersFileInputs = [];
+  const othersPreviewContainers = [];
+  const othersFileNameContainers = [];
+
+  const previewFile = (inputEl, previewContainer, fileNameContainer) => {
     const file = inputEl.files[0];
     previewContainer.innerHTML = "";
     fileNameContainer.textContent = "";
@@ -45,29 +53,49 @@ document.addEventListener("DOMContentLoaded", () => {
     const wrapper = document.createElement("div");
     wrapper.className = "file-preview-wrapper";
 
-    // Common elements
     const nameLabel = document.createElement("span");
     nameLabel.textContent = file.name;
     nameLabel.className = "file-name-label";
 
     const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
     removeBtn.innerHTML = '<i class="fas fa-times"></i>';
     removeBtn.className = "remove-preview-btn";
     removeBtn.title = "Remove file";
 
-    removeBtn.addEventListener("click", () => {
-      inputEl.value = ""; // clear file input
-      previewContainer.innerHTML = ""; // remove preview
-      fileNameContainer.textContent = ""; // clear name label
+    removeBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevent card click event
+
+      // Find the card element that contains this input
+      const cardElement =
+        inputEl.closest(".others-card") ||
+        document.getElementById(inputEl.id.replace("Input", "Card"));
+      const isOthersCard =
+        cardElement && cardElement.classList.contains("others-card");
+
+      if (!isOthersCard) {
+        // Standard behavior for non-'Others' cards - just clear preview
+        inputEl.value = "";
+        previewContainer.innerHTML = "";
+        fileNameContainer.textContent = "";
+        return;
+      }
+
+      // For 'Others' cards, show confirmation modal
+      showRemoveModal(
+        inputEl,
+        previewContainer,
+        fileNameContainer,
+        cardElement
+      );
     });
 
-    // Type-specific preview
+    // === FILE TYPE DISPLAY LOGIC ===
     if (fileType.startsWith("image/")) {
       const img = document.createElement("img");
       img.src = URL.createObjectURL(file);
       img.className = "file-preview-image";
       img.onload = () => URL.revokeObjectURL(img.src);
-
       wrapper.appendChild(img);
     } else if (fileType === "application/pdf") {
       const pdfIcon = document.createElement("i");
@@ -78,17 +106,14 @@ document.addEventListener("DOMContentLoaded", () => {
       fileType ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     ) {
-      console.log("Word document detected");
       const wordIcon = document.createElement("i");
       wordIcon.className = "fas fa-file-word word-icon";
       wrapper.appendChild(wordIcon);
     } else if (fileType.startsWith("text/") || file.name.endsWith(".txt")) {
-      console.log("Text file detected");
       const txtIcon = document.createElement("i");
       txtIcon.className = "fas fa-file-alt txt-icon";
       wrapper.appendChild(txtIcon);
     } else {
-      console.log("Unsupported file type:", fileType);
       const fallback = document.createElement("div");
       fallback.innerHTML =
         '<i class="fas fa-file file-icon"></i> Unsupported file type';
@@ -99,30 +124,184 @@ document.addEventListener("DOMContentLoaded", () => {
     wrapper.appendChild(nameLabel);
     wrapper.appendChild(removeBtn);
     previewContainer.appendChild(wrapper);
-    // fileNameContainer.textContent = file.name;
-  }
+  };
 
-  fileMappings.forEach(({ cardId, inputId, fileNameId, previewId }) => {
+  let skipNextClick = false;
+
+  const initDocumentCard = ({
+    cardId,
+    inputId,
+    fileNameId,
+    previewId,
+    isOthers = false,
+  }) => {
     const card = document.getElementById(cardId);
-
     const fileInput = document.getElementById(inputId);
     const fileNameContainer = document.getElementById(fileNameId);
     const previewContainer = document.getElementById(previewId);
 
-    // Trigger input on card click
+    if (!card || !fileInput) return;
+
     card.addEventListener("click", () => {
+      if (skipNextClick) {
+        skipNextClick = false;
+        return;
+      }
       fileInput.click();
     });
 
-    // Handle file input
     fileInput.addEventListener("change", () => {
       const file = fileInput.files[0];
       if (!file) return;
 
+      showToast(`Will be uploaded as: ${file.name}`);
       fileNameContainer.textContent = file.name;
-      previewFile(fileInput, previewContainer, fileNameContainer);
+      previewFile(fileInput, previewContainer, fileNameContainer, isOthers);
+
+      if (isOthers) {
+        createAnotherOthersCard();
+      }
     });
+  };
+
+  // CONFIRMATION MODAL FOR REMOVING OTHERS UPLOADED FILE
+  const removeModal = document.getElementById("confirmRemoveOthersModal");
+  const closeRemoveUploadModal = document.getElementById(
+    "closeRemoveUploadModal"
+  );
+  const cancelRemoveUploadBtn = document.getElementById(
+    "cancelRemoveUploadBtn"
+  );
+  const confirmRemoveUploadBtn = document.getElementById(
+    "confirmRemoveUploadBtn"
+  );
+
+  let pendingRemovalData = null;
+
+  const showRemoveModal = (
+    inputEl,
+    previewContainer,
+    fileNameContainer,
+    cardEl
+  ) => {
+    pendingRemovalData = {
+      input: inputEl,
+      preview: previewContainer,
+      fileName: fileNameContainer,
+      card: cardEl,
+    };
+
+    removeModal.style.display = "flex";
+  };
+
+  const hideRemoveModal = () => {
+    removeModal.style.display = "none";
+    pendingRemovalData = null;
+  };
+
+  const confirmRemoval = () => {
+    if (!pendingRemovalData) return;
+
+    const { input, preview, fileName, card } = pendingRemovalData;
+
+    // Clear the file input and preview
+    skipNextClick = true;
+    input.value = "";
+    preview.innerHTML = "";
+    fileName.textContent = "";
+
+    // Get all others cards and inputs
+    const othersCards = document.querySelectorAll(".others-card");
+    const othersInputs = document.querySelectorAll(
+      'input[name="other_documents"]'
+    );
+
+    // Count empty others cards
+    const emptyOthersCards = Array.from(othersCards).filter((cardElement) => {
+      const cardInput = cardElement.nextElementSibling;
+      return (
+        cardInput &&
+        cardInput.tagName === "INPUT" &&
+        cardInput.files.length === 0
+      );
+    });
+
+    // Remove the card only if there will be at least one empty "Others" card remaining
+    if (emptyOthersCards.length > 1) {
+      card.classList.add("fade-out");
+      setTimeout(() => {
+        // Remove both the card and its associated input
+        const associatedInput = card.nextElementSibling;
+        if (associatedInput && associatedInput.tagName === "INPUT") {
+          associatedInput.remove();
+        }
+        card.remove();
+      }, 300);
+    }
+
+    hideRemoveModal();
+  };
+
+  // Modal event listeners
+  cancelRemoveUploadBtn.addEventListener("click", hideRemoveModal);
+  closeRemoveUploadModal.addEventListener("click", hideRemoveModal);
+  confirmRemoveUploadBtn.addEventListener("click", confirmRemoval);
+
+  // Close modal when clicking outside
+  removeModal.addEventListener("click", (e) => {
+    if (e.target === removeModal) {
+      hideRemoveModal();
+    }
   });
+
+  fileMappings.forEach(initDocumentCard);
+
+  let otherDocCount = 1;
+
+  const createAnotherOthersCard = () => {
+    // Check if there's already an empty others card
+    const othersInputs = document.querySelectorAll(
+      'input[name="other_documents"]'
+    );
+    const hasEmpty = Array.from(othersInputs).some(
+      (input) => input.files.length === 0
+    );
+
+    if (hasEmpty) return; // Don't add another if an empty one already exists
+
+    otherDocCount += 1;
+    const idSuffix = `others${otherDocCount}`;
+    const container = document.querySelector(".document-types");
+
+    const cardDiv = document.createElement("div");
+    cardDiv.className = "document-type-card others-card";
+    cardDiv.id = `${idSuffix}Card`;
+    cardDiv.style.cursor = "pointer";
+    cardDiv.innerHTML = `
+      <i class="fas fa-ellipsis-h document-type-icon"></i>
+      <div class="document-type-title">Upload Other Documents</div>
+      <div class="document-type-desc">Other supporting documents as required for the shipment.</div>
+      <div class="uploaded-file-name" id="${idSuffix}FileName"></div>
+      <div class="file-preview-area" id="${idSuffix}Preview"></div>
+    `;
+
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.name = "other_documents";
+    fileInput.id = `${idSuffix}Input`;
+    fileInput.hidden = true;
+
+    container.appendChild(cardDiv);
+    container.appendChild(fileInput);
+
+    initDocumentCard({
+      cardId: `${idSuffix}Card`,
+      inputId: `${idSuffix}Input`,
+      fileNameId: `${idSuffix}FileName`,
+      previewId: `${idSuffix}Preview`,
+      isOthers: true,
+    });
+  };
 
   // === Adding Cargo Detail Logic ===
 
@@ -291,10 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (containerField) {
       // convert to uppercase
       const containerValue = containerField.value.trim().toUpperCase();
-      // console.log("container value: ", containerValue);
       const containerRegex = /^[A-Z]{4}\d{7}$/;
-
-      console.log("test: ", containerRegex.test(containerValue));
 
       if (!containerRegex.test(containerValue)) {
         showFieldError(
@@ -459,8 +635,17 @@ document.addEventListener("DOMContentLoaded", () => {
     docInputs.forEach(({ name, id }) => {
       const input = document.getElementById(id);
       if (input && input.files.length > 0) {
-        const file = input.files[0];
-        formData.append("documents", file, file.name); // Django expects `documents` as a list
+        formData.append("documents", input.files[0], input.files[0].name);
+      }
+    });
+
+    // Append dynamic others
+    const otherInputs = document.querySelectorAll(
+      'input[name="other_documents"]'
+    );
+    otherInputs.forEach((input) => {
+      if (input.files.length > 0) {
+        formData.append("other_documents", input.files[0], input.files[0].name);
       }
     });
 

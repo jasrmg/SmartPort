@@ -564,7 +564,7 @@
         style="cursor: pointer"
       >
         <i class="fas fa-ellipsis-h document-type-icon"></i>
-        <div class="document-type-title">Others</div>
+        <div class="document-type-title">Upload Other Documents</div>
         <div class="document-type-desc">
           Other supporting documents as required for the shipment.
         </div>
@@ -602,8 +602,44 @@
 {% endblock %}
 <!---->
 {% block modal %}
+<div id="confirmRemoveOthersModal" class="modal-overlay" style="display: none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        Are you sure you want to remove this document upload?
+      </h2>
+      <button
+        class="modal-close"
+        id="closeRemoveUploadModal"
+        aria-label="Close Modal"
+      >
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-warning">
+        <i class="fas fa-exclamation-triangle icon"></i>
+        Are you sure you want to remove this uploaded file? This action cannot
+        be undone.
+      </div>
 
-<div class="modal-overlay" id="confirmDeleteCargoModal" style="display: none">
+      <div
+        class="modal-actions"
+        style="display: flex; justify-content: flex-end; margin-top: 1.5rem"
+      >
+        <button class="btn btn-cancel" id="cancelRemoveUploadBtn">
+          Cancel
+        </button>
+        <button class="btn btn-danger" id="confirmRemoveUploadBtn">
+          <span class="btn-text">Remove</span>
+          <span class="spinner" style="display: none"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="confirmDeleteCargoModal" class="modal-overlay" style="display: none">
   <div class="modal">
     <div class="modal-header sticky-top">
       <h2 class="modal-title">
