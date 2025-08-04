@@ -151,7 +151,14 @@ def shipper_submit_shipment_view(request):
   if auth_check:
     return auth_check
   
-  return render(request, "smartportApp/shipper/submit-shipment.html")
+  voyages = Voyage.objects.select_related("departure_port", "arrival_port", "vessel") \
+  .filter(status=Voyage.VoyageStatus.ASSIGNED) \
+  .order_by("departure_date")
+
+  context = {
+    "voyages": voyages
+  }
+  return render(request, "smartportApp/shipper/submit-shipment.html", context)
 
 # --------------------  END OF TEMPLATES --------------------
 

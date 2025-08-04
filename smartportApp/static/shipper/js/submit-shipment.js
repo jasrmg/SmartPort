@@ -239,6 +239,178 @@ document.addEventListener("DOMContentLoaded", () => {
   closeModalBtn.addEventListener("click", closeModal);
   cancelBtn.addEventListener("click", closeModal);
 
+  // === Spinner and Form Submission ===
+  const form = document.getElementById("submitShipmentForm");
+
+  const submitBtn = document.querySelector(".btn-submit");
+  const btnIcon = submitBtn.querySelector(".btn-icon");
+  const btnText = submitBtn.querySelector(".btn-text");
+
+  if (!form) return;
+
+  const validateFormFields = () => {
+    let isValid = true;
+    let firstInvalidField = null;
+    let toastShown = false;
+
+    const showFieldError = (field, message) => {
+      field.classList.add("input-error");
+      if (!toastShown) {
+        showToast(message, true);
+        toastShown = true;
+      }
+      if (!firstInvalidField) firstInvalidField = field;
+      isValid = false;
+    };
+
+    const requiredFields = form.querySelectorAll("[data-required]");
+    requiredFields.forEach((field) => {
+      const value = field.value.trim();
+
+      // Handle empty
+      if (!value) {
+        showFieldError(field, "Please fill out all required fields.");
+        return;
+      }
+
+      // Handle email
+      if (field.type === "email") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          showFieldError(field, "Please enter a valid email address.");
+        } else {
+          field.classList.remove("input-error");
+        }
+      } else {
+        field.classList.remove("input-error");
+      }
+    });
+
+    // Handle cargo entries
+    const cargoEntries = form.querySelectorAll(".cargo-entry");
+    cargoEntries.forEach((entry, index) => {
+      const description = entry.querySelector(
+        "textarea[name='cargo_description[]']"
+      );
+      const quantity = entry.querySelector("input[name='quantity[]']");
+      const weight = entry.querySelector("input[name='weight[]']");
+      const value = entry.querySelector("input[name='value[]']");
+
+      if (!description || !quantity || !weight || !value) return;
+
+      if (!description.value.trim()) {
+        showFieldError(
+          description,
+          `Cargo #${index + 1}: Description is required.`
+        );
+      } else {
+        description.classList.remove("input-error");
+      }
+
+      if (!quantity.value || parseInt(quantity.value) <= 0) {
+        showFieldError(
+          quantity,
+          `Cargo #${index + 1}: Quantity must be at least 1.`
+        );
+      } else {
+        quantity.classList.remove("input-error");
+      }
+
+      if (!weight.value || parseFloat(weight.value) < 0) {
+        showFieldError(
+          weight,
+          `Cargo #${index + 1}: Weight must be 0 or more.`
+        );
+      } else {
+        weight.classList.remove("input-error");
+      }
+
+      if (!value.value || parseFloat(value.value) < 0) {
+        showFieldError(value, `Cargo #${index + 1}: Value must be 0 or more.`);
+      } else {
+        value.classList.remove("input-error");
+      }
+    });
+
+    if (!isValid && firstInvalidField) {
+      firstInvalidField.scrollIntoView({ behavior: "smooth", block: "center" });
+      firstInvalidField.focus();
+    }
+
+    return isValid;
+  };
+
+  // spinner on button
+  const showSpinnerOnButton = () => {
+    btnIcon.innerHTML = "";
+    btnIcon.classList.add("spinner");
+
+    btnText.textContent = "Submitting...";
+    submitBtn.disabled = true;
+  };
+
+  const resetButton = () => {
+    btnIcon.classList.remove("loading-spinner");
+    btnIcon.innerHTML = `<i class="fas fa-paper-plane"></i>`;
+    btnText.textContent = "Submit Submanifest";
+    submitBtn.disabled = false;
+  };
+
+  const disableForm = () => {
+    [...form.elements].forEach((el) => (el.disabled = true));
+  };
+
+  const enableForm = () => {
+    [...form.elements].forEach((el) => (el.disabled = false));
+  };
+
+  form.addEventListener("submit", async (e) => {
+    console.log("submitting...");
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!validateFormFields()) return;
+
+    showSpinnerOnButton();
+    disableForm();
+
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("Shipment submitted successfully.");
+        // window.location.href = result.redirect_url || "/shipper/shipments";
+      } else {
+        alert(result.error || "Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      alert("A network error occurred. Please check your connection.");
+    } finally {
+      resetButton();
+      enableForm();
+    }
+  });
+
+  form.querySelectorAll("[data-required]").forEach((field) => {
+    field.addEventListener("input", () => {
+      if (field.classList.contains("input-error") && field.value.trim()) {
+        field.classList.remove("input-error");
+      }
+    });
+  });
+
   // Initialize on page load
   renumberCargos();
   updateAddButtons();

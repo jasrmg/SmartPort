@@ -29,12 +29,12 @@
         <span>Dashboard</span>
       </a>
     </li>
-    <li class="nav-item expanded">
+    <li class="nav-item">
       <a href="" class="nav-link">
         <i class="fas fa-ship"></i>
         <span>Vessels</span>
       </a>
-      <ul class="nav-sub-menu" style="height: auto">
+      <ul class="nav-sub-menu">
         <li>
           <a href="{% url 'vessel-info' %}" class="nav-sub-link">
             <i class="fas fa-list-ul"></i>
@@ -42,7 +42,7 @@
           </a>
         </li>
         <li>
-          <a href="" class="nav-sub-link">
+          <a href="{% url 'deliveries' %}" class="nav-sub-link">
             <i class="fas fa-truck-fast"></i>
 
             <span>Deliveries</span>
@@ -117,7 +117,7 @@
     </div>
   </div>
 
-  <form class="form-container">
+  <form class="form-container" id="submitShipmentForm" novalidate>
     <!-- Voyage Selection -->
     <div class="form-section">
       <h2 class="form-section-title">Voyage Information</h2>
@@ -127,12 +127,15 @@
           class="form-control"
           id="voyageSelect"
           name="voyage_id"
-          required
+          data-required
         >
           <option value="">-- Select a Voyage --</option>
-          <option value="1">VYG-20250724-001 | Manila ➝ Cebu</option>
-          <option value="2">VYG-20250725-002 | Davao ➝ Subic</option>
-          <option value="3">VYG-20250726-003 | Batangas ➝ Iloilo</option>
+          {% for voyage in voyages %}
+          <option value="{{ voyage.voyage_id }}">
+            {{ voyage.voyage_number }} | {{ voyage.departure_port.port_name }} ➝
+            {{ voyage.arrival_port.port_name }}
+          </option>
+          {% endfor %}
         </select>
         <small class="form-helper">
           *Choose the voyage associated with this shipment.
@@ -146,7 +149,13 @@
       <div class="form-grid">
         <div class="form-group">
           <label class="form-label" for="consignorName">Consignor's Name</label>
-          <input type="text" class="form-control" id="shipperName" required />
+          <input
+            type="text"
+            class="form-control"
+            id="consignorName"
+            name="consignor_name"
+            data-required
+          />
         </div>
         <div class="form-group">
           <label class="form-label" for="consignorEmail">Consignor Email</label>
@@ -154,7 +163,8 @@
             type="email"
             class="form-control"
             id="consignorEmail"
-            required
+            name="consignor_email"
+            data-required
           />
         </div>
         <div class="form-group">
@@ -162,10 +172,11 @@
             >Consignor's Address</label
           >
           <input
-            type="texdt"
+            type="text"
             class="form-control"
             id="consignorAddress"
-            required
+            name="consignor_address"
+            data-required
           />
         </div>
       </div>
@@ -177,7 +188,13 @@
       <div class="form-grid">
         <div class="form-group">
           <label class="form-label" for="consigneeName">Consignee Name</label>
-          <input type="text" class="form-control" id="consigneeName" required />
+          <input
+            type="text"
+            class="form-control"
+            id="consigneeName"
+            name="consignee_name"
+            data-required
+          />
         </div>
         <div class="form-group">
           <label class="form-label" for="consigneeEmail">Consignee Email</label>
@@ -185,7 +202,8 @@
             type="email"
             class="form-control"
             id="consigneeEmail"
-            required
+            name="consignee_email"
+            data-required
           />
         </div>
         <div class="form-group">
@@ -196,7 +214,8 @@
             type="text"
             class="form-control"
             id="consigneeAddress"
-            required
+            name="consignee_address"
+            data-required
           />
         </div>
       </div>
@@ -209,7 +228,6 @@
       <div class="cargo-entry">
         <!-- Circular number indicator -->
         <div class="cargo-header">
-          <!-- Remove button positioned on the right -->
           <div class="cargo-number">1</div>
         </div>
 
@@ -430,6 +448,7 @@
         <textarea
           class="form-control"
           id="handlingInstructions"
+          name="handling_instructions"
           rows="4"
           placeholder="e.g. Fragile – handle with care. Keep upright at all times. Avoid exposure to direct sunlight or moisture. Use forklift from bottom only."
         ></textarea>
@@ -534,8 +553,8 @@
     <!-- Submit Button -->
     <div style="display: flex; justify-content: end">
       <button type="submit" class="btn-submit">
-        <i class="fas fa-paper-plane"></i>
-        Submit Submanifest
+        <span class="btn-icon"><i class="fas fa-paper-plane"></i></span>
+        <span class="btn-text">Submit Submanifest</span>
       </button>
     </div>
   </form>
