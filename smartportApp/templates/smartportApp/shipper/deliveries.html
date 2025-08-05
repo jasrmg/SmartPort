@@ -201,7 +201,7 @@
         <p class="submanifest-card-info">
           <strong>Created At:</strong>
           <!---->
-          {{ sub.created_at }}
+          {{ sub.created_at|date:"M d, Y @ h:i A" }}
         </p>
         <p class="submanifest-card-info {{ sub.status }}">
           <strong>Status:</strong>

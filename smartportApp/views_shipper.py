@@ -205,7 +205,7 @@ def parse_manifest_page(page_obj):
       "submanifest_number": sm.submanifest_number,
       "status": sm.status,
       "status_display": sm.get_status_display(),
-      "created_at": sm.created_at.strftime("%b %d, %Y @ %I:%M %p"),
+      "created_at": sm.created_at,
       "container_no": sm.container_no,
       "seal_no": sm.seal_no,
       "bill_of_lading_no": sm.bill_of_lading_no,
