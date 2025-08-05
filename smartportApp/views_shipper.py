@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
@@ -350,6 +351,9 @@ def process_shipment_submission(request):
       create_cargo_items(request, submanifest)
       create_documents(request, submanifest, user)
 
+      # TODO: notify the admin
+      # notify_admins_new_submanifest(submanifest, user, len(documents_created))
+
       logger.info(f"Sumanifest {submanifest.submanifest_number} created successfully by user {user.first_name}")
 
       return JsonResponse({
@@ -370,6 +374,14 @@ def process_shipment_submission(request):
       'error': 'An unexpected error occurred. Please try again.'
     }, status=500)
   
+
+# TODO: notify admins if a submanifest is added
+def notify_admins_new_submanifest(submanifest, shipper_user, document_count):
+  """
+  Notify all admin users about a new submanifest submission
+  """
+
+
 
 def validate_shipment_data(request):
     """Validate the incoming shipment data"""
@@ -565,6 +577,7 @@ def create_documents(request, submanifest, user_profile):
         document_type=doc_type,
         file=file,
         uploaded_by=user_profile,
+        original_filename=file.name,
         custom_filename=''
       )
       documents_created.append(document)
@@ -578,6 +591,7 @@ def create_documents(request, submanifest, user_profile):
         document_type='other',
         file=file,
         uploaded_by=user_profile,
+        original_filename=file.name,
         custom_filename=file.name
       )
       documents_created.append(document)
@@ -585,3 +599,57 @@ def create_documents(request, submanifest, user_profile):
   logger.info(f"Created {len(documents_created)} documents for submanifest {submanifest.submanifest_number}")
   
   return documents_created
+
+
+from django.utils import timezone
+
+# Handling multiple files of same type on same date
+def handle_duplicate_filenames(filepath):
+  """
+  Handle duplicate filenames by adding a counter
+  Example: 42_others_20250210.pdf -> 42_others_20250210_2.pdf
+  """
+  from django.core.files.storage import default_storage
+  
+  if not default_storage.exists(filepath):
+    return filepath
+  
+  # Split filename and extension
+  base_path = filepath.rsplit('.', 1)[0]
+  ext = filepath.rsplit('.', 1)[1] if '.' in filepath else ''
+  
+  counter = 2
+  while True:
+    new_filepath = f"{base_path}_{counter}.{ext}" if ext else f"{base_path}_{counter}"
+    if not default_storage.exists(new_filepath):
+      return new_filepath
+    counter += 1
+
+# Alternative implementation with duplicate handling
+def document_upload_path_with_duplicates(instance, filename):
+  """
+  Alternative implementation that handles duplicate filenames
+  Format: <submanifest_id>_<document_type>_<yrmonthdate>.ext
+  If duplicate exists, adds counter: <submanifest_id>_<document_type>_<yrmonthdate>_2.ext
+  """
+  # Get file extension
+  ext = filename.split('.')[-1].lower()
+  
+  # Generate date in YYYYMMDD format
+  date_str = timezone.now().strftime('%Y%m%d')
+  
+  # Map document types to shorter names
+  doc_type_map = {
+    'bill_of_lading': 'bol',
+    'invoice': 'invoice', 
+    'packing_list': 'packing',
+    'certificate_of_origin': 'certificate',
+    'other': 'others'
+  }
+  
+  doc_type = doc_type_map.get(instance.document_type, instance.document_type)
+  custom_filename = f"{instance.submanifest.submanifest_id}_{doc_type}_{date_str}.{ext}"
+  base_path = os.path.join('documents', timezone.now().strftime('%Y/%m'), custom_filename)
+  
+  # Handle duplicates
+  return handle_duplicate_filenames(base_path)

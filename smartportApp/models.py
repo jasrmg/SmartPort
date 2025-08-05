@@ -1,3 +1,4 @@
+import os
 from django.db import models
 from accounts.models import UserProfile
 
@@ -326,6 +327,52 @@ class CargoDelivery(models.Model):
     return f"Delivery confirmation for {self.cargo}"
 
 
+from django.core.files.storage import default_storage
+# helper for the documents model
+def document_upload_path(instance, filename):
+  """
+    generate custom filename for uploaded documents
+    Format: <submanifest_id>_<doc_type>_<yrmonthdate>.<ext>
+    Example: 69_others_20250805.pdf
+  """
+
+  # get file extensions
+  ext = filename.split (".")[-1].lower()
+
+  # generate date in yyyymmdd format
+  date_str = timezone.now().strftime('%Y%m%d')
+
+  # map document types to shorter names for filename
+  doc_type_map = {
+    'bill_of_lading': 'bol',
+    'invoice': 'invoice',
+    'packing_list': 'packing',
+    'certificate_of_origin': 'certificate',
+    'other': 'others',
+  }
+
+  # get mapped document type or use original if not found
+  doc_type = doc_type_map.get(instance.document_type, instance.document_type)
+
+  # create custom filename: <submanifest_id>_<doc_type>_<yrmonthdate>.<ext>
+  base_filename = f"{instance.submanifest.submanifest_id}_{doc_type}_{date_str}"
+
+  # Full path with year/month organization
+  year_month = timezone.now().strftime('%Y/%m')
+  base_path = os.path.join('documents', year_month, f"{base_filename}.{ext}")
+
+  # Handle duplicates by adding counter
+  if default_storage.exists(base_path):
+    counter = 2
+    while True:
+      duplicate_path = os.path.join('documents', year_month, f"{base_filename}_{counter}.{ext}")
+      if not default_storage.exists(duplicate_path):
+        return duplicate_path
+      counter += 1
+    
+  return base_path
+
+
 class Document(models.Model):
   DOCUMENT_TYPE_CHOICES = [
     ('bill_of_lading', 'Bill of Lading'),
@@ -339,15 +386,28 @@ class Document(models.Model):
   submanifest = models.ForeignKey('SubManifest', on_delete=models.CASCADE, related_name='documents')
 
   document_type = models.CharField(max_length=50, choices=DOCUMENT_TYPE_CHOICES)
-  file = models.FileField(upload_to='documents/')
+  file = models.FileField(upload_to=document_upload_path)
   uploaded_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
   uploaded_at = models.DateTimeField(auto_now_add=True)
 
-  # Optional: if `document_type == "other"`
+  # Store original filename for reference
+  original_filename = models.CharField(max_length=255, blank=True)
+
+  # if `document_type == "other"`
   custom_filename = models.CharField(max_length=255, blank=True)
 
   def __str__(self):
     return f"{self.get_document_type_display()} - {self.submanifest_id}"
+  
+  def get_file_basename(self):
+    """Get just the filename without path"""
+    return os.path.basename(self.file.name)
+  
+  def get_download_filename(self):
+    """Get a user-friendly filename for downloads"""
+    if self.document_type == 'other' and self.custom_filename:
+        return self.custom_filename
+    return self.original_filename or self.get_file_basename()
 
 
 class Notification(models.Model):
