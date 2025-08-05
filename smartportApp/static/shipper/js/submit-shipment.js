@@ -514,6 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Handle cargo entries
     const cargoEntries = form.querySelectorAll(".cargo-entry");
+
     cargoEntries.forEach((entry, index) => {
       const description = entry.querySelector(
         "textarea[name='cargo_description[]']"
@@ -612,10 +613,10 @@ document.addEventListener("DOMContentLoaded", () => {
       "consignor_name",
       "consignor_email",
       "consignor_address",
-      "container_no",
-      "seal_no",
-      "bill_of_lading_no",
-      "handling_instruction",
+      "container_number",
+      "seal_number",
+      "bill_of_lading_number",
+      "handling_instructions",
     ];
 
     baseFields.forEach((field) => {
@@ -627,38 +628,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // === Cargos ===
     const cargoEntries = form.querySelectorAll(".cargo-entry");
-    cargoEntries.forEach((entry, index) => {
-      const description = entry.querySelector(
-        `textarea[name='cargo_description[]']`
-      );
-      const quantity = entry.querySelector(`input[name='quantity[]']`);
-      const weight = entry.querySelector(`input[name='weight[]']`);
-      const value = entry.querySelector(`input[name='value[]']`);
-      const hsCode = entry.querySelector(`input[name='hs_code[]']`);
-      const additionalInfo = entry.querySelector(
-        `textarea[name='additional_info[]']`
-      );
+    const cargoItems = [];
 
-      formData.append("cargo_description[]", description?.value || "");
-      formData.append("quantity[]", quantity?.value || "0");
-      formData.append("weight[]", weight?.value || "0");
-      formData.append("value[]", value?.value || "0");
-      formData.append("hs_code[]", hsCode?.value || "");
-      formData.append("additional_info[]", additionalInfo?.value || "");
+    cargoEntries.forEach((entry) => {
+      const description =
+        entry
+          .querySelector("textarea[name='cargo_description[]']")
+          ?.value.trim() || "";
+      const additionalInfo =
+        entry
+          .querySelector("textarea[name='additional_info[]']")
+          ?.value.trim() || "";
+      const quantity =
+        entry.querySelector("input[name='quantity[]']")?.value || "0";
+      const weight =
+        entry.querySelector("input[name='weight[]']")?.value || "0";
+      const value = entry.querySelector("input[name='value[]']")?.value || "0";
+      const hsCode =
+        entry.querySelector("input[name='hscode[]']")?.value.trim() || "";
+
+      cargoItems.push({
+        description,
+        additional_info: additionalInfo,
+        quantity: parseInt(quantity || "0", 10),
+        weight: parseFloat(weight || "0", 10),
+        value: parseFloat(value || "0", 10),
+        hs_code: hsCode,
+      });
     });
+
+    formData.append("cargo_items", JSON.stringify(cargoItems));
 
     // === Documents ===
     const docInputs = [
       { name: "bill_of_lading", id: "billOfLadingInput" },
-      { name: "invoice", id: "commercialInvoiceInput" },
+      { name: "commercial_invoice", id: "commercialInvoiceInput" },
       { name: "packing_list", id: "packingListInput" },
-      { name: "other", id: "certificateOriginInput" }, // rename or expand if needed
+      { name: "certificate_origin", id: "certificateOriginInput" }, // rename or expand if needed
     ];
 
     docInputs.forEach(({ name, id }) => {
       const input = document.getElementById(id);
       if (input && input.files.length > 0) {
-        formData.append("documents", input.files[0], input.files[0].name);
+        formData.append(name, input.files[0]);
       }
     });
 
@@ -668,12 +680,12 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     otherInputs.forEach((input) => {
       if (input.files.length > 0) {
-        formData.append("other_documents", input.files[0], input.files[0].name);
+        formData.append("other_documents", input.files[0]);
       }
     });
 
     try {
-      const response = await fetch(form.action, {
+      const response = await fetch(`/submit-shipment/`, {
         method: "POST",
         headers: {
           "X-CSRFToken": csrftoken,
@@ -683,7 +695,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const result = await response.json();
 
-      if (response.ok) {
+      if (response.ok && result.success) {
         showToast("Shipment submitted successfully.", false);
         // redirect or something...
       } else {
