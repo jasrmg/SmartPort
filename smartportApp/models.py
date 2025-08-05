@@ -331,6 +331,7 @@ class Document(models.Model):
     ('bill_of_lading', 'Bill of Lading'),
     ('invoice', 'Invoice'),
     ('packing_list', 'Packing List'),
+    ('certificate_of_origin', 'Certificate Of Origin'),
     ('other', 'Other'),
   ]
 

@@ -367,219 +367,221 @@ def process_shipment_submission(request):
   except Exception as e:
     logger.error(f"Unexpected error in shipment submission: {str(e)}")
     return JsonResponse({
-        'error': 'An unexpected error occurred. Please try again.'
+      'error': 'An unexpected error occurred. Please try again.'
     }, status=500)
   
+
 def validate_shipment_data(request):
     """Validate the incoming shipment data"""
     errors = []
     
     # Required fields validation
     required_fields = [
-        'voyage_id', 'consignee_name', 'consignee_email', 'consignee_address',
-        'consignor_name', 'consignor_email', 'consignor_address',
-        'container_number', 'seal_number', 'bill_of_lading_number'
+      'voyage_id', 'consignee_name', 'consignee_email', 'consignee_address',
+      'consignor_name', 'consignor_email', 'consignor_address',
+      'container_number', 'seal_number', 'bill_of_lading_number'
     ]
     
     for field in required_fields:
-        value = request.POST.get(field, '').strip()
-        if not value:
-            errors.append(f'{field.replace("_", " ").title()} is required')
+      value = request.POST.get(field, '').strip()
+      if not value:
+        errors.append(f'{field.replace("_", " ").title()} is required')
     
     # Validate voyage exists
     voyage_id = request.POST.get('voyage_id')
     if voyage_id:
-        try:
-            voyage = Voyage.objects.get(voyage_id=voyage_id)
-        except Voyage.DoesNotExist:
-            errors.append('Selected voyage does not exist')
+      try:
+        voyage = Voyage.objects.get(voyage_id=voyage_id)
+      except Voyage.DoesNotExist:
+        errors.append('Selected voyage does not exist')
     
     # Validate container number format (ISO 6346)
     container_number = request.POST.get('container_number', '').strip().upper()
     if container_number and not validate_container_number(container_number):
-        errors.append('Container number must follow ISO 6346 format (4 letters + 7 digits)')
+      errors.append('Container number must follow ISO 6346 format (4 letters + 7 digits)')
     
     # Validate seal number (6-10 digits)
     seal_number = request.POST.get('seal_number', '').strip()
     if seal_number and (not seal_number.isdigit() or len(seal_number) < 6 or len(seal_number) > 10):
-        errors.append('Seal number must be 6-10 digits')
+      errors.append('Seal number must be 6-10 digits')
     
     # Validate bill of lading format
     bol_number = request.POST.get('bill_of_lading_number', '').strip().upper()
     if bol_number and not validate_bill_of_lading(bol_number):
-        errors.append('Bill of Lading number must be 10-17 alphanumeric characters')
+      errors.append('Bill of Lading number must be 10-17 alphanumeric characters')
     
     # Validate cargo items
     cargo_validation = validate_cargo_items(request)
     if cargo_validation['has_errors']:
-        errors.extend(cargo_validation['errors'])
+      errors.extend(cargo_validation['errors'])
     
     return {
-        'has_errors': len(errors) > 0,
-        'errors': errors,
-        'error_message': '; '.join(errors) if errors else None
+      'has_errors': len(errors) > 0,
+      'errors': errors,
+      'error_message': '; '.join(errors) if errors else None
     }
 
 
 def validate_container_number(container_number):
-    """Validate container number format (ISO 6346)"""
-    import re
-    pattern = r'^[A-Z]{4}\d{7}$'
-    return bool(re.match(pattern, container_number))
+  """Validate container number format (ISO 6346)"""
+  import re
+  pattern = r'^[A-Z]{4}\d{7}$'
+  return bool(re.match(pattern, container_number))
 
 
 def validate_bill_of_lading(bol_number):
-    """Validate bill of lading number format"""
-    import re
-    pattern = r'^[A-Z0-9]{10,17}$'
-    return bool(re.match(pattern, bol_number))
+  """Validate bill of lading number format"""
+  import re
+  pattern = r'^[A-Z0-9]{10,17}$'
+  return bool(re.match(pattern, bol_number))
 
 
 def validate_cargo_items(request):
-    """Validate cargo items from JSON data"""
-    errors = []
-    
-    try:
-        cargo_items_json = request.POST.get('cargo_items', '[]')
-        cargo_items = json.loads(cargo_items_json)
-        
-        if not cargo_items:
-            errors.append('At least one cargo item is required')
-            return {'has_errors': True, 'errors': errors}
-        
-        for i, item in enumerate(cargo_items, 1):
-            # Required fields
-            if not item.get('description', '').strip():
-                errors.append(f'Cargo #{i}: Description is required')
-            
-            # Validate numeric fields
-            try:
-                quantity = int(item.get('quantity', 0))
-                if quantity <= 0:
-                    errors.append(f'Cargo #{i}: Quantity must be at least 1')
-            except (ValueError, TypeError):
-                errors.append(f'Cargo #{i}: Invalid quantity')
-            
-            try:
-                weight = float(item.get('weight', 0))
-                if weight < 0:
-                    errors.append(f'Cargo #{i}: Weight cannot be negative')
-            except (ValueError, TypeError):
-                errors.append(f'Cargo #{i}: Invalid weight')
-            
-            try:
-                value = float(item.get('value', 0))
-                if value < 0:
-                    errors.append(f'Cargo #{i}: Value cannot be negative')
-            except (ValueError, TypeError):
-                errors.append(f'Cargo #{i}: Invalid value')
-                
-    except json.JSONDecodeError:
-        errors.append('Invalid cargo data format')
-    
-    return {
-        'has_errors': len(errors) > 0,
-        'errors': errors
-    }
-
-
-def create_submanifest(request, user_profile):
-    """Create the main SubManifest record"""
-    
-    # Get voyage
-    voyage = Voyage.objects.get(voyage_id=request.POST.get('voyage_id'))
-    
-    # Create submanifest
-    submanifest = SubManifest.objects.create(
-        voyage=voyage,
-        created_by=user_profile,
-        
-        # Consignee details  
-        consignee_name=request.POST.get('consignee_name', '').strip(),
-        consignee_email=request.POST.get('consignee_email', '').strip(),
-        consignee_address=request.POST.get('consignee_address', '').strip(),
-        
-        # Consignor details
-        consignor_name=request.POST.get('consignor_name', '').strip(),
-        consignor_email=request.POST.get('consignor_email', '').strip(), 
-        consignor_address=request.POST.get('consignor_address', '').strip(),
-        
-        # Shipment details
-        container_no=request.POST.get('container_number', '').strip().upper(),
-        seal_no=request.POST.get('seal_number', '').strip(),
-        bill_of_lading_no=request.POST.get('bill_of_lading_number', '').strip().upper(),
-        handling_instruction=request.POST.get('handling_instructions', '').strip(),
-        
-        # Default status
-        status='pending_admin'
-    )
-    
-    return submanifest
-
-
-def create_cargo_items(request, submanifest):
-    """Create cargo items from JSON data"""
-    
+  """Validate cargo items from JSON data"""
+  errors = []
+  
+  try:
     cargo_items_json = request.POST.get('cargo_items', '[]')
     cargo_items = json.loads(cargo_items_json)
     
-    cargo_objects = []
-    for i, item in enumerate(cargo_items, 1):
-        cargo = Cargo(
-            submanifest=submanifest,
-            item_number=i,
-            description=item.get('description', '').strip(),
-            quantity=int(item.get('quantity', 0)),
-            weight=Decimal(str(item.get('weight', 0))),
-            value=Decimal(str(item.get('value', 0))),
-            additional_info=item.get('additional_info', '').strip() or None,
-            hs_code=item.get('hs_code', '').strip() or None
-        )
-        cargo_objects.append(cargo)
+    if not cargo_items:
+      errors.append('At least one cargo item is required')
+      return {'has_errors': True, 'errors': errors}
     
-    # Bulk create for efficiency
-    Cargo.objects.bulk_create(cargo_objects)
+    for i, item in enumerate(cargo_items, 1):
+      # Required fields
+      if not item.get('description', '').strip():
+        errors.append(f'Cargo #{i}: Description is required')
+      
+      # Validate numeric fields
+      try:
+        quantity = int(item.get('quantity', 0))
+        if quantity <= 0:
+          errors.append(f'Cargo #{i}: Quantity must be at least 1')
+      except (ValueError, TypeError):
+        errors.append(f'Cargo #{i}: Invalid quantity')
+      
+      try:
+        weight = float(item.get('weight', 0))
+        if weight < 0:
+          errors.append(f'Cargo #{i}: Weight cannot be negative')
+      except (ValueError, TypeError):
+        errors.append(f'Cargo #{i}: Invalid weight')
+      
+      try:
+        value = float(item.get('value', 0))
+        if value < 0:
+          errors.append(f'Cargo #{i}: Value cannot be negative')
+      except (ValueError, TypeError):
+        errors.append(f'Cargo #{i}: Invalid value')
+            
+  except json.JSONDecodeError:
+    errors.append('Invalid cargo data format')
+  
+  return {
+    'has_errors': len(errors) > 0,
+    'errors': errors
+  }
+
+
+def create_submanifest(request, user_profile):
+  """Create the main SubManifest record"""
+  
+  # Get voyage
+  voyage = Voyage.objects.get(voyage_id=request.POST.get('voyage_id'))
+  
+  # Create submanifest
+  submanifest = SubManifest.objects.create(
+    voyage=voyage,
+    created_by=user_profile,
+    
+    # Consignee details  
+    consignee_name=request.POST.get('consignee_name', '').strip(),
+    consignee_email=request.POST.get('consignee_email', '').strip(),
+    consignee_address=request.POST.get('consignee_address', '').strip(),
+    
+    # Consignor details
+    consignor_name=request.POST.get('consignor_name', '').strip(),
+    consignor_email=request.POST.get('consignor_email', '').strip(), 
+    consignor_address=request.POST.get('consignor_address', '').strip(),
+    
+    # Shipment details
+    container_no=request.POST.get('container_number', '').strip().upper(),
+    seal_no=request.POST.get('seal_number', '').strip(),
+    bill_of_lading_no=request.POST.get('bill_of_lading_number', '').strip().upper(),
+    handling_instruction=request.POST.get('handling_instructions', '').strip(),
+    
+    # Default status
+    status='pending_admin'
+  )
+  
+  return submanifest
+
+
+def create_cargo_items(request, submanifest):
+  """Create cargo items from JSON data"""
+  
+  cargo_items_json = request.POST.get('cargo_items', '[]')
+  cargo_items = json.loads(cargo_items_json)
+  
+  cargo_objects = []
+  for i, item in enumerate(cargo_items, 1):
+    cargo = Cargo(
+        submanifest=submanifest,
+      item_number=i,
+      description=item.get('description', '').strip(),
+      quantity=int(item.get('quantity', 0)),
+      weight=Decimal(str(item.get('weight', 0))),
+      value=Decimal(str(item.get('value', 0))),
+      additional_info=item.get('additional_info', '').strip() or None,
+      hs_code=item.get('hs_code', '').strip() or None
+    )
+    cargo_objects.append(cargo)
+  
+  # Bulk create for efficiency
+  Cargo.objects.bulk_create(cargo_objects)
 
 
 def create_documents(request, submanifest, user_profile):
-    """Create document records from uploaded files"""
-    
-    # Document type mappings from form to model
-    document_mappings = {
-        'bill_of_lading': 'bill_of_lading',
-        'commercial_invoice': 'invoice', 
-        'packing_list': 'packing_list',
-        'certificate_origin': 'other'
-    }
-    
-    documents_created = []
-    
-    # Process standard document types
-    for form_field, doc_type in document_mappings.items():
-        file = request.FILES.get(form_field)
-        if file:
-            document = Document.objects.create(
-                submanifest=submanifest,
-                document_type=doc_type,
-                file=file,
-                uploaded_by=user_profile,
-                custom_filename=file.name if doc_type == 'other' else ''
-            )
-            documents_created.append(document)
-    
-    # Process "other" documents (multiple files possible)
-    other_files = request.FILES.getlist('other_documents')
-    for file in other_files:
-        if file:
-            document = Document.objects.create(
-                submanifest=submanifest,
-                document_type='other',
-                file=file,
-                uploaded_by=user_profile,
-                custom_filename=file.name
-            )
-            documents_created.append(document)
-    
-    logger.info(f"Created {len(documents_created)} documents for submanifest {submanifest.submanifest_number}")
-    
-    return documents_created
+  """Create document records from uploaded files"""
+  
+  # Document type mappings from form to model
+  document_mappings = {
+    'bill_of_lading': 'bill_of_lading',
+    'commercial_invoice': 'invoice', 
+    'packing_list': 'packing_list',
+    'certificate_origin': 'certificate_of_origin',
+    # 'other': 'other',
+  }
+  
+  documents_created = []
+  
+  # Process standard document types
+  for form_field, doc_type in document_mappings.items():
+    file = request.FILES.get(form_field)
+    if file:
+      document = Document.objects.create(
+        submanifest=submanifest,
+        document_type=doc_type,
+        file=file,
+        uploaded_by=user_profile,
+        custom_filename=''
+      )
+      documents_created.append(document)
+  
+  # Process "other" documents (multiple files possible)
+  other_files = request.FILES.getlist('other_documents')
+  for file in other_files:
+    if file:
+      document = Document.objects.create(
+        submanifest=submanifest,
+        document_type='other',
+        file=file,
+        uploaded_by=user_profile,
+        custom_filename=file.name
+      )
+      documents_created.append(document)
+  
+  logger.info(f"Created {len(documents_created)} documents for submanifest {submanifest.submanifest_number}")
+  
+  return documents_created

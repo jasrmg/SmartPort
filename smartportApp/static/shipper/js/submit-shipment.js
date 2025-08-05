@@ -664,7 +664,7 @@ document.addEventListener("DOMContentLoaded", () => {
       { name: "bill_of_lading", id: "billOfLadingInput" },
       { name: "commercial_invoice", id: "commercialInvoiceInput" },
       { name: "packing_list", id: "packingListInput" },
-      { name: "certificate_origin", id: "certificateOriginInput" }, // rename or expand if needed
+      { name: "certificate_origin", id: "certificateOriginInput" },
     ];
 
     docInputs.forEach(({ name, id }) => {
