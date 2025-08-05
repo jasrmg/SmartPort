@@ -418,9 +418,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!form) return;
 
+  // caps the inputs
   const containerInput = document.getElementById("containerNumber");
+  const bolInput = document.getElementById("billOfLadingNumber");
   if (containerInput) {
     containerInput.addEventListener("input", (e) => {
+      e.target.value = e.target.value.toUpperCase();
+    });
+  }
+  if (bolInput) {
+    bolInput.addEventListener("input", (e) => {
       e.target.value = e.target.value.toUpperCase();
     });
   }
@@ -439,6 +446,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!firstInvalidField) firstInvalidField = field;
       isValid = false;
     };
+
+    const isBillOfLading = (value) => /^[A-Z0-9]{10,17}$/i.test(value.trim());
 
     const requiredFields = form.querySelectorAll("[data-required]");
     requiredFields.forEach((field) => {
@@ -460,6 +469,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } else {
         field.classList.remove("input-error");
+      }
+
+      // handle bill of lading
+
+      if (field.name === "bill_of_lading") {
+        if (!isBillOfLading(value)) {
+          showFieldError(
+            field,
+            "Bill of lading must be 10 - 16 alphanumeric characters (no special characters)"
+          );
+        } else {
+          field.classList.remove("input-error");
+        }
+        return;
       }
     });
 

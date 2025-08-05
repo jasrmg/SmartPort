@@ -494,6 +494,52 @@
       </div>
     </div>
 
+    <!-- Bill of Lading Info Section -->
+    <div class="form-section">
+      <h2 class="form-section-title">Bill of Lading Information</h2>
+      <div class="form-group">
+        <label class="form-label" for="billOfLadingNumber"
+          >Bill of Lading Number
+
+          <div class="tooltip-wrapper">
+            <span class="tooltip-trigger">?</span>
+            <div class="tooltip-box">
+              <p>
+                The Bill of Lading Number is a unique shipment identifier issued
+                by the carrier or freight forwarder.
+              </p>
+              <p>
+                It is usually found in the actual Bill of Lading document,
+                typically near the top or in the header section.
+              </p>
+              <p>If you're unsure:</p>
+              <ul style="padding-left: 1.2rem; margin: 0">
+                <li>Check the document uploaded by your logistics provider,</li>
+                <li>Or contact the shipper or carrier for assistance,</li>
+                <li>
+                  Ensure accuracy — this number is used for tracking and
+                  customs.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          id="billOfLadingNumber"
+          name="bill_of_lading_number"
+          placeholder="e.g. MSCU123456789"
+          data-required
+        />
+        <small class="form-helper">
+          *Unique reference for the shipment issued by the carrier or freight
+          forwarder.
+        </small>
+      </div>
+    </div>
+
     <!-- Document Cards Section -->
     <div class="document-types">
       <!-- BILL OF LADING -->
