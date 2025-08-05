@@ -409,6 +409,76 @@ document.addEventListener("DOMContentLoaded", () => {
   closeModalBtn.addEventListener("click", closeModal);
   cancelBtn.addEventListener("click", closeModal);
 
+  const clearAllFormData = () => {
+    const form = document.getElementById("submitShipmentForm");
+    if (!form) return;
+
+    // reset all form data
+    form.reset();
+
+    // clear all file previews and file names for main document cards
+    fileMappings.forEach(({ fileNameId, previewId }) => {
+      const fileNameEl = document.getElementById(fileNameId);
+      const previewEl = document.getElementById(previewId);
+
+      if (fileNameEl) fileNameEl.textContent = "";
+      if (previewEl) previewEl.innerHTML = "";
+    });
+
+    // remove all extra others card keep only the original one
+    const othersCards = document.querySelectorAll(".others-card");
+    const othersInputs = document.querySelectorAll(
+      'input[name="other_documents"]'
+    );
+
+    othersCards.forEach((card, index) => {
+      if (index > 0) {
+        // Keep the first one
+        const associatedInput = card.nextElementSibling;
+        if (associatedInput && associatedInput.tagName === "INPUT") {
+          associatedInput.remove();
+        }
+        card.remove();
+      }
+    });
+
+    // clear the original others card
+    const originalOthersFileName = document.getElementById("othersFileName");
+    const originalOthersPreview = document.getElementById("othersPreview");
+    if (originalOthersFileName) originalOthersFileName.textContent = "";
+    if (originalOthersPreview) originalOthersPreview.innerHTML = "";
+
+    // reset others counter
+    otherDocCount = 1;
+
+    // remove all extra cargo entries (keep only the first one)
+    const cargoEntries = document.querySelectorAll(".cargo-entry");
+    cargoEntries.forEach((entry, index) => {
+      if (index > 0) {
+        // Keep the first one
+        entry.remove();
+      }
+    });
+
+    // Clear the first cargo entry fields
+    const firstCargoEntry = document.querySelector(".cargo-entry");
+    if (firstCargoEntry) {
+      const inputs = firstCargoEntry.querySelectorAll("input, textarea");
+      inputs.forEach((input) => {
+        input.value = "";
+        input.classList.remove("input-error");
+      });
+    }
+
+    // Remove error classes from all fields
+    const errorFields = form.querySelectorAll(".input-error");
+    errorFields.forEach((field) => field.classList.remove("input-error"));
+
+    // Update cargo numbering and buttons
+    renumberCargos();
+    updateAddButtons();
+  };
+
   // === Spinner and Form Submission ===
   const form = document.getElementById("submitShipmentForm");
 
@@ -577,7 +647,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const resetButton = () => {
-    btnIcon.classList.remove("loading-spinner");
+    btnIcon.classList.remove("spinner");
     btnIcon.innerHTML = `<i class="fas fa-paper-plane"></i>`;
     btnText.textContent = "Submit Submanifest";
     submitBtn.disabled = false;
@@ -697,6 +767,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (response.ok && result.success) {
         showToast("Shipment submitted successfully.", false);
+        clearAllFormData();
         // redirect or something...
       } else {
         showToast(
