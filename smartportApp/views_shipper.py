@@ -81,7 +81,6 @@ def shipper_deliveries_view(request):
     "custom_clearance",
     ).filter(created_by=shipper)
   
-  # TODO: apply filters
 
   # APPLY FILTERS:
   if vessel_type != "all":
