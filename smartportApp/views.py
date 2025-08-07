@@ -1699,6 +1699,9 @@ def create_notification(user, title, message, link_url=None, triggered_by=None):
     triggered_by=triggered_by
   )
 
+
+
+
 # --------------------------------- CUSTOM ---------------------------------
 @login_required
 def customs_dashboard(request):

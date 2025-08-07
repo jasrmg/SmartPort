@@ -23,6 +23,7 @@
     />
     <!--CUSTOM CSS-->
     <link rel="stylesheet" href="{% static 'admin/css/admin-base.css' %}" />
+    <link rel="stylesheet" href="{% static 'global/notifications.css' %}" />
     {% block head %} {% endblock %}
   </head>
   <body class="loading">
@@ -128,6 +129,7 @@
         {% block content %} {% endblock %}
       </div>
     </div>
+
     <!--GLOBAL MODAL-->
     <!--EDIT PROFILE MODAL-->
     <div id="editProfileModal" class="modal-overlay">
@@ -329,7 +331,10 @@
     <!--CUSTOM JS-->
     <script type="module" src="{% static 'admin/js/admin-base.js' %}"></script>
     <script src="{% static 'admin/js/admin-change-password.js' %}"></script>
-    <!-- <script src="{% static 'global/update-profile.js' %}"></script> -->
+    <script src="{% static 'global/notifications.js' %}"></script>
+    <!--
+      <script src="{% static 'global/update-profile.js' %}"></script>
+    -->
     <!--SCRIPT BLOCK-->
     {% block script %} {% endblock %}
     <!--LOADER JS -->

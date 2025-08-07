@@ -417,7 +417,7 @@ class Notification(models.Model):
     UserProfile,
     on_delete=models.CASCADE,
     related_name="notifications"
-  )
+  ) # recipient of the notification
   title = models.CharField(max_length=255)
   message = models.TextField()
   link_url = models.CharField(max_length=500, blank=True)  
