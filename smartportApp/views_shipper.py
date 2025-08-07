@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
 
-from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo, CargoDelivery, CustomClearance
+from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo, CargoDelivery, CustomClearance, UserProfile
 
 from django.utils.timezone import make_aware, is_naive
 from django.db.models import F, Q
@@ -425,6 +425,36 @@ import logging
 from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
 
+from . views import create_notification
+
+# helper method for bulk creation of notification
+def create_notification_bulk(recipients, title, message, link_url="", triggered_by=None):
+  """
+  Creates notifications for multiple recipients efficiently using bulk_create.
+
+  Parameters:
+  - recipients: iterable of UserProfile objects
+  - title: notification title
+  - message: body message
+  - link_url: frontend URL to redirect to
+  - triggered_by: UserProfile who triggered the notification
+  """
+  if not all(isinstance(user, UserProfile) for user in recipients):
+    raise ValueError("All recipients must be instances of UseProfile")
+  
+  notifications = [
+    Notification(
+      user=user,
+      title=title,
+      message=message,
+      link_url=link_url or "",
+      triggered_by=triggered_by
+    )
+    for user in recipients
+  ]
+  Notification.objects.bulk_create(notifications)
+
+
 logger = logging.getLogger(__name__)
 
 # Process the submission and save shipment data
@@ -447,7 +477,16 @@ def process_shipment_submission(request):
       create_documents(request, submanifest, user)
 
       # TODO: notify the admin
-      # notify_admins_new_submanifest(submanifest, user, len(documents_created))
+      # bulk creation of notification 1 per admin
+      admin_users = UserProfile.objects.filter(role="admin")
+      create_notification_bulk(
+        recipients=admin_users,
+        title="Submanifest Submitted",
+        message=f"{user.first_name} {user.last_name} submitted shipment {submanifest.submanifest_number}",
+        link_url=f"/submanifest/{submanifest.submanifest_id}/",
+        triggered_by=user
+      )
+
 
       logger.info(f"Sumanifest {submanifest.submanifest_number} created successfully by user {user.first_name}")
 
