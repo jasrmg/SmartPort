@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartPort | Custom Clearance Details</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .section {
+        margin-bottom: 30px;
+        padding: 15px;
+        border-left: 4px solid #007bff;
+        background-color: #f8f9fa;
+      }
+      .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+      }
+      p {
+        margin: 8px 0;
+        line-height: 1.4;
+      }
+      .label {
+        font-weight: bold;
+        color: #555;
+      }
+      .no-data {
+        color: #666;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Custom Clearance Details</h1>
+
+      <!-- Clearance Information Section -->
+      <div class="section">
+        <div class="section-title">Clearance Information</div>
+        <p>
+          <span class="label">Clearance Exists:</span> {{ clearance.exists }}
+        </p>
+        <p>
+          <span class="label">Clearance Number:</span>
+          <!---->
+          {{ clearance.clearance_number }}
+        </p>
+        <p><span class="label">Created At:</span> {{ clearance.created_at }}</p>
+        <p>
+          <span class="label">Inspection Data:</span>
+          <!---->
+          {{ clearance.inspection_data }}
+        </p>
+        <p><span class="label">Status:</span> {{ clearance.status }}</p>
+        <p><span class="label">Remarks:</span> {{ clearance.remarks }}</p>
+        <p>
+          <span class="label">Cleared By:</span>
+          <!---->
+          {{ clearance.cleared_by.first_name }}
+          <!---->
+          {{ clearance.cleared_by.last_name }}
+        </p>
+        <p>
+          <span class="label">Created By:</span>
+          <!---->
+          {{ clearance.created_by.first_name }}
+          <!---->
+          {{ clearance.created_by.last_name }}
+        </p>
+        {% if clearance.clearance_file %}
+        <!---->
+        {% for file in clearance.clearance_file %}
+        <p>
+          <span class="label">Clearance File:</span>
+          <a href="{{ clearance.clearance_file.url }}" target="_blank"
+            >Download File</a
+          >
+        </p>
+        {% empty %}
+        <p>
+          <span class="label">Clearance File:</span>
+          <span class="no-data">No file available</span>
+        </p>
+        {% endfor %}
+        <!---->
+        {% endif %}
+      </div>
+
+      <!-- Documents Section -->
+      <div class="section">
+        <div class="section-title">Documents</div>
+        {% if has_documents %} {% for document in documents %}
+        <div
+          style="
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          "
+        >
+          <p><span class="label">Document Type:</span> {{ document.type }}</p>
+          <p><span class="label">Filename:</span> {{ document.filename }}</p>
+          <p>
+            <span class="label">Uploaded At:</span> {{ document.uploaded_at }}
+          </p>
+          {% if document.file_url %}
+          <p>
+            <span class="label">File:</span>
+            <a href="{{ document.file_url }}" target="_blank">View/Download</a>
+          </p>
+          {% else %}
+          <p>
+            <span class="label">File:</span>
+            <span class="no-data">No file URL available</span>
+          </p>
+          {% endif %}
+        </div>
+        {% endfor %} {% else %}
+        <p class="no-data">No documents available</p>
+        {% endif %}
+      </div>
+
+      <!-- Raw Data Section (for debugging) -->
+      <div class="section">
+        <div class="section-title">Raw Data (Debug)</div>
+        <p><span class="label">Clearance Data:</span></p>
+        <pre
+          style="
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+          "
+        >
+{{ clearance|pprint }}</pre
+        >
+
+        <p><span class="label">Documents Data:</span></p>
+        <pre
+          style="
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+          "
+        >
+{{ documents|pprint }}</pre
+        >
+      </div>
+    </div>
+  </body>
+</html>
