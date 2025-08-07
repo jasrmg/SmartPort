@@ -103,6 +103,8 @@ urlpatterns = [
   path("shipper/vessel/<int:vessel_id>/details/", views_shipper.get_vessel_details, name="vessel-details"),
   path("get-cargo-items/<int:submanifest_id>/", views_shipper.get_cargo_items, name="get-cargo-items"),
   path("shipper/confirm-delivery/<int:cargo_id>/", views_shipper.confirm_delivery_view, name="confirm-delivery"),
+  # VIEW CUSTOM CLEARANCE
+  path('clearance/<int:submanifest_id>/', views_shipper.custom_clearance_view, name='custom_clearance'),
   # SUBMIT SHIPMENT
   path("submit-shipment/", views_shipper.submit_shipment, name="submit-shipment"),
 

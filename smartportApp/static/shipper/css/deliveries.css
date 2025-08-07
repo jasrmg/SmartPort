@@ -126,6 +126,22 @@
   color: var(--dark-gray);
   margin-bottom: 0.3rem;
 }
+.clearance-approved {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.clearance-rejected {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.clearance-pending {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #212529;
+}
+
 .submanifest-card-info strong {
   color: var(--primary);
 }
@@ -193,14 +209,19 @@
   font-size: 1.5rem;
 }
 
-.back-to-list-btn {
+.back-to-list-btn,
+.view-clearance-btn {
   background-color: var(--light);
   color: var(--primary) !important;
   border: 1px solid var(--gray);
 }
-.back-to-list-btn:hover {
+.back-to-list-btn:hover,
+.view-clearance-btn:hover {
   background-color: var(--gray);
   transform: translateY(-2px);
+}
+.view-clearance-btn {
+  margin-left: 1rem;
 }
 /* ---------- START OF TABLE ---------- */
 .table-responsive {

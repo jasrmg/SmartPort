@@ -13,9 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const cargoContainer = document.querySelector(".submanifest-cargo");
   const numberDisplay = document.getElementById("submanifest-number-display");
   const backBtn = document.getElementById("back-to-list-btn");
+  const viewClearanceBtn = document.getElementById("view-clearance-btn");
 
   let totalPages = parseInt(paginationContainer.dataset.totalPages);
   let currentPage = parseInt(paginationContainer.dataset.currentPage);
+  let currentSubmanifestId = null; // Track current submanifest
 
   const updatePaginationUI = () => {
     const paginationWindow = document.getElementById("pagination-window");
@@ -93,12 +95,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Update clearance button visibility and state
+  const updateClearanceButton = (hasClearance, clearanceStatus) => {
+    if (!viewClearanceBtn) return;
+
+    if (hasClearance) {
+      viewClearanceBtn.style.display = "inline-block";
+      viewClearanceBtn.disabled = false;
+
+      // Update button text/icon based on clearance status
+      const icon = viewClearanceBtn.querySelector("i");
+      const text = viewClearanceBtn.querySelector("span") || viewClearanceBtn;
+
+      text.textContent = "View Clearance";
+    } else {
+      viewClearanceBtn.style.display = "none";
+    }
+  };
+
   const bindCardClickEvents = () => {
     const cards = document.querySelectorAll(".submanifest-card");
 
     cards.forEach((card) => {
       card.addEventListener("click", () => {
         const submanifestId = card.dataset.submanifestId;
+        currentSubmanifestId = submanifestId; // Store current ID
         loadCargoForSubmanifest(submanifestId);
         const submanifestNumber = card.querySelector("h3")?.textContent || "";
 
@@ -115,6 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
 
       const tbody = document.getElementById("cargo-tbody");
+
       tbody.innerHTML = ""; // clear previous
       data.cargo.forEach((item) => {
         const row = `
@@ -145,11 +167,18 @@ document.addEventListener("DOMContentLoaded", () => {
         tbody.insertAdjacentHTML("beforeend", row);
       });
 
+      // Update clearance button based on the fetched data
+      updateClearanceButton(data.has_clearance, data.clearance_status);
+
       document.querySelector(".submanifest-cargo").style.display = "block";
 
       bindDeliveryButtons();
     } catch (err) {
       console.error("Failed to load cargo:", err);
+      // Hide clearance button on error
+      if (viewClearanceBtn) {
+        viewClearanceBtn.style.display = "none";
+      }
     }
   };
 
@@ -208,6 +237,20 @@ document.addEventListener("DOMContentLoaded", () => {
     backBtn.addEventListener("click", () => {
       cardsContainer.style.display = "grid";
       cargoContainer.style.display = "none";
+      currentSubmanifestId = null; // Clear current ID
+    });
+  }
+
+  // Bind clearance button click
+  if (viewClearanceBtn) {
+    viewClearanceBtn.addEventListener("click", () => {
+      if (parseInt(currentSubmanifestId)) {
+        // Navigate to clearance view page
+        console.log("CURRENT SMID: ", currentSubmanifestId);
+        console.log("CURRENT SMID: ", typeof currentSubmanifestId);
+        console.log("CURRENT SMID: ", typeof parseInt(currentSubmanifestId));
+        window.location.href = `/clearance/${currentSubmanifestId}/`;
+      }
     });
   }
 

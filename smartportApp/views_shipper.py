@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
 
-from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo, CargoDelivery
+from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo, CargoDelivery, CustomClearance
 
 from django.utils.timezone import make_aware, is_naive
 from django.db.models import F, Q
@@ -253,26 +253,42 @@ from django.views.decorators.http import require_POST, require_GET
 def get_cargo_items(request, submanifest_id):
   try:
     sm = SubManifest.objects.select_related(
+      'custom_clearance',
       'voyage__vessel'  # Optimize DB access
     ).get(pk=submanifest_id)
 
     vessel_name = sm.voyage.vessel.name if sm.voyage.vessel else "N/A"
     cargo_items = sm.cargo_items.all()
-    data = [
-      {
-        "id": c.cargo_id,
-        "item_number": c.item_number,
-        "description": c.description,
-        "quantity": c.quantity,
-        "value": format_currency(c.value),
-        "vessel": vessel_name,
-        "delivered": hasattr(c, "delivery")
-      }
-      for c in cargo_items
-    ]
-    return JsonResponse({"cargo": data})
+
+    cargo_data = []
+    for item in cargo_items:
+      cargo_data.append({
+        'id': item.cargo_id,
+        'item_number': item.item_number,
+        'description': item.description,
+        'quantity': item.quantity,
+        'value': format_currency(item.value),
+        "delivered": hasattr(item, "delivery")
+      })
+
+    # clearance info
+    has_clearance = hasattr(sm, 'custom_clearance')
+    clearance_status = "pending"
+
+    if has_clearance:
+      clearance_status = sm.custom_clearance.clearance_status
+
+    response_data = {
+      'cargo': cargo_data,
+      'has_clearance': has_clearance,
+      'clearance_status': clearance_status,
+      'submanifest_id': submanifest_id
+    }
+    return JsonResponse(response_data)
   except SubManifest.DoesNotExist:
     return JsonResponse({"error": "SubManifest not found"}, status=404)
+  except Exception as e:
+    return JsonResponse({'error': str(e)}, status=500)
 
 # ENDPOINT TO CONFIRM DELIVERY:
 @login_required
@@ -306,6 +322,86 @@ def confirm_delivery_view(request, cargo_id):
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
   
+# ENDPOINT TO VIEW THE CUSTOM CLEARANCE
+from django.shortcuts import render, get_object_or_404
+@login_required
+def custom_clearance_view(request, submanifest_id):
+  # view to display the custom clearance
+  user = request.user.userprofile
+  print("TANGANG USER: ", user)
+
+  # get submanifest with its related data:
+  submanifest = get_object_or_404(
+    SubManifest.objects.select_related(
+      'voyage__vessel',
+      'voyage__departure_port',
+      'voyage__arrival_port',
+      'custom_clearance__created_by',
+      'custom_clearance__reviewed_by'
+    ).prefetch_related('documents'),
+    submanifest_id=submanifest_id,
+    # created_by=1
+  )
+
+  # check if clearance exists
+  try:
+    clearance = submanifest.custom_clearance
+  except CustomClearance.DoesNotExist:
+    clearance = None
+
+  # prepare documents data
+  documents_data = []
+  if submanifest.documents.exists():
+    for doc in submanifest.documents.all():
+      documents_data.append({
+        'type': doc.get_document_type_display(),
+        'filename': doc.get_download_filename(),
+        'uploaded_at': doc.uploaded_at,
+        'file_url': doc.file.url if doc.file else None
+      })
+  
+  # prepare clearance data:
+  clearance_data = {
+    'exists': clearance is not None,
+    'clearance_number': clearance.clearance_number if clearance else 'Error Clearance Number',
+    'created_at': clearance.created_at if clearance else 'Error Created At',
+    'inspection_data': clearance.inspection_date if clearance else 'Error Inspection Date',
+    'status': clearance.get_clearance_status_display() if clearance else 'Error Status',
+    'remarks': clearance.remarks if clearance else 'Error Remarks',
+    'cleared_by': clearance.reviewed_by if clearance else 'No remarks available',
+    'clearance_file': clearance.clearance_file if clearance else None,
+    'created_by': clearance.created_by if clearance else None,
+  }
+
+  # Prepare submanifest data
+  # submanifest_data = {
+  #   'id': submanifest.submanifest_id,
+  #   'number': submanifest.submanifest_number,
+  #   'created_at': submanifest.created_at,
+  #   'vessel_name': submanifest.voyage.vessel.name,
+  #   'voyage_number': submanifest.voyage.voyage_number,
+  #   'departure_port': submanifest.voyage.departure_port.port_name,
+  #   'arrival_port': submanifest.voyage.arrival_port.port_name,
+  #   'departure_date': submanifest.voyage.departure_date,
+  #   'eta': submanifest.voyage.eta,
+  #   'arrival_date': submanifest.voyage.arrival_date,
+  #   'status': submanifest.get_status_display(),
+  #   'status_raw': submanifest.status,
+  #   'container_no': submanifest.container_no,
+  #   'seal_no': submanifest.seal_no,
+  #   'bill_of_lading_no': submanifest.bill_of_lading_no,
+  #   'consignee_name': submanifest.consignee_name,
+  #   'consignor_name': submanifest.consignor_name,
+  # }
+
+  context = {
+    # 'submanifest': submanifest_data,
+    'clearance': clearance_data,
+    'documents': documents_data,
+    'has_documents': len(documents_data) > 0,
+  }
+  
+  return render(request, 'smartportApp/custom-clearance.html', context)
 
 # ENDPOINT TO SUBMIT THE SHIPMENT(SUBMANIFEST DETAIL)
 @login_required

@@ -268,6 +268,7 @@ class CustomClearance(models.Model):
     REJECTED = "rejected", "Rejected"
   
   clearance_id = models.AutoField(primary_key=True)
+  clearance_number = models.CharField(max_length=50, unique=True, blank=True, null=True) # CLR-yyyymmdd-pk
   submanifest = models.OneToOneField("SubManifest", on_delete=models.CASCADE, related_name="custom_clearance")
   clearance_status = models.CharField(max_length=20, choices=ClearanceStatus.choices, default=ClearanceStatus.PENDING)
   inspection_date = models.DateTimeField(null=True, blank=True)
