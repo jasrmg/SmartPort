@@ -106,8 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Update button text/icon based on clearance status
       const icon = viewClearanceBtn.querySelector("i");
       const text = viewClearanceBtn.querySelector("span") || viewClearanceBtn;
-
-      text.textContent = "View Clearance";
+      console.log("icon: ", icon);
     } else {
       viewClearanceBtn.style.display = "none";
     }
@@ -246,10 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
     viewClearanceBtn.addEventListener("click", () => {
       if (parseInt(currentSubmanifestId)) {
         // Navigate to clearance view page
-        console.log("CURRENT SMID: ", currentSubmanifestId);
-        console.log("CURRENT SMID: ", typeof currentSubmanifestId);
-        console.log("CURRENT SMID: ", typeof parseInt(currentSubmanifestId));
-        window.location.href = `/clearance/${currentSubmanifestId}/`;
+        window.open(`/clearance/${currentSubmanifestId}/`, "_blank");
       }
     });
   }
