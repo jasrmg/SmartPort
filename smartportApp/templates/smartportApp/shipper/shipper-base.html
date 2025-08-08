@@ -23,6 +23,7 @@
     />
     <!--CUSTOM CSS-->
     <link rel="stylesheet" href="{% static 'shipper/css/shipper-base.css' %}" />
+    <link rel="stylesheet" href="{% static 'global/notifications.css' %}" />
     {% block head %} {% endblock %}
   </head>
   <body class="loading">
@@ -327,6 +328,7 @@
     <script src="{% static 'global/firebase_config.js' %}"></script>
 
     <!--CUSTOM JS-->
+    <script src="{% static 'global/notifications.js' %}"></script>
     <script type="module" src="{% static 'admin/js/admin-base.js' %}"></script>
     <script src="{% static 'admin/js/admin-change-password.js' %}"></script>
     <!-- <script src="{% static 'global/update-profile.js' %}"></script> -->

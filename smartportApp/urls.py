@@ -1,12 +1,15 @@
 from django.urls import path
 from . import views
 from . import views_shipper
-from . import notification
+from . import notification 
 
 urlpatterns = [
   path("", views.auth_view, name="auth_view"),
   # NOTIFICATION POLLING
   path('poll-notifications/', notification.poll_recent_notifications, name='poll-notifications'),
+  # ENDPOINT FOR NOTIFICATION ICON ON THE TOPBAR
+  path('notifications/', notification.get_user_notifications, name="get-user-notifications"),
+  path('notifications/mark-read/', notification.mark_notifications_read, name='mark_notifications_read'),
 
   # ROLE REDIRECT
   # path("role-redirect/", views.role_redirect_view, name="role-redirect"),

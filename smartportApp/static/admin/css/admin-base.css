@@ -1012,6 +1012,14 @@ h6 {
   justify-content: center;
   border-radius: 50%;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.notif-image img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .notif-content {

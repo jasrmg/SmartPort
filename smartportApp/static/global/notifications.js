@@ -36,7 +36,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!badge) return;
 
     badge.textContent = count > 0 ? count : "";
-    badge.style.display = count > 0 ? "inline-block" : "none";
+    badge.style.display = count > 0 ? "flex" : "none";
+    // Also toggle hidden class for consistency
+    badge.classList.toggle("hidden", count === 0);
   };
 
   /**
@@ -49,6 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const shownNotificationIds = new Set();
 
   const showFloatingNotifications = (notifications) => {
+    if (!notifications || notifications.length === 0) return;
+
     console.log("floating notif");
 
     const existingNotifs = document.querySelectorAll(".floating-notification");
@@ -75,12 +79,16 @@ document.addEventListener("DOMContentLoaded", () => {
       container.innerHTML = `
       <div class="notification-content">
         <div class="avatar-section">
-          <img src="${notification.avatar_url}" alt="avatar" class="avatar-img" />
+          <img src="${
+            notification.avatar_url
+          }" alt="avatar" class="avatar-img" />
         </div>
         <div class="info-section">
           <div class="user-name">${notification.user_name}</div>
           <div class="notification-title">${notification.title}</div>
-          <div class="notification-time">1ms</div>
+          <div class="notification-time">${
+            notification.time_ago || "just now"
+          }</div>
         </div>
       </div>
     `;
@@ -99,10 +107,144 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setTimeout(() => {
           container.remove();
+          // Clean up from shown notifications set after a longer delay
+          // to prevent re-showing the same notification too quickly
+          setTimeout(() => {
+            shownNotificationIds.delete(notification.notification_id);
+          }, 30000); // 30 seconds delay before allowing re-show
         }, 400); // Match fade-out duration
       }, 5000);
     });
   };
+
+  /* ------------------------------- START OF TOPBAR NOTIFICATION -------------------------------*/
+  const notifToggle = document.getElementById("notificationToggle");
+  const notifDropdown = document.getElementById("notificationDropdown");
+  const notifList = document.querySelector(".notification-list");
+  const notifBadge = document.querySelector(".notification-badge");
+
+  let isDropdownOpen = false;
+  let hasUnreadNotifications = false;
+
+  notifToggle.addEventListener("click", async () => {
+    const wasOpen = isDropdownOpen;
+    isDropdownOpen = !wasOpen;
+
+    notifDropdown.classList.toggle("hidden", !isDropdownOpen);
+
+    if (isDropdownOpen) {
+      // Dropdown opening -> load notifications
+      await loadNotifications();
+    } else {
+      // Dropdown closing -> mark as read only if there were unread notifications
+      if (hasUnreadNotifications) {
+        await markNotificationsAsRead();
+      }
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    const isClickInside =
+      notifToggle.contains(event.target) ||
+      notifDropdown.contains(event.target);
+
+    if (!isClickInside && isDropdownOpen) {
+      isDropdownOpen = false;
+      notifDropdown.classList.add("hidden");
+
+      // Mark as read when clicking outside if there were unread notifications
+      if (hasUnreadNotifications) {
+        markNotificationsAsRead();
+      }
+    }
+  });
+
+  const markNotificationsAsRead = async () => {
+    try {
+      await fetch("/notifications/mark-read/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({}),
+      });
+
+      // Update local state
+      hasUnreadNotifications = false;
+
+      // Update badge
+      updateNotificationBadge(0);
+
+      // Remove unread visual styles from list items
+      notifList.querySelectorAll(".unread").forEach((item) => {
+        item.classList.remove("unread");
+      });
+
+      console.log("Notifications marked as read");
+    } catch (err) {
+      console.error("Failed to mark notifications as read:", err);
+    }
+  };
+
+  const loadNotifications = async () => {
+    console.log("getting notifs");
+    try {
+      const response = await fetch("/notifications/", {
+        method: "GET",
+      });
+
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      const data = await response.json();
+
+      notifList.innerHTML = "";
+
+      if (data.notifications.length === 0) {
+        notifList.innerHTML = `<li class="notification-item"><p class="notif-text">No notifications</p></li>`;
+        hasUnreadNotifications = false;
+        updateNotificationBadge(0);
+        return;
+      }
+
+      // Count unread notifications
+      const unreadCount = data.notifications.filter((n) => !n.is_read).length;
+      hasUnreadNotifications = unreadCount > 0;
+
+      // Update badge based on actual unread count
+      updateNotificationBadge(unreadCount);
+
+      data.notifications.forEach((notif) => {
+        const li = document.createElement("li");
+        li.className = `notification-item ${notif.is_read ? "" : "unread"}`;
+        li.innerHTML = `
+        ${
+          notif.triggered_by_avatar
+            ? `<div class="notif-image"><img src="${notif.triggered_by_avatar}" alt="Notification Icon" class="notif-icon" /></div>`
+            : `<div class="notif-icon">${notif.title
+                .charAt(0)
+                .toUpperCase()}</div>`
+        }
+        <div class="notif-content">
+          <p class="notif-text">${notif.message}</p>
+          <span class="notif-time">${notif.time_ago}</span>
+        </div>
+      `;
+        if (notif.link_url) {
+          li.addEventListener("click", () => {
+            window.location.href = notif.link_url;
+          });
+        }
+        notifList.appendChild(li);
+      });
+    } catch (error) {
+      console.error("Failed to load notifications:", error);
+    }
+  };
+
+  /* ------------------------------- END OF TOPBAR NOTIFICATION -------------------------------*/
+
+  // Load notifications immediately on page load
+  pollNotifications();
 
   // Begin polling every 10 seconds
   setInterval(pollNotifications, 10000);

@@ -527,25 +527,6 @@ document.addEventListener("DOMContentLoaded", () => {
       logoutModal.style.display = "none";
     }
   });
-
-  /* ------------------------------- START OF NOTIFICATION -------------------------------*/
-  const notifToggle = document.getElementById("notificationToggle");
-  const notifDropdown = document.getElementById("notificationDropdown");
-
-  notifToggle.addEventListener("click", () => {
-    notifDropdown.classList.toggle("hidden");
-  });
-
-  document.addEventListener("click", (event) => {
-    const isClickInside =
-      notifToggle.contains(event.target) ||
-      notifDropdown.contains(event.target);
-    if (!isClickInside) {
-      notifDropdown.classList.add("hidden");
-    }
-  });
-
-  /* ------------------------------- END OF NOTIFICATION -------------------------------*/
 });
 
 /* ------------------------------- END OF DOMCONTENTLOADED -------------------------------*/

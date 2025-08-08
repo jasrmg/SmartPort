@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initShipmentChart();
   initVesselChart();
   initIncidentChart();
-  updateNotificationBadge();
 });
 
 /* ------------------------------- SIDEBAR TOGGLE ------------------------------- */
@@ -269,15 +268,4 @@ const initIncidentChart = () => {
     updateIncidentChart(e.target.value)
   );
   updateIncidentChart();
-};
-
-/* ------------------------------- NOTIFICATION BADGE ------------------------------- */
-const updateNotificationBadge = () => {
-  const unreadCount = document.querySelectorAll(
-    ".notification-item.unread"
-  ).length;
-  const badge = document.querySelector(".notification-badge");
-
-  badge.style.display = unreadCount > 0 ? "inline-block" : "none";
-  if (unreadCount > 0) badge.textContent = unreadCount;
 };

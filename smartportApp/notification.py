@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from . models import Notification
 
+from django.views.decorators.http import require_POST
+
 # NOTIFICAITON POLLING ENDPOINT FOR UNREAD NOTIFICATIONS
 
 @login_required
@@ -61,5 +63,41 @@ def poll_recent_notifications(request):
     }
   })
 
+# ENDPOINT FOR PREFILLING THE TOPBAR NOTIFICATION
+@login_required
+def get_user_notifications(request):
+  try:
+    user_profile = request.user.userprofile
+  except:
+    return JsonResponse({'error': 'User profile not found'}, status=404)
 
+  notifications =Notification.objects.filter(user=user_profile).order_by('-created_at')[:10]
+
+  data = []
+
+  for notif in notifications:
+    data.append({
+      'id': notif.notification_id,
+      'title': notif.title,
+      'message': notif.message,
+      'link_url': notif.link_url,
+      'is_read': notif.is_read,
+      'created_at': notif.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+      'time_ago': notif.created_at.strftime('%b %d, %H:%M'), # convert to 2h in frontend
+      'triggered_by_avatar': notif.triggered_by.avatar if notif.triggered_by and notif.triggered_by.avatar else None
+    })
+
+  return JsonResponse({'notifications': data})
+
+@login_required
+@require_POST
+def mark_notifications_read(request):
+  try:
+    user_profile = request.user.userprofile
+  except:
+    return JsonResponse({'error': 'User profile not found'}, status=404)
+
+  updated_count = Notification.objects.filter(user=user_profile, is_read=False).update(is_read=True)
+
+  return JsonResponse({'status': 'success', 'updated_count': updated_count})
 
