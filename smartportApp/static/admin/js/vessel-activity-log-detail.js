@@ -18,6 +18,21 @@ const attachVesselCardClickHandlers = () => {
   });
 };
 
+const formatTimeTo12Hour = (timeStr) => {
+  // If timeStr already contains AM/PM, return as is
+  if (timeStr.includes("AM") || timeStr.includes("PM")) {
+    return timeStr;
+  }
+
+  // Parse 24-hour format (HH:MM)
+  const [hours, minutes] = timeStr.split(":");
+  const hour24 = parseInt(hours, 10);
+  const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+  const ampm = hour24 >= 12 ? "PM" : "AM";
+
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
 const loadVesselDetail = async (vesselId) => {
   try {
     currentVesselId = vesselId;
@@ -70,7 +85,7 @@ const loadVesselDetail = async (vesselId) => {
           .map(
             (log) => `
           <tr>
-            <td class="time-column">${log.time}</td>
+            <td class="time-column">${formatTimeTo12Hour(log.time)}</td>
             <td class="user-column">${log.user}</td>
             <td class="type-column">${log.action_type}</td>
             <td class="description-column">${log.description}</td>
@@ -184,7 +199,7 @@ addLogForm.addEventListener("submit", async (e) => {
         const tbody = dateGroup.querySelector("tbody");
         const newRow = document.createElement("tr");
         newRow.innerHTML = `
-        <td class="time-column">${newLog.time}</td>
+        <td class="time-column">${formatTimeTo12Hour(newLog.time)}</td>
         <td class="user-column">${newLog.user}</td>
         <td class="type-column">${newLog.action_type}</td>
         <td class="description-column">${newLog.description}</td>
@@ -214,7 +229,7 @@ addLogForm.addEventListener("submit", async (e) => {
           </thead>
           <tbody>
             <tr>
-              <td class="time-column">${newLog.time}</td>
+              <td class="time-column">${formatTimeTo12Hour(newLog.time)}</td>
               <td class="user-column">${newLog.user}</td>
               <td class="type-column">${newLog.action_type}</td>
               <td class="description-column">${newLog.description}</td>

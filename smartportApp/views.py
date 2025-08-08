@@ -1232,12 +1232,15 @@ def add_vessel_log_entry(request, vessel_id):
       created_by=profile,
     )
 
+    # Convert UTC time to local timezone (Asia/Manila)
+    created_at_local = timezone.localtime(log.created_at)
+
     created_at = log.created_at
     return JsonResponse({
       "success": True,
       "log": {
-        "time": created_at.strftime("%H:%M"),
-        "date": created_at.strftime("%Y-%m-%d"),
+        "time": created_at_local.strftime("%I:%M %p"),
+        "date": created_at_local.strftime("%Y-%m-%d"),
         "user": f"{profile.first_name} {profile.last_name}",
         "action_type": "Manual Note",
         "description": log.description,
