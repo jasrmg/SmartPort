@@ -45,8 +45,12 @@ def shipper_dashboard(request):
   if auth_check:
     return auth_check
 
+  context = {
+    'show_logo_text': True,
+  }
 
-  return render(request, "smartportApp/shipper/dashboard.html")
+
+  return render(request, "smartportApp/shipper/dashboard.html", context)
 
 def shipper_vessel_info_view(request):
   # check if authenticated and role is shipper
