@@ -16,6 +16,7 @@ from django.db.models import Case, When, IntegerField
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
 
 # Create your views here.
+
 @login_required
 def role_redirect_view(request):
   user_profile = getattr(request.user, "userprofile", None)
@@ -118,6 +119,8 @@ def admin_dashboard(request):
     "active_voyages": active_voyages,
     "arrivals_today_count": arrivals_today_count,
     "incidents_today_count": incidents_today_count,
+    # flag for the topbar wether to show the searchbar or the text:
+    "show_logo_text": True,
   }
 
   return render(request, "smartportApp/admin/dashboard.html", context)

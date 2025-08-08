@@ -57,10 +57,14 @@
       <div class="main-content">
         <!--TOPBAR BLOCK-->
         <div class="topbar">
+          {% if show_logo_text %}
+          <span class="logo-text">SmartPort</span>
+          {% else %}
           <div class="search-bar">
             <i class="fas fa-search"></i>
             <input type="text" placeholder="Search..." />
           </div>
+          {% endif %}
           <div class="user-menu">
             <!--NOTIFICATION-->
             <div class="notification-container">

@@ -79,16 +79,12 @@ document.addEventListener("DOMContentLoaded", () => {
       container.innerHTML = `
       <div class="notification-content">
         <div class="avatar-section">
-          <img src="${
-            notification.avatar_url
-          }" alt="avatar" class="avatar-img" />
+          <img src="${notification.avatar_url}" alt="avatar" class="avatar-img" />
         </div>
         <div class="info-section">
           <div class="user-name">${notification.user_name}</div>
           <div class="notification-title">${notification.title}</div>
-          <div class="notification-time">${
-            notification.time_ago || "just now"
-          }</div>
+          <div class="notification-time">1m</div>
         </div>
       </div>
     `;
