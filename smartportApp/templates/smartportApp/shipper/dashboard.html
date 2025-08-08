@@ -61,10 +61,25 @@
       </ul>
     </li>
     <li class="nav-item">
-      <a href="{% url 'vessel-info' %}" class="nav-link">
+      <a href="" class="nav-link">
         <i class="fas fa-ship"></i>
         <span>Vessels</span>
       </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="{% url 'vessel-info' %}" class="nav-sub-link">
+            <i class="fas fa-list-ul"></i>
+            <span>Vessels Info</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'deliveries' %}" class="nav-sub-link">
+            <i class="fas fa-truck-fast"></i>
+
+            <span>Deliveries</span>
+          </a>
+        </li>
+      </ul>
     </li>
     <li class="nav-item">
       <a href="{% url 'submit-shipment-view' %}" class="nav-link">
