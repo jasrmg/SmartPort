@@ -166,6 +166,9 @@ def shipper_submit_shipment_view(request):
   }
   return render(request, "smartportApp/shipper/submit-shipment.html", context)
 
+def shipper_incident_feed_view(request):
+  return render(request, "smartportApp/shipper/incident-report-feed.html")
+
 # --------------------  END OF TEMPLATES --------------------
 
 # -------------------- LOGIC --------------------
