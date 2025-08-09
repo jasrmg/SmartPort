@@ -443,7 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ${carouselHTML}
         ${dotsHTML}
         <div class="incident-meta">
-          <p><strong>Date:</strong> ${incident.created_at}</p>
+          <p><strong>Date:</strong> ${formatDate(incident.created_at)}</p>
           <p><strong>Reporter:</strong> ${incident.reporter_name}</p>
           <p><strong>Vessel:</strong> ${incident.vessel_name || "—"}</p>
           <p><strong>Location:</strong> ${incident.location}</p>
@@ -455,6 +455,16 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>`;
   };
 
+  // helper function for the time display:
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const options = {
+      year: "numeric",
+      month: "long",
+      day: "2-digit",
+    };
+    return date.toLocaleDateString("en-US", options);
+  };
   // Initial attach
   attachImagePreviewListeners();
   document.querySelectorAll(".incident-card").forEach(updateCarouselControls);
