@@ -78,6 +78,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
 
       if (data.success) {
+        // remove the no incident to show if its in the html:
+        const noResultsMsg = document.querySelector(".no-results");
+        if (noResultsMsg) {
+          noResultsMsg.remove();
+        }
         const cardHTML = buildIncidentCard(data.incident);
         const feed = document.getElementById("incidentFeed");
         feed.insertAdjacentHTML("afterbegin", cardHTML);
@@ -464,7 +469,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const approveBtn = e.target.closest(".btn-approve");
     const declineBtn = e.target.closest(".btn-decline");
 
-    // ✅ APPROVE
+    //  APPROVE
     if (approveBtn) {
       const card = approveBtn.closest(".incident-card");
       const incidentId = card.dataset.cardId;
@@ -502,14 +507,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // ✅ DECLINE - open modal
+    //  DECLINE - open modal
     if (declineBtn) {
       targetDeclineCard = declineBtn.closest(".incident-card");
       modal.style.display = "flex";
     }
   });
 
-  // ✅ Confirm decline
+  //  Confirm decline
   confirmBtn.addEventListener("click", async () => {
     if (!targetDeclineCard || !targetDeclineCard.isConnected) {
       console.warn("Target decline card is missing or already removed.");
@@ -544,13 +549,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ✅ Cancel decline
+  //  Cancel decline
   cancelBtn.addEventListener("click", () => {
     modal.style.display = "none";
     targetDeclineCard = null;
   });
 
-  // ✅ Click outside modal
+  //  Click outside modal
   window.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.style.display = "none";
