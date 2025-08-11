@@ -143,8 +143,13 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
       container.onclick = () => {
-        if (notification.link_url) {
+        console.log("Notification clicked:", notification);
+
+        if (notification.link_url && notification.link_url.trim() !== "") {
           window.location.href = notification.link_url;
+        } else {
+          // Default behavior for shipper notifications
+          window.location.href = "/shipper-dashboard/"; // or whatever page you want
         }
       };
 

@@ -509,6 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           showToast("Incident approved");
         } else {
+          console.error("error: ", data.error);
           showToast("Failed to approve incident", true);
         }
       } catch (err) {

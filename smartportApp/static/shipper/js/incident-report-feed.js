@@ -406,14 +406,10 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         actionsHTML = `
         <div class="incident-actions">
-          <select class="status-dropdown">
-            <option value="pending" ${
-              incident.status === "pending" ? "selected" : ""
-            }>Under Review</option>
-            <option value="resolved" ${
-              incident.status === "resolved" ? "selected" : ""
-            }>Resolved</option>
-          </select>
+          <span class="status-label unresolved">
+            <i class="fas fa-exclamation-triangle"></i>
+            Unresolved
+          </span>
         </div>
         `;
       }
