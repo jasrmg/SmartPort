@@ -2,7 +2,7 @@ from django.utils.timezone import now, timedelta
 from django.utils import timezone
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from . models import Notification
+from smartportApp.models import Notification
 
 from django.views.decorators.http import require_POST
 

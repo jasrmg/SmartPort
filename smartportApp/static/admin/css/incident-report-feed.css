@@ -824,6 +824,15 @@ input[type="file"].form-input {
   border-radius: 6px;
   font-size: 0.9rem;
 }
+.status-label.unresolved {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: var(--danger);
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
 
 /* Responsive Design */
 @media (max-width: 600px) {

@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from . import views_shipper
-from . import notification 
+from .utils import notification 
 
 urlpatterns = [
   path("", views.auth_view, name="auth_view"),

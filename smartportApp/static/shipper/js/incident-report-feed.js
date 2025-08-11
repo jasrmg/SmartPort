@@ -79,15 +79,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.success) {
         // remove the no incident to show if its in the html:
-        const noResultsMsg = document.querySelector(".no-results");
-        if (noResultsMsg) {
-          noResultsMsg.remove();
-        }
-        const cardHTML = buildIncidentCard(data.incident);
-        const feed = document.getElementById("incidentFeed");
-        feed.insertAdjacentHTML("afterbegin", cardHTML);
-        updateCarouselControls(feed.firstElementChild);
-        attachImagePreviewListeners();
+        // const noResultsMsg = document.querySelector(".no-results");
+        // if (noResultsMsg) {
+        //   noResultsMsg.remove();
+        // }
+        // const cardHTML = buildIncidentCard(data.incident);
+        // const feed = document.getElementById("incidentFeed");
+        // feed.insertAdjacentHTML("afterbegin", cardHTML);
+        // updateCarouselControls(feed.firstElementChild);
+        // attachImagePreviewListeners();
 
         showToast("Incident report submitted successfully!");
         incidentModal.style.display = "none";

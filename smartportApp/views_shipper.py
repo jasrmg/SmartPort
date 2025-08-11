@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 import json
 
+
+
 def enforce_shipper_access(request):
   ''' Check if the user is authenticated and has the shipper role. '''
   if not request.user.is_authenticated:
@@ -150,7 +152,6 @@ def shipper_deliveries_view(request):
 
   return render(request, "smartportApp/shipper/deliveries.html", context)
 
-# pull 2
 def shipper_submit_shipment_view(request):
   # check if authenticated and role is shipper
   auth_check = enforce_shipper_access(request)
@@ -166,8 +167,69 @@ def shipper_submit_shipment_view(request):
   }
   return render(request, "smartportApp/shipper/submit-shipment.html", context)
 
+# reused admin logic for the incident feed view:
+from django.db.models import F, Q
+from django.db.models import Case, When, IntegerField
+from django.core.paginator import Paginator, EmptyPage
+
+from smartportApp.utils.utils import with_approval_priority, serialize_incident
+
 def shipper_incident_feed_view(request):
-  return render(request, "smartportApp/shipper/incident-report-feed.html")
+  sort = request.GET.get("sort", "newest")
+  incidents = IncidentReport.objects.filter(is_approved=True)
+
+
+  # prioritize not approve first by the admin
+  if sort == "newest":
+    incidents = with_approval_priority(incidents).order_by('approval_priority', '-incident_datetime')
+  elif sort == "oldest":
+    incidents = with_approval_priority(incidents).order_by('approval_priority', 'incident_datetime')
+  elif sort == "vessel":
+    # Only incidents that are linked to a vessel
+    incidents = with_approval_priority(
+        incidents.filter(vessel__isnull=False)
+      ).order_by('approval_priority', 'vessel__name')
+  elif sort == "impact":
+    impact_order = Case(
+      When(impact_level="high", then=0),
+      When(impact_level="medium", then=1),
+      When(impact_level="low", then=2),
+      default=3,
+      output_field=IntegerField()
+    )
+    incidents = with_approval_priority(incidents).annotate(
+      impact_order=impact_order
+    ).order_by('approval_priority', 'impact_order')
+
+  elif sort == "status_resolved":
+    incidents = with_approval_priority(incidents).order_by(
+      'approval_priority', '-status'
+    )
+  
+  elif sort == "status_pending":
+    incidents = with_approval_priority(incidents).order_by(
+      'approval_priority', 'status'
+    )
+  paginator = Paginator(incidents, 2)  # ilisanan ug 5 ig deploy
+  page_number = int(request.GET.get("page", 1))
+
+  try:
+    page_obj = paginator.page(page_number)
+
+  except EmptyPage:
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+      return JsonResponse({"incidents": [], "has_more": False})
+    return render(request, "smartportApp/admin/incident-report-feed.html", {"page_obj": paginator.page(paginator.num_pages)})
+  
+
+  if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    # print(f"Page {page_number} of {paginator.num_pages}, has_next: {page_obj.has_next()}")
+    data = [serialize_incident(incident) for incident in page_obj]
+    return JsonResponse({"incidents": data, "has_more": page_obj.has_next()})
+  
+  # return render(request, "smartportApp/admin/incident-report-feed.html", {"page_obj": page_obj})
+
+  return render(request, "smartportApp/shipper/incident-report-feed.html", {"page_obj": page_obj})
 
 # --------------------  END OF TEMPLATES --------------------
 
@@ -432,7 +494,6 @@ import logging
 from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
 
-from . views import create_notification
 
 # helper method for bulk creation of notification
 def create_notification_bulk(recipients, title, message, link_url="", triggered_by=None):
@@ -515,12 +576,6 @@ def process_shipment_submission(request):
       'error': 'An unexpected error occurred. Please try again.'
     }, status=500)
   
-
-# TODO: notify admins if a submanifest is added
-def notify_admins_new_submanifest(submanifest, shipper_user, document_count):
-  """
-  Notify all admin users about a new submanifest submission
-  """
 
 
 
@@ -794,3 +849,8 @@ def document_upload_path_with_duplicates(instance, filename):
   
   # Handle duplicates
   return handle_duplicate_filenames(base_path)
+
+
+# --------------- INCIDENT FEED ---------------
+
+

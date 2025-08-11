@@ -1,9 +1,8 @@
-<!-- prettier-ignore -->
-{% extends "smartportApp/admin/admin-base.html" %}
+{% extends "smartportApp/shipper/shipper-base.html" %}
 <!---->
 {% load static %}
 <!---->
-{% block title %} Incident Report Feed {% endblock %}
+{% block title %} Shipper Incident Feed {% endblock %}
 <!---->
 {% block head %}
 
@@ -41,13 +40,13 @@
       </a>
     </li>
     <li class="nav-item">
-      <a href="{% url 'submit-shipment-view' %}" class="nav-link active">
+      <a href="{% url 'submit-shipment-view' %}" class="nav-link">
         <i class="fas fa-upload"></i>
         <span>Submit Shipment</span>
       </a>
     </li>
     <li class="nav-item">
-      <a href="#" class="nav-link">
+      <a href="#" class="nav-link active">
         <i class="fas fa-chart-bar"></i>
         <span>Incident Feed</span>
       </a>
@@ -108,104 +107,109 @@
       </div>
     </div>
 
-<div class="incident-feed-container" id="incidentFeed">
-  <div id="feedLoader" class="loader" style="display: none">
-    <div class="spinner"></div>
-  </div>
-
-  {% for incident in page_obj %}
-    <div class="incident-card" data-card-id="{{ incident.incident_id }}">
-      <!-- Header -->
-      <div class="incident-header">
-        <div>
-          <strong>Incident Type:</strong>
-          {{ incident.get_incident_type_display }}
-        </div>
-        <div>
-          <strong>Impact Level:</strong>
-          <span class="impact-badge impact-{{ incident.impact_level|lower }}">
-            {{ incident.get_impact_level_display }}
-          </span>
-        </div>
+    <div class="incident-feed-container" id="incidentFeed">
+      <div id="feedLoader" class="loader" style="display: none">
+        <div class="spinner"></div>
       </div>
 
-      <!-- Image Carousel -->
-      {% if incident.images.count %}
+      {% for incident in page_obj %}
+      <div class="incident-card" data-card-id="{{ incident.incident_id }}">
+        <!-- Header -->
+        <div class="incident-header">
+          <div>
+            <strong>Incident Type:</strong>
+            {{ incident.get_incident_type_display }}
+          </div>
+          <div>
+            <strong>Impact Level:</strong>
+            <span class="impact-badge impact-{{ incident.impact_level|lower }}">
+              {{ incident.get_impact_level_display }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Image Carousel -->
+        {% if incident.images.count %}
         <div class="incident-image-carousel">
-          <button class="carousel-btn left-btn"><i class="fas fa-chevron-left"></i></button>
+          <button class="carousel-btn left-btn">
+            <i class="fas fa-chevron-left"></i>
+          </button>
 
           <div class="incident-image-container">
             {% for image in incident.images.all %}
-              <img
-                src="{{ image.image.url }}"
-                alt="Incident Image"
-                class="incident-image {% if forloop.first %}active{% endif %}"
-              />
+            <img
+              src="{{ image.image.url }}"
+              alt="Incident Image"
+              class="incident-image {% if forloop.first %}active{% endif %}"
+            />
             {% endfor %}
           </div>
 
           {% if incident.images.count > 1 %}
-            <button class="carousel-btn right-btn"><i class="fas fa-chevron-right"></i></button>
+          <button class="carousel-btn right-btn">
+            <i class="fas fa-chevron-right"></i>
+          </button>
           {% endif %}
         </div>
 
         {% if incident.images.count > 1 %}
-          <div class="carousel-dots">
-            {% for _ in incident.images.all %}
-              <span class="dot {% if forloop.first %}active{% endif %}"></span>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% else %}
-        {% if forloop.counter <= 2 %}
-          <div class="incident-image-carousel no-image">
-            <div class="incident-image-container">
-              <div class="no-image-placeholder">
-                <i class="fas fa-image"></i>
-                <span>No image available</span>
-              </div>
+        <div class="carousel-dots">
+          {% for _ in incident.images.all %}
+          <span class="dot {% if forloop.first %}active{% endif %}"></span>
+          {% endfor %}
+        </div>
+        {% endif %} {% else %} {% if forloop.counter <= 2 %}
+        <div class="incident-image-carousel no-image">
+          <div class="incident-image-container">
+            <div class="no-image-placeholder">
+              <i class="fas fa-image"></i>
+              <span>No image available</span>
             </div>
           </div>
-        {% endif %}
-      {% endif %}
+        </div>
+        {% endif %} {% endif %}
 
-      <!-- Metadata -->
-      <div class="incident-meta">
-        <p><strong>Date:</strong> {{ incident.created_at|date:"F d, Y" }}</p>
-        <p><strong>Reporter:</strong> {{ incident.reporter.first_name }} {{ incident.reporter.last_name }}</p>
-        <p><strong>Vessel:</strong> {{ incident.vessel.name|default:"—" }}</p>
-        <p><strong>Location:</strong> {{ incident.location }}</p>
-      </div>
+        <!-- Metadata -->
+        <div class="incident-meta">
+          <p><strong>Date:</strong> {{ incident.created_at|date:"F d, Y" }}</p>
+          <p>
+            <strong>Reporter:</strong> {{ incident.reporter.first_name }}
+            <!---->
+            {{ incident.reporter.last_name }}
+          </p>
+          <p><strong>Vessel:</strong> {{ incident.vessel.name|default:"—" }}</p>
+          <p><strong>Location:</strong> {{ incident.location }}</p>
+        </div>
 
-      <!-- Description -->
-      <div class="incident-description">
-        <p><strong>Description:</strong> {{ incident.description }}</p>
-      </div>
+        <!-- Description -->
+        <div class="incident-description">
+          <p><strong>Description:</strong> {{ incident.description }}</p>
+        </div>
 
-      <!-- Actions -->
-      <div class="incident-actions">
-        {% if incident.is_approved %}
+        <!-- Actions -->
+        <div class="incident-actions">
+          {% if incident.is_approved %}
+          <!---->
           {% if incident.status == 'resolved' %}
-            <span class="status-label resolved">
-              <i class="fas fa-check-circle"></i> Resolved
-            </span>
+          <span class="status-label resolved">
+            <i class="fas fa-check-circle"></i> Resolved
+          </span>
           {% else %}
-            <select class="status-dropdown">
-              <option value="pending" {% if incident.status == 'pending' %}selected{% endif %}>Under Review</option>
-              <option value="resolved">Resolved</option>
-            </select>
+          <span class="status-label unresolved">
+            <i class="fas fa-exclamation-triangle"></i>
+            Unresolved
+          </span>
           {% endif %}
-        {% else %}
-          <a class="btn btn-approve"><i class="fas fa-check"></i>Approve</a>
-          <a class="btn btn-decline"><i class="fa-solid fa-xmark"></i> Decline</a>
-        {% endif %}
+          <!---->
+          {% else %}
+          <!---->
+          {% endif %}
+        </div>
       </div>
+      {% empty %}
+      <p class="no-results">No incident reports to show.</p>
+      {% endfor %}
     </div>
-  {% empty %}
-    <p class="no-results">No incident reports to show.</p>
-  {% endfor %}
-</div>
-
   </div>
 </div>
 <!-- FULL SCREEN IMAGE VIEW -->
@@ -356,5 +360,6 @@
 
 {% endblock %} {% block script %}
 <!-- <script src="{% static 'admin/js/incident-report-feed-scroll.js' %}"></script> -->
-<script src="{% static 'admin/js/incident-report-feed.js' %}"></script>
+<!--reuse admin logic-->
+<script src="{% static 'shipper/js/incident-report-feed.js' %}"></script>
 {% endblock %}

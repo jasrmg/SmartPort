@@ -1,3 +1,6 @@
+const NOTIFICATION_BASE_OFFSET = 2.2;
+const NOTIFICATION_HEIGHT = 7.0;
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("hello world!");
 
@@ -42,6 +45,48 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   /**
+   * Plays a notification sound: implement only if needed
+   */
+  const playNotificationSound = () => {
+    try {
+      // Create audio element for notification sound
+      const audio = new Audio(
+        "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmAaCkSW2eXBfSsPF2gWCwAA=="
+      );
+      audio.volume = 1; // Adjust volume as needed
+      audio
+        .play()
+        .catch((e) => console.log("Could not play notification sound:", e));
+    } catch (e) {
+      console.log("Could not create notification sound:", e);
+    }
+  };
+
+  /**
+   * Calculates the proper position for a new notification
+   * @returns {number} - The bottom position in rem
+   */
+  const calculateNotificationPosition = () => {
+    const existingNotifs = document.querySelectorAll(".floating-notification");
+    return (
+      NOTIFICATION_BASE_OFFSET + existingNotifs.length * NOTIFICATION_HEIGHT
+    );
+  };
+
+  /**
+   * Updates positions of all existing notifications
+   * Called when a notification is removed to reposition remaining ones
+   */
+  const updateNotificationPositions = () => {
+    const notifications = document.querySelectorAll(".floating-notification");
+    notifications.forEach((notification, index) => {
+      const newBottom = NOTIFICATION_BASE_OFFSET + index * NOTIFICATION_HEIGHT;
+      notification.style.bottom = `${newBottom}rem`;
+      notification.style.transition = "bottom 0.3s ease";
+    });
+  };
+
+  /**
    * Displays newly received notifications as floating containers on the UI.
    * Each container disappears after 5 seconds.
    * @param {Array} notifications - Array of notification objects.
@@ -66,13 +111,21 @@ document.addEventListener("DOMContentLoaded", () => {
       // Mark as shown
       shownNotificationIds.add(notification.notification_id);
 
+      // Play notification sound: implement if needed
+      // playNotificationSound();
+
       const container = document.createElement("div");
       container.classList.add("floating-notification");
+      container.dataset.notificationId = notification.notification_id;
+
+      // Calculate position dynamically
+      const bottomPosition = calculateNotificationPosition();
+      container.style.bottom = `${bottomPosition}rem`;
 
       // Dynamically offset to stack
-      container.style.bottom = `calc(${baseOffset}rem + ${
-        existingNotifs.length * spacing + index * spacing
-      }rem)`;
+      // container.style.bottom = `calc(${baseOffset}rem + ${
+      //   existingNotifs.length * spacing + index * spacing
+      // }rem)`;
 
       console.log("Notification data:", notification);
 
@@ -103,6 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setTimeout(() => {
           container.remove();
+          // Update positions of remaining notifications
+          updateNotificationPositions();
           // Clean up from shown notifications set after a longer delay
           // to prevent re-showing the same notification too quickly
           setTimeout(() => {

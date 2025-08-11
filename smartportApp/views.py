@@ -15,6 +15,9 @@ from django.db.models import Case, When, IntegerField
 
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
 
+# import the helper functions
+from smartportApp.utils.utils import serialize_incident, create_notification, determine_impact_level, with_approval_priority
+
 # Create your views here.
 
 @login_required
@@ -499,15 +502,6 @@ def report_feed_view(request):
   return render(request, "smartportApp/admin/incident-report-feed.html", {"page_obj": page_obj})
 
 
-# helper for the filter annotation:
-def with_approval_priority(queryset):
-  return queryset.annotate(
-    approval_priority=Case(
-      When(is_approved=False, then=0),
-      default=1,
-      output_field=IntegerField()
-    )
-  )
 
 
 # -------------------- END OF ADMIN TEMPLATES --------------------
@@ -1431,7 +1425,9 @@ def check_master_manifest(request, voyage_id):
     return JsonResponse({"error": "Voyage not found"}, status=404)
 
 # =========== REPORT ===========
-# UPLOAD INCIDENT REPORT
+# UPLOAD INCIDENT REPORT(ADMIN, SHIPPER, EMPLOYEE)
+from . views_shipper import create_notification_bulk
+from django.urls import reverse
 def submit_incident_report(request):
   if request.method != "POST":
     return JsonResponse({"error": "Invalid method"}, status=405)
@@ -1489,6 +1485,18 @@ def submit_incident_report(request):
         user_profile=user
       )
 
+    # === NOTIFY ADMINS if reporter is not admin ===
+    if not is_admin:
+      admin_users = UserProfile.objects.filter(role='admin')
+      incident_link = reverse('report-feed')
+      create_notification_bulk(
+        recipients=admin_users,
+        title="New Incident Report Submitted",
+        message=f"{user.first_name} {user.last_name} reported an incident: {incident.get_incident_type_display()} at {location}.",
+        link_url=incident_link,
+        triggered_by=user
+      )
+
     # === Build incident response data ===
     image_data = []
     for img in incident.images.all():
@@ -1526,36 +1534,9 @@ def submit_incident_report(request):
     return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
 
 
-# HELPER FUNCTION FOR THE INCIDENT REPORT VIEW:
-def serialize_incident(incident):
-  return {
-    "incident_id": incident.incident_id,
-    "incident_type_display": incident.get_incident_type_display(),
-    "impact_level": incident.impact_level,
-    "impact_level_display": incident.get_impact_level_display(),
-    "created_at": incident.created_at.strftime("%B %d, %Y"),
-    "reporter_name": f"{incident.reporter.first_name} {incident.reporter.last_name}",
-    "vessel_name": incident.vessel.name if incident.vessel else None,
-    "location": incident.location,
-    "description": incident.description,
-    "is_approved": incident.is_approved,
-    "status": incident.status,
-    "images": [{"url": img.image.url} for img in incident.images.all()],
-  }
-
-# HELPER FUNCTION FOR THE SYSTEM GENERATED IMPACT LEVEL:
-def determine_impact_level(incident_type, description=""):
-  high_impact = {"collision", "fire", "capsizing", "grounding", "oil_spill"}
-  medium_impact = {"human_error", "slip_trip_fall"}
-
-  if incident_type in high_impact:
-    return "high"
-  elif incident_type in medium_impact:
-    return "medium"
-  return "low"
 
 
-# APPROVE INCIDENT
+# APPROVE INCIDENT(ADMIN)
 @require_POST
 @login_required
 def approve_incident(request, incident_id):
@@ -1576,19 +1557,41 @@ def approve_incident(request, incident_id):
         created_by=request.user.userprofile
       )
 
+    # Send notification to the reporter
+    create_notification(
+      user=incident.reporter,
+      title="Incident Report Approved",
+      message=f"Your incident report at {incident.location} has been approved by the admin.",
+      link_url=reverse("incident-feed"),
+      triggered_by=request.user.userprofile
+    )
+
     return JsonResponse({'success': True})
   except IncidentReport.DoesNotExist:
     return JsonResponse({'success': False, 'error': 'Incident not found'})
   except Exception as e:
     return JsonResponse({'success': False, 'error': str(e)})
   
-# REJECT INCIDENT
+# REJECT INCIDENT(ADMIN)
 @require_POST
 @login_required
 def decline_incident(request, incident_id):
   try:
     incident = IncidentReport.objects.get(pk=incident_id)
+
+    reporter = incident.reporter
+    location = incident.location
+
     incident.delete()
+    print("incident deleted")
+    # Send notification to the reporter
+    create_notification(
+      user=reporter,
+      title="Incident Report Declined",
+      message=f"Your incident report at {location} was declined by the admin.",
+      triggered_by=request.user.userprofile
+    )
+
     return JsonResponse({'success': True})
   except IncidentReport.DoesNotExist:
     return JsonResponse({'success': False, 'error': 'Incident not found'})
@@ -1597,7 +1600,7 @@ def decline_incident(request, incident_id):
 
 
 from django.db import transaction
-# RESOLVE INCIDENT
+# RESOLVE INCIDENT(ADMIN)
 @csrf_exempt
 def resolve_incident(request, incident_id):
   if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -1682,28 +1685,6 @@ def parse_manifest_page(page_obj):
   return parsed_voyages
 
 
-# NOTIFICATION HELPER:
-def create_notification(user, title, message, link_url=None, triggered_by=None):
-  """
-  Creates a new in-app notification.
-  
-  Parameters:
-  - user: UserProfile instance (recipient)
-  - title: Short title for the notification
-  - message: Detailed message content
-  - link_url: Optional frontend route (e.g., /submanifest/123/)
-  - triggered_by: Optional UserProfile (admin, shipper, etc. who triggered it)
-  """
-  if not isinstance(user, UserProfile):
-    raise ValueError("Expected `user` to be an instance of UserProfile")
-  
-  Notification.objects.create(
-    user=user,
-    title=title,
-    message=message,
-    link_url=link_url or "",
-    triggered_by=triggered_by
-  )
 
 
 
