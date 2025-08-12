@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Notification clicked:", notification);
 
         if (notification.link_url && notification.link_url.trim() !== "") {
-          window.location.href = notification.link_url;
+          window.open(notification.link_url, "_blank", "noopener,noreferrer");
         } else {
           // Default behavior for shipper notifications
           window.location.href = "/shipper-dashboard/"; // or whatever page you want
@@ -287,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
         if (notif.link_url) {
           li.addEventListener("click", () => {
-            window.location.href = notif.link_url;
+            window.open(notif.link_url, "_blank", "noopener,noreferrer");
           });
         }
         notifList.appendChild(li);
