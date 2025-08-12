@@ -167,6 +167,23 @@ def shipper_submit_shipment_view(request):
   }
   return render(request, "smartportApp/shipper/submit-shipment.html", context)
 
+def edit_submit_shipment(request, submanifest_id):
+  submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
+  cargos = Cargo.objects.filter(submanifest=submanifest)
+  voyages = Voyage.objects.select_related("departure_port", "arrival_port", "vessel") \
+  .filter(status=Voyage.VoyageStatus.ASSIGNED) \
+  .order_by("departure_date")
+
+  print("CARGOS: ", cargos)
+  print("SUBMANIFEST: ", submanifest)
+  context = {
+    "submanifest": submanifest,
+    "cargos": cargos,
+    "voyages": voyages
+  }
+  return render(request, "smartportApp/shipper/edit-shipment.html", context)
+
+
 # reused admin logic for the incident feed view:
 from django.db.models import F, Q
 from django.db.models import Case, When, IntegerField
@@ -852,5 +869,5 @@ def document_upload_path_with_duplicates(instance, filename):
 
 
 # --------------- INCIDENT FEED ---------------
-
+# giusa ra ug logic sa admin side
 

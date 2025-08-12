@@ -114,6 +114,8 @@ urlpatterns = [
   path('clearance/<int:submanifest_id>/', views_shipper.custom_clearance_view, name='custom_clearance'),
   # SUBMIT SHIPMENT
   path("submit-shipment/", views_shipper.submit_shipment, name="submit-shipment"),
+  # EDIT SHIPMENT
+  path("edit/submit-shipment/<int:submanifest_id>/", views_shipper.edit_submit_shipment, name="edit-submit-shipment"),
 
 
   # -------------------------------- EMPLOYEE USING DIFFERENT VIEW --------------------------------
