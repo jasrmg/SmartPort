@@ -925,6 +925,16 @@ def delete_document(request, document_id):
   except Document.DoesNotExist:
     return JsonResponse({"error": "Document not found"}, status=404)
 
+def delete_cargo(request, cargo_id):
+  try:
+    cargo = Cargo.objects.get(cargo_id=cargo_id, submanifest__created_by__user=request.user)
+    cargo.delete()
+    return JsonResponse({'success': True, 'message': 'Cargo deleted successfully'})
+  except Cargo.DoesNotExist:
+    return JsonResponse({'success': False, 'error': 'Cargo not found'}, status=404)
+  except Exception as e:
+    return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 # --------------- INCIDENT FEED ---------------
 # giusa ra ug logic sa admin side
 
