@@ -427,98 +427,59 @@
 
     <!-- Document Cards Section -->
     <div class="document-types">
-      <!-- BILL OF LADING -->
-      <div
-        class="document-type-card"
-        id="billOfLadingCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-file-alt document-type-icon"></i>
-        <div class="document-type-title">Bill of Lading</div>
-        <div class="document-type-desc">
-          Transport document that serves as a receipt of goods, evidence of the
-          contract of carriage, and a document of title.
-        </div>
-        <div class="uploaded-file-name" id="billOfLadingFileName"></div>
-        <div class="file-preview-area" id="billOfLadingPreview"></div>
-      </div>
-      <!-- INVOICE -->
-      <div
-        class="document-type-card"
-        id="commercialInvoiceCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-file-invoice-dollar document-type-icon"></i>
-        <div class="document-type-title">Commercial Invoice</div>
-        <div class="document-type-desc">
-          Document containing details of the sale transaction including item,
-          quantity, and value.
-        </div>
-        <div class="uploaded-file-name" id="commercialInvoiceFileName"></div>
-        <div class="file-preview-area" id="commercialInvoicePreview"></div>
-      </div>
+      {% for doc_type in document_data %}
+        <div class="document-type-card {% if doc_type.key == 'others' %}others-card{% endif %}"
+            id="{{ doc_type.key|slugify }}Card"
+            style="cursor: pointer">
+          
+          <i class="{{ doc_type.icon }} document-type-icon"></i>
+          <div class="document-type-title">{{ doc_type.title }}</div>
+          <div class="document-type-desc">{{ doc_type.desc }}</div>
 
-      <!-- PACKING LIST -->
-      <div
-        class="document-type-card"
-        id="packingListCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-list-ol document-type-icon"></i>
-        <div class="document-type-title">Packing List</div>
-        <div class="document-type-desc">
-          Document detailing the contents of a shipment, including item counts,
-          dimensions, and weights.
-        </div>
-        <div class="uploaded-file-name" id="packingListFileName"></div>
-        <div class="file-preview-area" id="packingListPreview"></div>
-      </div>
+          {# === FILE NAME AREA === #}
+          <div class="uploaded-file-name" id="{{ doc_type.key|slugify }}FileName">
+            {% if doc_type.docs %}
+              {% for doc in doc_type.docs %}
+                {{ doc.file_name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            {% endif %}
+          </div>
 
-      <!-- CERTIFICATE OF ORIGIN -->
-      <div
-        class="document-type-card"
-        id="certificateOriginCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-certificate document-type-icon"></i>
-        <div class="document-type-title">Certificate of Origin</div>
-        <div class="document-type-desc">
-          Document certifying the country of origin of the goods being shipped.
-        </div>
-        <div class="uploaded-file-name" id="certificateOriginFileName"></div>
-        <div class="file-preview-area" id="certificateOriginPreview"></div>
-      </div>
-      <!-- OTHERS -->
-      <div
-        class="document-type-card others-card"
-        id="othersCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-ellipsis-h document-type-icon"></i>
-        <div class="document-type-title">Upload Other Documents</div>
-        <div class="document-type-desc">
-          Other supporting documents as required for the shipment.
-        </div>
-        <div class="uploaded-file-name" id="othersFileName"></div>
-        <div class="file-preview-area" id="othersPreview"></div>
-      </div>
+          {# === FILE PREVIEW AREA === #}
+          <div class="file-preview-area" id="{{ doc_type.key|slugify }}Preview">
+            {% if doc_type.docs %}
+              {% for doc in doc_type.docs %}
+                <div class="file-preview-wrapper">
+                  
+                  {% if doc.file.url|lower|slice:"-4:" == ".jpg" or doc.file.url|lower|slice:"-5:" == ".jpeg" or doc.file.url|lower|slice:"-4:" == ".png" %}
+                    <img src="{{ doc.file.url }}" class="file-preview-image" alt="Document preview">
+                  {% elif doc.file.url|lower|slice:"-4:" == ".pdf" %}
+                    <i class="fas fa-file-pdf pdf-icon"></i>
+                  {% elif doc.file.url|lower|slice:"-4:" == ".doc" or doc.file.url|lower|slice:"-5:" == ".docx" %}
+                    <i class="fas fa-file-word word-icon"></i>
+                  {% elif doc.file.url|lower|slice:"-4:" == ".txt" %}
+                    <i class="fas fa-file-alt txt-icon"></i>
+                  {% else %}
+                    <i class="fas fa-file file-icon"></i>
+                  {% endif %}
 
-      <input type="file" name="bill_of_lading" id="billOfLadingInput" hidden />
-      <input
-        type="file"
-        name="commercial_invoice"
-        id="commercialInvoiceInput"
-        hidden
-      />
-      <input type="file" name="packing_list" id="packingListInput" hidden />
-      <input
-        type="file"
-        name="certificate_origin"
-        id="certificateOriginInput"
-        hidden
-      />
-      <input type="file" name="other_documents" id="othersInput" hidden />
+                  <span class="file-name-label">{{ doc.original_filename }}</span>
+                  <button type="button" class="remove-preview-btn" title="Remove file">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+
+        </div>
+
+        {# FILE INPUT — hidden but connected to JS preview #}
+        <input type="file" name="{{ doc_type.key }}" id="{{ doc_type.key|slugify }}Input" hidden>
+      {% endfor %}
     </div>
+
+
     
     <!-- Submit Button -->
     <div style="display: flex; justify-content: end">

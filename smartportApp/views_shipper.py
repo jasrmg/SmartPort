@@ -167,7 +167,12 @@ def shipper_submit_shipment_view(request):
   }
   return render(request, "smartportApp/shipper/submit-shipment.html", context)
 
+"""
+POST: Process all updates for the shipment
+GET: Display the form with the existing data
+"""
 def edit_submit_shipment(request, submanifest_id):
+
   submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
   cargos = Cargo.objects.filter(submanifest=submanifest)
   voyages = Voyage.objects.select_related("departure_port", "arrival_port", "vessel") \
@@ -175,20 +180,50 @@ def edit_submit_shipment(request, submanifest_id):
   .order_by("departure_date")
 
   documents = submanifest.documents.all()  # fetch related docs
+  
   documents_by_type = {}
+
   for doc in documents:
     doc_type = doc.document_type
-    if doc_type not in documents_by_type:
-      documents_by_type[doc_type] = []
-    documents_by_type[doc_type].append(doc)
+    documents_by_type.setdefault(doc_type, []).append(doc)
 
-  print("CARGOS: ", cargos)
-  print("SUBMANIFEST: ", submanifest)
+    # Define document types with merged docs
+    document_data = []
+
+    # Normal single-card types
+    for key, title, icon, desc in [
+        ("bill_of_lading", "Bill of Lading", "fas fa-file-alt",
+         "Transport document that serves as a receipt of goods, evidence of the contract of carriage, and a document of title"),
+        ("invoice", "Commercial Invoice", "fas fa-file-invoice-dollar",
+         "Document containing details of the sale transaction including item, quantity, and value"),
+        ("packing_list", "Packing List", "fas fa-list-ol",
+         "Document detailing the contents of a shipment, including item counts, dimensions, and weights"),
+        ("certificate_of_origin", "Certificate Of Origin", "fas fa-certificate",
+         "Document certifying the country of origin of the goods being shipped"),
+    ]:
+        document_data.append({
+            "key": key,
+            "title": title,
+            "icon": icon,
+            "desc": desc,
+            "docs": documents_by_type.get(key, [])
+        })
+
+    # For "other" → one card per document
+    for idx, doc in enumerate(documents_by_type.get("other", []), start=1):
+        document_data.append({
+            "key": f"other_{idx}",  # unique key per card
+            "title": f"Other Document",
+            "icon": "fas fa-ellipsis-h",
+            "desc": "Supporting document for shipment.",
+            "docs": [doc]  # single doc per card
+        })
+
   context = {
     "submanifest": submanifest,
     "cargos": cargos,
     "voyages": voyages,
-    "documents_by_type": documents_by_type,
+    "document_data": document_data,
   }
   return render(request, "smartportApp/shipper/edit-shipment.html", context)
 
