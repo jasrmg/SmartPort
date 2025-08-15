@@ -2,8 +2,6 @@ const NOTIFICATION_BASE_OFFSET = 2.2;
 const NOTIFICATION_HEIGHT = 7.0;
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("hello world!");
-
   /**
    * Polls the backend for recent unread notifications.
    * Updates the UI with floating notifications and unread badge count.
@@ -20,8 +18,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((res) => res.json())
       .then((data) => {
         updateNotificationBadge(data.unread_count);
-        console.log("unread: ", data.unread_count);
-        console.log("Debug info:", data.debug_info);
         showFloatingNotifications(data.notifications);
       })
       .catch((error) => {
@@ -98,8 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const showFloatingNotifications = (notifications) => {
     if (!notifications || notifications.length === 0) return;
 
-    console.log("floating notif");
-
     const existingNotifs = document.querySelectorAll(".floating-notification");
     const baseOffset = 2.2;
     const spacing = 4.5;
@@ -127,8 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
       //   existingNotifs.length * spacing + index * spacing
       // }rem)`;
 
-      console.log("Notification data:", notification);
-
       container.innerHTML = `
       <div class="notification-content">
         <div class="avatar-section">
@@ -143,8 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
       container.onclick = () => {
-        console.log("Notification clicked:", notification);
-
         if (notification.link_url && notification.link_url.trim() !== "") {
           window.open(notification.link_url, "_blank", "noopener,noreferrer");
         } else {
@@ -236,8 +226,6 @@ document.addEventListener("DOMContentLoaded", () => {
       notifList.querySelectorAll(".unread").forEach((item) => {
         item.classList.remove("unread");
       });
-
-      console.log("Notifications marked as read");
     } catch (err) {
       console.error("Failed to mark notifications as read:", err);
     }

@@ -476,6 +476,98 @@
 
         {# FILE INPUT — hidden but connected to JS preview #}
         <input type="file" name="{{ doc_type.key }}" id="{{ doc_type.key|slugify }}Input" hidden>
+        {% empty %}
+              <!-- BILL OF LADING -->
+      <div
+        class="document-type-card"
+        id="billOfLadingCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-file-alt document-type-icon"></i>
+        <div class="document-type-title">Bill of Ladings</div>
+        <div class="document-type-desc">
+          Transport document that serves as a receipt of goods, evidence of the
+          contract of carriage, and a document of title.
+        </div>
+        <div class="uploaded-file-name" id="billOfLadingFileName"></div>
+        <div class="file-preview-area" id="billOfLadingPreview"></div>
+      </div>
+      <!-- INVOICE -->
+      <div
+        class="document-type-card"
+        id="commercialInvoiceCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-file-invoice-dollar document-type-icon"></i>
+        <div class="document-type-title">Commercial Invoice</div>
+        <div class="document-type-desc">
+          Document containing details of the sale transaction including item,
+          quantity, and value.
+        </div>
+        <div class="uploaded-file-name" id="commercialInvoiceFileName"></div>
+        <div class="file-preview-area" id="commercialInvoicePreview"></div>
+      </div>
+
+      <!-- PACKING LIST -->
+      <div
+        class="document-type-card"
+        id="packingListCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-list-ol document-type-icon"></i>
+        <div class="document-type-title">Packing List</div>
+        <div class="document-type-desc">
+          Document detailing the contents of a shipment, including item counts,
+          dimensions, and weights.
+        </div>
+        <div class="uploaded-file-name" id="packingListFileName"></div>
+        <div class="file-preview-area" id="packingListPreview"></div>
+      </div>
+
+      <!-- CERTIFICATE OF ORIGIN -->
+      <div
+        class="document-type-card"
+        id="certificateOriginCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-certificate document-type-icon"></i>
+        <div class="document-type-title">Certificate of Origin</div>
+        <div class="document-type-desc">
+          Document certifying the country of origin of the goods being shipped.
+        </div>
+        <div class="uploaded-file-name" id="certificateOriginFileName"></div>
+        <div class="file-preview-area" id="certificateOriginPreview"></div>
+      </div>
+      <!-- OTHERS -->
+      <div
+        class="document-type-card others-card"
+        id="othersCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-ellipsis-h document-type-icon"></i>
+        <div class="document-type-title">Upload Other Documents</div>
+        <div class="document-type-desc">
+          Other supporting documents as required for the shipment.
+        </div>
+        <div class="uploaded-file-name" id="othersFileName"></div>
+        <div class="file-preview-area" id="othersPreview"></div>
+      </div>
+
+      <input type="file" name="bill_of_lading" id="billOfLadingInput" hidden />
+      <input
+        type="file"
+        name="commercial_invoice"
+        id="commercialInvoiceInput"
+        hidden
+      />
+      <input type="file" name="packing_list" id="packingListInput" hidden />
+      <input
+        type="file"
+        name="certificate_origin"
+        id="certificateOriginInput"
+        hidden
+      />
+      <input type="file" name="other_documents" id="othersInput" hidden />
       {% endfor %}
 
       <!-- OTHERS -->
@@ -587,5 +679,5 @@
 
 <!---->
 {% block script %}
-<!-- <script src="{% static 'shipper/js/submit-shipment.js' %}"></script> -->
+<script src="{% static 'shipper/js/edit-shipment.js' %}"></script>
 {% endblock %}

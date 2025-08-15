@@ -79,12 +79,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!pendingDocumentId || !pendingDocumentElement) return;
 
     showLoadingState();
-
     try {
-      const response = await fetch(`/delete-document/${pendingDocumentId}/`, {
+      const response = await fetch(`/documents/delete/${pendingDocumentId}/`, {
         method: "POST",
         headers: {
-          "X-CSRFToken": getCsrfToken(),
+          "X-CSRFToken": csrftoken,
           "Content-Type": "application/json",
         },
       });
@@ -92,30 +91,157 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // Remove the document element from DOM with animation
+        // Find the parent elements before removal
+        const previewArea =
+          pendingDocumentElement.closest(".file-preview-area");
+        const cardElement = pendingDocumentElement.closest(
+          ".document-type-card"
+        );
+
+        console.log("=== DELETION DEBUG START ===");
+        console.log("pendingDocumentElement:", pendingDocumentElement);
+        console.log("previewArea:", previewArea);
+        console.log("cardElement:", cardElement);
+        console.log(
+          "cardElement.id:",
+          cardElement ? cardElement.id : "NO CARD ELEMENT"
+        );
+
+        // Animate the document element removal
         pendingDocumentElement.style.opacity = "0";
         pendingDocumentElement.style.transform = "scale(0.8)";
         pendingDocumentElement.style.transition = "all 0.3s ease";
 
         setTimeout(() => {
-          pendingDocumentElement.remove();
+          console.log("About to remove document element");
 
-          // Check if the preview area is now empty
-          const previewArea =
-            pendingDocumentElement.closest(".file-preview-area");
-          if (previewArea && previewArea.children.length === 0) {
+          // Try multiple ways to remove the element
+          if (pendingDocumentElement && pendingDocumentElement.parentNode) {
+            pendingDocumentElement.parentNode.removeChild(
+              pendingDocumentElement
+            );
+            console.log(
+              "Document element removed using parentNode.removeChild"
+            );
+          } else if (pendingDocumentElement) {
+            pendingDocumentElement.remove();
+            console.log("Document element removed using element.remove()");
+          }
+
+          // Double-check by looking for elements in the preview area
+          const remainingElements = previewArea
+            ? previewArea.querySelectorAll(".file-preview-wrapper")
+            : [];
+          console.log(
+            "Remaining file-preview-wrapper elements:",
+            remainingElements.length
+          );
+
+          // Check if the preview area is now empty AFTER the element is removed
+          console.log(
+            "Preview area children count AFTER removal:",
+            previewArea ? previewArea.children.length : "NO PREVIEW AREA"
+          );
+
+          // Use both checks: children.length === 0 AND no file-preview-wrapper elements
+          if (
+            previewArea &&
+            (previewArea.children.length === 0 ||
+              remainingElements.length === 0)
+          ) {
+            console.log("Preview area is empty, processing card...");
+
             // Clear the filename container if it exists
-            const cardElement = previewArea.closest(".document-type-card");
             if (cardElement) {
+              console.log("Processing card element with ID:", cardElement.id);
+
               const fileNameContainer = cardElement.querySelector(
                 ".uploaded-file-name"
               );
               if (fileNameContainer) {
                 fileNameContainer.textContent = "";
+                console.log("Cleared filename container");
               }
               cardElement.classList.remove("has-existing-file");
+              console.log("Removed 'has-existing-file' class");
+
+              // Check if this is an "other" type card - if so, remove the entire card
+              const isOtherCard =
+                cardElement.id && cardElement.id.startsWith("other_");
+              console.log("Is other card?", isOtherCard);
+              console.log(
+                "Card ID starts with 'other_'?",
+                cardElement.id ? cardElement.id.startsWith("other_") : "NO ID"
+              );
+
+              if (isOtherCard) {
+                console.log("REMOVING OTHER CARD - Starting animation...");
+                // Remove the entire card for "other" type
+                setTimeout(() => {
+                  console.log("Applying removal styles to card");
+                  cardElement.style.opacity = "0";
+                  cardElement.style.transform = "scale(0.95)";
+                  cardElement.style.transition = "all 0.2s ease";
+
+                  setTimeout(() => {
+                    console.log("Removing card from DOM");
+                    cardElement.remove();
+                    console.log("Card removed successfully");
+                  }, 200);
+                }, 100);
+              } else {
+                console.log("NOT an other card - keeping card for new uploads");
+              }
+              // For non-other cards, keep the card but make it clickable for new uploads
+            } else {
+              console.log("NO CARD ELEMENT FOUND!");
+            }
+          } else {
+            console.log("Preview area still has children or doesn't exist");
+            if (previewArea) {
+              console.log("Remaining children:", previewArea.children);
+              // Force remove any remaining file-preview-wrapper elements
+              const wrappers = previewArea.querySelectorAll(
+                ".file-preview-wrapper"
+              );
+              console.log(
+                "Found",
+                wrappers.length,
+                "file-preview-wrapper elements to remove"
+              );
+              wrappers.forEach((wrapper, index) => {
+                console.log(`Forcing removal of wrapper ${index}:`, wrapper);
+                wrapper.remove();
+              });
+
+              // Check again after force removal
+              setTimeout(() => {
+                console.log(
+                  "After force removal - children count:",
+                  previewArea.children.length
+                );
+                if (
+                  previewArea.children.length === 0 &&
+                  cardElement &&
+                  cardElement.id &&
+                  cardElement.id.startsWith("other_")
+                ) {
+                  console.log(
+                    "FORCE REMOVING OTHER CARD after cleaning wrappers"
+                  );
+                  cardElement.style.opacity = "0";
+                  cardElement.style.transform = "scale(0.95)";
+                  cardElement.style.transition = "all 0.2s ease";
+
+                  setTimeout(() => {
+                    cardElement.remove();
+                    console.log("Card force removed successfully");
+                  }, 200);
+                }
+              }, 50);
             }
           }
+          console.log("=== DELETION DEBUG END ===");
         }, 300);
 
         // Show success message
@@ -143,28 +269,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Helper function to get CSRF token
-  function getCsrfToken() {
-    const token = document.querySelector("[name=csrfmiddlewaretoken]");
-    if (token) {
-      return token.value;
+  const showToast = (msg, isError = false, duration = 2500) => {
+    const toast = document.createElement("div");
+    toast.className = `custom-toast ${isError ? "error" : ""}`;
+    toast.textContent = msg;
+
+    let container = document.getElementById("toast-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "toast-container";
+      document.body.appendChild(container);
     }
 
-    // Alternative: get from cookie
-    const cookies = document.cookie.split(";");
-    for (let cookie of cookies) {
-      const [name, value] = cookie.trim().split("=");
-      if (name === "csrftoken") {
-        return value;
-      }
-    }
+    container.appendChild(toast);
 
-    // Alternative: get from meta tag (if you have it)
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    if (meta) {
-      return meta.getAttribute("content");
-    }
-
-    return "";
-  }
+    setTimeout(() => {
+      toast.classList.add("fade-out");
+      toast.addEventListener("transitionend", () => toast.remove());
+    }, duration);
+  };
 });

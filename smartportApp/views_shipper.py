@@ -183,12 +183,14 @@ def edit_submit_shipment(request, submanifest_id):
   
   documents_by_type = {}
 
+  # Define document types with merged docs
+  document_data = []
+
   for doc in documents:
     doc_type = doc.document_type
     documents_by_type.setdefault(doc_type, []).append(doc)
 
-    # Define document types with merged docs
-    document_data = []
+    
 
     # Normal single-card types
     for key, title, icon, desc in [
