@@ -477,6 +477,21 @@
         {# FILE INPUT — hidden but connected to JS preview #}
         <input type="file" name="{{ doc_type.key }}" id="{{ doc_type.key|slugify }}Input" hidden>
       {% endfor %}
+
+      <!-- OTHERS -->
+      <div
+        class="document-type-card others-card"
+        id="othersCard"
+        style="cursor: pointer"
+      >
+        <i class="fas fa-ellipsis-h document-type-icon"></i>
+        <div class="document-type-title">Upload Other Documents</div>
+        <div class="document-type-desc">
+          Other supporting documents as required for the shipment.
+        </div>
+        <div class="uploaded-file-name" id="othersFileName"></div>
+        <div class="file-preview-area" id="othersPreview"></div>
+      </div>
     </div>
 
 
