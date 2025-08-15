@@ -336,6 +336,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Track the highest existing cargo number on page load
   let highestCargoNumber = 0;
 
+  // Helper function to mark cargo entries with database status
+  const markCargoStatus = (cargoElement, isNew = true) => {
+    if (isNew) {
+      cargoElement.classList.add("cargo-new");
+      // Don't set data-cargo-id for new entries
+    } else {
+      cargoElement.classList.add("cargo-existing");
+      // Existing entries should already have data-cargo-id from backend
+    }
+  };
+
   // Initialize cargo numbering - find the highest existing number
   const initializeCargoNumbering = () => {
     document.querySelectorAll(".cargo-entry").forEach((entry) => {
@@ -489,26 +500,62 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Confirm cargo delete button
   if (confirmCargoBtn) {
-    confirmCargoBtn.addEventListener("click", () => {
+    confirmCargoBtn.addEventListener("click", async () => {
       console.log("Confirming cargo deletion");
 
       if (cargoToDelete) {
         showCargoLoadingState();
 
-        // Add a small delay to show the loading state
-        setTimeout(() => {
-          cargoToDelete.style.opacity = "0";
-          cargoToDelete.style.transform = "scale(0.95)";
-          cargoToDelete.style.transition = "all 0.3s ease";
+        try {
+          // Check if this cargo has an ID (exists in database)
+          const cargoId =
+            cargoToDelete.dataset.cargoId ||
+            cargoToDelete.querySelector("[data-cargo-id]")?.dataset.cargoId;
 
+          if (cargoId) {
+            console.log("Deleting cargo from database, ID:", cargoId);
+
+            // Make API call to delete from database
+            const response = await fetch(`/cargo/delete/${cargoId}/`, {
+              method: "DELETE", // or 'POST' depending on your backend
+              headers: {
+                "X-CSRFToken": csrftoken,
+                "Content-Type": "application/json",
+              },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+              throw new Error(
+                result.error || "Failed to delete cargo from database"
+              );
+            }
+
+            console.log("Cargo successfully deleted from database");
+          } else {
+            console.log("Cargo is new (not in database), skipping API call");
+          }
+
+          // Animate and remove from DOM
           setTimeout(() => {
-            cargoToDelete.remove();
-            renumberAfterDeletion(); // Use special renumbering for deletions
-            updateAddButtons();
-            showToast("Cargo entry deleted successfully");
-            closeCargoModal();
-          }, 300);
-        }, 500);
+            cargoToDelete.style.opacity = "0";
+            cargoToDelete.style.transform = "scale(0.95)";
+            cargoToDelete.style.transition = "all 0.3s ease";
+
+            setTimeout(() => {
+              cargoToDelete.remove();
+              renumberAfterDeletion();
+              updateAddButtons();
+              showToast("Cargo entry deleted successfully");
+              closeCargoModal();
+            }, 300);
+          }, 200);
+        } catch (error) {
+          console.error("Error deleting cargo:", error);
+          showToast(error.message || "Error deleting cargo entry", true);
+          resetCargoConfirmButton();
+        }
       } else {
         closeCargoModal();
       }
@@ -551,6 +598,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // First, initialize the cargo numbering system
   initializeCargoNumbering(); // Find the highest existing number
+
+  // Mark all existing cargo entries as existing (from database)
+  document.querySelectorAll(".cargo-entry").forEach((entry) => {
+    markCargoStatus(entry, false); // Mark as existing (from database)
+  });
+
   renumberCargos(); // Handle any unnumbered entries (should be none on load)
   updateAddButtons(); // Show add buttons correctly
 
