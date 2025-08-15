@@ -183,43 +183,41 @@ def edit_submit_shipment(request, submanifest_id):
   
   documents_by_type = {}
 
-  # Define document types with merged docs
-  document_data = []
-
   for doc in documents:
     doc_type = doc.document_type
     documents_by_type.setdefault(doc_type, []).append(doc)
 
-    
+  # Define document types with merged docs
+  document_data = []
 
-    # Normal single-card types
-    for key, title, icon, desc in [
-        ("bill_of_lading", "Bill of Lading", "fas fa-file-alt",
-         "Transport document that serves as a receipt of goods, evidence of the contract of carriage, and a document of title"),
-        ("invoice", "Commercial Invoice", "fas fa-file-invoice-dollar",
-         "Document containing details of the sale transaction including item, quantity, and value"),
-        ("packing_list", "Packing List", "fas fa-list-ol",
-         "Document detailing the contents of a shipment, including item counts, dimensions, and weights"),
-        ("certificate_of_origin", "Certificate Of Origin", "fas fa-certificate",
-         "Document certifying the country of origin of the goods being shipped"),
-    ]:
-        document_data.append({
-            "key": key,
-            "title": title,
-            "icon": icon,
-            "desc": desc,
-            "docs": documents_by_type.get(key, [])
-        })
+  # Normal single-card types
+  for key, title, icon, desc in [
+    ("bill_of_lading", "Bill of Lading", "fas fa-file-alt",
+      "Transport document that serves as a receipt of goods, evidence of the contract of carriage, and a document of title"),
+    ("invoice", "Commercial Invoice", "fas fa-file-invoice-dollar",
+      "Document containing details of the sale transaction including item, quantity, and value"),
+    ("packing_list", "Packing List", "fas fa-list-ol",
+      "Document detailing the contents of a shipment, including item counts, dimensions, and weights"),
+    ("certificate_of_origin", "Certificate Of Origin", "fas fa-certificate",
+      "Document certifying the country of origin of the goods being shipped"),
+  ]:
+    document_data.append({
+      "key": key,
+      "title": title,
+      "icon": icon,
+      "desc": desc,
+      "docs": documents_by_type.get(key, [])
+    })
 
-    # For "other" → one card per document
-    for idx, doc in enumerate(documents_by_type.get("other", []), start=1):
-        document_data.append({
-            "key": f"other_{idx}",  # unique key per card
-            "title": f"Other Document",
-            "icon": "fas fa-ellipsis-h",
-            "desc": "Supporting document for shipment.",
-            "docs": [doc]  # single doc per card
-        })
+  # For "other" → one card per document
+  for idx, doc in enumerate(documents_by_type.get("other", []), start=1):
+    document_data.append({
+      "key": f"other_{idx}",  # unique key per card
+      "title": f"Other Document",
+      "icon": "fas fa-ellipsis-h",
+      "desc": "Supporting document for shipment.",
+      "docs": [doc]  # single doc per card
+    })
 
   context = {
     "submanifest": submanifest,

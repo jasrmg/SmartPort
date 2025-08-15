@@ -29,10 +29,10 @@ def poll_recent_notifications(request):
 
   # debug print found notif
   all_notifs = Notification.objects.filter(user=user_profile).order_by('-created_at')[:5]
-  print("Recent 5 notifications:")
+  # print("Recent 5 notifications:")
 
-  for notif in all_notifs:
-    print(f"  ID {notif.notification_id}: {notif.created_at} ({'future' if notif.created_at > now else 'past'})")
+  # for notif in all_notifs:
+  #   print(f"  ID {notif.notification_id}: {notif.created_at} ({'future' if notif.created_at > now else 'past'})")
 
   notifications_data = [
     {

@@ -243,11 +243,14 @@
     <h2 class="form-section-title">Cargo Details</h2>
     <div id="cargoContainer">
       <!-- Cargo Entry Template -->
-      <div class="cargo-entry">
-        {% for cargo in cargos %}
+      {% for cargo in cargos %}
+      <div class="cargo-entry" data-cargo-id="{{ cargo.cargo_id }}">
         <!-- Circular number indicator -->
         <div class="cargo-header">
           <div class="cargo-number">{{ forloop.counter }}</div>
+          {% if forloop.counter > 1 %}
+          <span class="btn-remove-cargo" title="Delete Cargo">&times;</span>
+          {% endif %}
         </div>
 
         <div class="cargo-details">
@@ -350,7 +353,6 @@
           </div>
         </div>
 
-        {% endfor %}
         <!-- Add Cargo Button - positioned at bottom right -->
         <div class="cargo-btn-container">
           <button type="button" class="btn-confirm-delivery addCargoBtn">
@@ -358,7 +360,109 @@
           </button>
         </div>
       </div>
+      {% endfor %}
     </div>
+    <!--TEMPLATE TO CLONE USING JS-->
+    <template id="cargoTemplate">
+    <div class="cargo-entry">
+    <div class="cargo-header">
+      <div class="cargo-number"></div>
+      <span class="btn-remove-cargo" title="Delete Cargo">&times;</span>
+    </div>
+
+    <div class="cargo-details">
+      <div class="form-group" style="width: 100%">
+        <label class="form-label">Cargo Description</label>
+        <textarea
+          class="form-control"
+          name="cargo_description[]"
+          required
+        ></textarea>
+        <small class="form-helper">*Describe the item clearly.</small>
+      </div>
+      <div class="form-group" style="width: 100%">
+        <label class="form-label">Additional Info</label>
+        <textarea class="form-control" name="additional_info[]"></textarea>
+        <small class="form-helper">*Optional notes for handling.</small>
+      </div>
+    </div>
+
+    <div class="cargo-details-two">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input
+            type="number"
+            class="form-control"
+            name="quantity[]"
+            min="1"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Weight (kg)</label>
+          <input
+            type="number"
+            class="form-control"
+            name="weight[]"
+            min="0"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Value (₱)</label>
+          <input
+            type="number"
+            class="form-control"
+            name="value[]"
+            min="0"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            HS Code
+            <div class="tooltip-wrapper">
+              <span class="tooltip-trigger">?</span>
+              <div class="tooltip-box">
+                <p>
+                  The HS Code is usually found in the Bill of Lading or
+                  Packing List.
+                </p>
+                <p>If it's not available:</p>
+                <ul style="padding-left: 1.2rem; margin: 0">
+                  <li>You may enter it manually if you know it,</li>
+                  <li>
+                    Or
+                    <a
+                      href="https://www.census.gov/foreign-trade/schedules/b/2025/index.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      click here to look it up </a
+                    >,
+                  </li>
+                  <li>
+                    Or simply leave it blank, and customs will review it for
+                    you.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </label>
+
+          <input type="text" class="form-control" name="hscode[]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="cargo-btn-container">
+      <button type="button" class="btn-confirm-delivery addCargoBtn">
+        + Add Another Cargo
+      </button>
+    </div>
+    </div>
+    </template>
 
     <!-- Special Instructions -->
     <div class="form-section">
@@ -428,7 +532,7 @@
     <!-- Document Cards Section -->
     <div class="document-types">
       {% for doc_type in document_data %}
-        <div class="document-type-card {% if doc_type.key == 'others' %}others-card{% endif %}"
+        <div class="document-type-card {% if doc_type.is_other %}others-card{% endif %}"
             id="{{ doc_type.key|slugify }}Card"
             style="cursor: pointer">
           
@@ -476,98 +580,6 @@
 
         {# FILE INPUT — hidden but connected to JS preview #}
         <input type="file" name="{{ doc_type.key }}" id="{{ doc_type.key|slugify }}Input" hidden>
-        {% empty %}
-              <!-- BILL OF LADING -->
-      <div
-        class="document-type-card"
-        id="billOfLadingCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-file-alt document-type-icon"></i>
-        <div class="document-type-title">Bill of Ladings</div>
-        <div class="document-type-desc">
-          Transport document that serves as a receipt of goods, evidence of the
-          contract of carriage, and a document of title.
-        </div>
-        <div class="uploaded-file-name" id="billOfLadingFileName"></div>
-        <div class="file-preview-area" id="billOfLadingPreview"></div>
-      </div>
-      <!-- INVOICE -->
-      <div
-        class="document-type-card"
-        id="commercialInvoiceCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-file-invoice-dollar document-type-icon"></i>
-        <div class="document-type-title">Commercial Invoice</div>
-        <div class="document-type-desc">
-          Document containing details of the sale transaction including item,
-          quantity, and value.
-        </div>
-        <div class="uploaded-file-name" id="commercialInvoiceFileName"></div>
-        <div class="file-preview-area" id="commercialInvoicePreview"></div>
-      </div>
-
-      <!-- PACKING LIST -->
-      <div
-        class="document-type-card"
-        id="packingListCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-list-ol document-type-icon"></i>
-        <div class="document-type-title">Packing List</div>
-        <div class="document-type-desc">
-          Document detailing the contents of a shipment, including item counts,
-          dimensions, and weights.
-        </div>
-        <div class="uploaded-file-name" id="packingListFileName"></div>
-        <div class="file-preview-area" id="packingListPreview"></div>
-      </div>
-
-      <!-- CERTIFICATE OF ORIGIN -->
-      <div
-        class="document-type-card"
-        id="certificateOriginCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-certificate document-type-icon"></i>
-        <div class="document-type-title">Certificate of Origin</div>
-        <div class="document-type-desc">
-          Document certifying the country of origin of the goods being shipped.
-        </div>
-        <div class="uploaded-file-name" id="certificateOriginFileName"></div>
-        <div class="file-preview-area" id="certificateOriginPreview"></div>
-      </div>
-      <!-- OTHERS -->
-      <div
-        class="document-type-card others-card"
-        id="othersCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-ellipsis-h document-type-icon"></i>
-        <div class="document-type-title">Upload Other Documents</div>
-        <div class="document-type-desc">
-          Other supporting documents as required for the shipment.
-        </div>
-        <div class="uploaded-file-name" id="othersFileName"></div>
-        <div class="file-preview-area" id="othersPreview"></div>
-      </div>
-
-      <input type="file" name="bill_of_lading" id="billOfLadingInput" hidden />
-      <input
-        type="file"
-        name="commercial_invoice"
-        id="commercialInvoiceInput"
-        hidden
-      />
-      <input type="file" name="packing_list" id="packingListInput" hidden />
-      <input
-        type="file"
-        name="certificate_origin"
-        id="certificateOriginInput"
-        hidden
-      />
-      <input type="file" name="other_documents" id="othersInput" hidden />
       {% endfor %}
 
       <!-- OTHERS -->
@@ -584,6 +596,12 @@
         <div class="uploaded-file-name" id="othersFileName"></div>
         <div class="file-preview-area" id="othersPreview"></div>
       </div>
+
+      <input type="file" name="bill_of_lading" id="billOfLadingInput" hidden />
+      <input type="file" name="commercial_invoice" id="commercialInvoiceInput" hidden />
+      <input type="file" name="packing_list" id="packingListInput" hidden />
+      <input type="file" name="certificate_origin" id="certificateOriginInput" hidden />
+      <input type="file" name="other_documents" id="othersInput" hidden />
     </div>
 
 
