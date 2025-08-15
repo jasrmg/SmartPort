@@ -243,8 +243,8 @@
     <h2 class="form-section-title">Cargo Details</h2>
     <div id="cargoContainer">
       <!-- Cargo Entry Template -->
-      {% for cargo in cargos %}
       <div class="cargo-entry">
+        {% for cargo in cargos %}
         <!-- Circular number indicator -->
         <div class="cargo-header">
           <div class="cargo-number">{{ forloop.counter }}</div>
@@ -253,13 +253,11 @@
         <div class="cargo-details">
           <div class="form-group" style="width: 100%">
             <label class="form-label">Cargo Description</label>
-            <textarea class="form-control" name="cargo_description[]" required>
-{{ cargo.description }}</textarea
-            >
-            <small class="form-helper"
-              >*Describe the item clearly — include type, material, size, or
-              variant.</small
-            >
+            <textarea class="form-control" name="cargo_description[]" required>{{ cargo.description }}</textarea>
+            <small class="form-helper">
+              *Describe the item clearly — include type, material, size, or
+              variant.
+            </small>
           </div>
           <div class="form-group" style="width: 100%">
             <label class="form-label">Additional Info</label>
@@ -267,13 +265,11 @@
               class="form-control"
               name="additional_info[]"
               placeholder="e.g. Fragile item, handle with care. Requires temperature control."
-            >
-{{ cargo.additional_info }}</textarea
-            >
-            <small class="form-helper"
-              >*Optional notes for special handling, delivery instructions, or
-              safety concerns.</small
-            >
+            >{{ cargo.additional_info|default_if_none:'' }}</textarea>
+            <small class="form-helper">
+              *Optional notes for special handling, delivery instructions, or
+              safety concerns.
+            </small>
           </div>
         </div>
 
@@ -354,6 +350,7 @@
           </div>
         </div>
 
+        {% endfor %}
         <!-- Add Cargo Button - positioned at bottom right -->
         <div class="cargo-btn-container">
           <button type="button" class="btn-confirm-delivery addCargoBtn">
@@ -361,7 +358,6 @@
           </button>
         </div>
       </div>
-      {% endfor %}
     </div>
 
     <!-- Special Instructions -->
@@ -378,7 +374,7 @@
           rows="4"
           placeholder="e.g. Fragile – handle with care. Keep upright at all times. Avoid exposure to direct sunlight or moisture. Use forklift from bottom only."
           value=""
-        ></textarea>
+        >{{ submanifest.handling_instruction }}</textarea>
       </div>
     </div>
 
@@ -420,6 +416,7 @@
           name="bill_of_lading_number"
           placeholder="e.g. MSCU123456789"
           data-required
+          value="{{ submanifest.bill_of_lading_no }}"
         />
         <small class="form-helper">
           *Unique reference for the shipment issued by the carrier or freight
@@ -522,7 +519,7 @@
       />
       <input type="file" name="other_documents" id="othersInput" hidden />
     </div>
-
+    
     <!-- Submit Button -->
     <div style="display: flex; justify-content: end">
       <button type="submit" class="btn-submit">

@@ -174,12 +174,21 @@ def edit_submit_shipment(request, submanifest_id):
   .filter(status=Voyage.VoyageStatus.ASSIGNED) \
   .order_by("departure_date")
 
+  documents = submanifest.documents.all()  # fetch related docs
+  documents_by_type = {}
+  for doc in documents:
+    doc_type = doc.document_type
+    if doc_type not in documents_by_type:
+      documents_by_type[doc_type] = []
+    documents_by_type[doc_type].append(doc)
+
   print("CARGOS: ", cargos)
   print("SUBMANIFEST: ", submanifest)
   context = {
     "submanifest": submanifest,
     "cargos": cargos,
-    "voyages": voyages
+    "voyages": voyages,
+    "documents_by_type": documents_by_type,
   }
   return render(request, "smartportApp/shipper/edit-shipment.html", context)
 
