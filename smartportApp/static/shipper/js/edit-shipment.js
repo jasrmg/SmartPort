@@ -21,6 +21,98 @@ document.addEventListener("DOMContentLoaded", () => {
     }, duration);
   };
 
+  // Counter for dynamic others cards
+  let otherDocCount = 1;
+
+  // Create dynamic card-to-input mappings
+  const getDynamicCardToInputMap = () => {
+    const baseMap = {
+      bill_of_ladingCard: "billOfLadingInput",
+      commercial_invoiceCard: "commercialInvoiceInput",
+      packing_listCard: "packingListInput",
+      certificate_originCard: "certificateOriginInput",
+      othersCard: "othersInput",
+    };
+
+    // Add dynamic others cards
+    for (let i = 2; i <= otherDocCount; i++) {
+      baseMap[`others${i}Card`] = `others${i}Input`;
+    }
+
+    return baseMap;
+  };
+
+  // Create dynamic input-to-card mappings
+  const getDynamicInputToCardMap = () => {
+    const baseMap = {
+      billOfLadingInput: "bill_of_ladingCard",
+      commercialInvoiceInput: "commercial_invoiceCard",
+      packingListInput: "packing_listCard",
+      certificateOriginInput: "certificate_originCard",
+      othersInput: "othersCard",
+    };
+
+    // Add dynamic others cards
+    for (let i = 2; i <= otherDocCount; i++) {
+      baseMap[`others${i}Input`] = `others${i}Card`;
+    }
+
+    return baseMap;
+  };
+
+  // Create another "Others" card after file upload
+  const createAnotherOthersCard = () => {
+    // Check if there's already an empty others card
+    const othersCards = document.querySelectorAll(".others-card");
+    const hasEmpty = Array.from(othersCards).some((card) => {
+      const previewArea = card.querySelector(".file-preview-area");
+      return previewArea && previewArea.children.length === 0;
+    });
+
+    if (hasEmpty) return; // Don't add another if an empty one already exists
+
+    otherDocCount += 1;
+    const idSuffix = `others${otherDocCount}`;
+    const container = document.querySelector(".document-types");
+
+    // Create the new card
+    const cardDiv = document.createElement("div");
+    cardDiv.className = "document-type-card others-card";
+    cardDiv.id = `${idSuffix}Card`;
+    cardDiv.style.cursor = "pointer";
+    cardDiv.innerHTML = `
+    <i class="fas fa-ellipsis-h document-type-icon"></i>
+    <div class="document-type-title">Upload Other Documents</div>
+    <div class="document-type-desc">Other supporting documents as required for the shipment.</div>
+    <div class="uploaded-file-name" id="${idSuffix}FileName"></div>
+    <div class="file-preview-area" id="${idSuffix}Preview"></div>
+  `;
+
+    // Create the corresponding file input
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.name = "other_documents";
+    fileInput.id = `${idSuffix}Input`;
+    fileInput.hidden = true;
+
+    // Find the position to insert (after all existing cards but before existing inputs)
+    const existingInputs = container.querySelectorAll('input[type="file"]');
+    const lastInput = existingInputs[existingInputs.length - 1];
+
+    if (lastInput) {
+      // Insert the card before the inputs section
+      container.insertBefore(cardDiv, lastInput);
+      // Insert the input after the last input
+      container.appendChild(fileInput);
+    } else {
+      // Fallback: just append both
+      container.appendChild(cardDiv);
+      container.appendChild(fileInput);
+    }
+
+    console.log(`Created new others card: ${idSuffix}`);
+  };
+
   // ========================================
   // === DOCUMENT DELETION FUNCTIONALITY ===
   // ========================================
@@ -631,17 +723,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let inputId = "";
 
     // Map card IDs to their corresponding file inputs
-    const cardToInputMap = {
-      bill_of_ladingCard: "billOfLadingInput",
-      commercial_invoiceCard: "commercialInvoiceInput",
-      packing_listCard: "packingListInput",
-      certificate_originCard: "certificateOriginInput",
-      othersCard: "othersInput",
-    };
+    const cardToInputMap = getDynamicCardToInputMap();
 
-    // Handle dynamic "other_" cards (created for additional document types)
-    if (cardId && cardId.startsWith("other_")) {
-      inputId = "othersInput";
+    // Handle dynamic "other" cards (created for additional document types)
+    if (cardId && cardId.startsWith("others") && cardId !== "othersCard") {
+      inputId = cardToInputMap[cardId];
     } else {
       inputId = cardToInputMap[cardId];
     }
@@ -734,14 +820,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Map input IDs back to card IDs
   const getCardIdFromInput = (inputId) => {
-    const inputToCardMap = {
-      billOfLadingInput: "bill_of_ladingCard",
-      commercialInvoiceInput: "commercial_invoiceCard",
-      packingListInput: "packing_listCard",
-      certificateOriginInput: "certificate_originCard",
-      othersInput: "othersCard",
-    };
-
+    const inputToCardMap = getDynamicInputToCardMap();
     return inputToCardMap[inputId] || "othersCard";
   };
 
@@ -801,6 +880,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Mark card as having files
     card.classList.add("has-existing-file");
+
+    // If this is an "others" card, create a new one after upload
+    const isOthersCard =
+      card.classList.contains("others-card") || card.id === "othersCard";
+    if (isOthersCard) {
+      createAnotherOthersCard();
+    }
   };
 
   // Create file preview element
@@ -880,7 +966,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Helper function to get input ID from card ID
   const getInputIdFromCard = (cardId) => {
     const cardToInputMap = {
       bill_of_ladingCard: "billOfLadingInput",
@@ -901,18 +986,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // === EVENT LISTENERS SETUP ===
   // =====================================
 
-  // Add click event listeners to all document cards
   document.addEventListener("click", handleDocumentCardClick);
 
-  // Add click event listener for removing new files
   document.addEventListener("click", handleNewFileRemoval);
 
-  // Add change event listeners to all file inputs
   document.addEventListener("change", (e) => {
     if (e.target.type === "file") {
       handleFileSelection(e);
     }
   });
-
-  console.log("File upload functionality initialized");
 });
