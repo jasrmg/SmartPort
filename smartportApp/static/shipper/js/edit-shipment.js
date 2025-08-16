@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
       billOfLadingInput: "bill_of_ladingCard",
       commercialInvoiceInput: "commercial_invoiceCard",
       packingListInput: "packing_listCard",
-      certificateOriginInput: "certificate_originCard",
+      certificateOriginInput: "certificate_of_originCard",
       othersInput: "othersCard",
     };
 
