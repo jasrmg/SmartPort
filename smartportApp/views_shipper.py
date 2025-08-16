@@ -167,19 +167,63 @@ def shipper_submit_shipment_view(request):
   }
   return render(request, "smartportApp/shipper/submit-shipment.html", context)
 
+"""
+POST: Process all updates for the shipment
+GET: Display the form with the existing data
+"""
 def edit_submit_shipment(request, submanifest_id):
+
   submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
   cargos = Cargo.objects.filter(submanifest=submanifest)
   voyages = Voyage.objects.select_related("departure_port", "arrival_port", "vessel") \
   .filter(status=Voyage.VoyageStatus.ASSIGNED) \
   .order_by("departure_date")
 
-  print("CARGOS: ", cargos)
-  print("SUBMANIFEST: ", submanifest)
+  documents = submanifest.documents.all()  # fetch related docs
+  
+  documents_by_type = {}
+
+  for doc in documents:
+    doc_type = doc.document_type
+    documents_by_type.setdefault(doc_type, []).append(doc)
+
+  # Define document types with merged docs
+  document_data = []
+
+  # Normal single-card types
+  for key, title, icon, desc in [
+    ("bill_of_lading", "Bill of Lading", "fas fa-file-alt",
+      "Transport document that serves as a receipt of goods, evidence of the contract of carriage, and a document of title"),
+    ("invoice", "Commercial Invoice", "fas fa-file-invoice-dollar",
+      "Document containing details of the sale transaction including item, quantity, and value"),
+    ("packing_list", "Packing List", "fas fa-list-ol",
+      "Document detailing the contents of a shipment, including item counts, dimensions, and weights"),
+    ("certificate_of_origin", "Certificate Of Origin", "fas fa-certificate",
+      "Document certifying the country of origin of the goods being shipped"),
+  ]:
+    document_data.append({
+      "key": key,
+      "title": title,
+      "icon": icon,
+      "desc": desc,
+      "docs": documents_by_type.get(key, [])
+    })
+
+  # For "other" → one card per document
+  for idx, doc in enumerate(documents_by_type.get("other", []), start=1):
+    document_data.append({
+      "key": f"other_{idx}",  # unique key per card
+      "title": f"Other Document",
+      "icon": "fas fa-ellipsis-h",
+      "desc": "Supporting document for shipment.",
+      "docs": [doc]  # single doc per card
+    })
+
   context = {
     "submanifest": submanifest,
     "cargos": cargos,
-    "voyages": voyages
+    "voyages": voyages,
+    "document_data": document_data,
   }
   return render(request, "smartportApp/shipper/edit-shipment.html", context)
 
@@ -539,7 +583,6 @@ def create_notification_bulk(recipients, title, message, link_url="", triggered_
   ]
   Notification.objects.bulk_create(notifications)
 
-
 logger = logging.getLogger(__name__)
 
 # Process the submission and save shipment data
@@ -592,9 +635,6 @@ def process_shipment_submission(request):
     return JsonResponse({
       'error': 'An unexpected error occurred. Please try again.'
     }, status=500)
-  
-
-
 
 def validate_shipment_data(request):
     """Validate the incoming shipment data"""
@@ -867,6 +907,33 @@ def document_upload_path_with_duplicates(instance, filename):
   # Handle duplicates
   return handle_duplicate_filenames(base_path)
 
+# --------------- EDIT SUBMITTED SHIPMENT ---------------
+def delete_document(request, document_id):
+  try:
+    document = Document.objects.get(pk=document_id)
+
+    if document.submanifest.created_by != request.user.userprofile:
+      return JsonResponse({"error": "Unauthorized"}, status=403)
+    
+    # delete file from storage
+    document.file.delete(save=False)
+
+    # delete database record
+    document.delete()
+
+    return JsonResponse({"success": True})
+  except Document.DoesNotExist:
+    return JsonResponse({"error": "Document not found"}, status=404)
+
+def delete_cargo(request, cargo_id):
+  try:
+    cargo = Cargo.objects.get(cargo_id=cargo_id, submanifest__created_by__user=request.user)
+    cargo.delete()
+    return JsonResponse({'success': True, 'message': 'Cargo deleted successfully'})
+  except Cargo.DoesNotExist:
+    return JsonResponse({'success': False, 'error': 'Cargo not found'}, status=404)
+  except Exception as e:
+    return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # --------------- INCIDENT FEED ---------------
 # giusa ra ug logic sa admin side

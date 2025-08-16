@@ -244,22 +244,23 @@
     <div id="cargoContainer">
       <!-- Cargo Entry Template -->
       {% for cargo in cargos %}
-      <div class="cargo-entry">
+      <div class="cargo-entry" data-cargo-id="{{ cargo.cargo_id }}">
         <!-- Circular number indicator -->
         <div class="cargo-header">
           <div class="cargo-number">{{ forloop.counter }}</div>
+          {% if forloop.counter > 1 %}
+          <span class="btn-remove-cargo" title="Delete Cargo">&times;</span>
+          {% endif %}
         </div>
 
         <div class="cargo-details">
           <div class="form-group" style="width: 100%">
             <label class="form-label">Cargo Description</label>
-            <textarea class="form-control" name="cargo_description[]" required>
-{{ cargo.description }}</textarea
-            >
-            <small class="form-helper"
-              >*Describe the item clearly — include type, material, size, or
-              variant.</small
-            >
+            <textarea class="form-control" name="cargo_description[]" required>{{ cargo.description }}</textarea>
+            <small class="form-helper">
+              *Describe the item clearly — include type, material, size, or
+              variant.
+            </small>
           </div>
           <div class="form-group" style="width: 100%">
             <label class="form-label">Additional Info</label>
@@ -267,13 +268,11 @@
               class="form-control"
               name="additional_info[]"
               placeholder="e.g. Fragile item, handle with care. Requires temperature control."
-            >
-{{ cargo.additional_info }}</textarea
-            >
-            <small class="form-helper"
-              >*Optional notes for special handling, delivery instructions, or
-              safety concerns.</small
-            >
+            >{{ cargo.additional_info|default_if_none:'' }}</textarea>
+            <small class="form-helper">
+              *Optional notes for special handling, delivery instructions, or
+              safety concerns.
+            </small>
           </div>
         </div>
 
@@ -363,6 +362,107 @@
       </div>
       {% endfor %}
     </div>
+    <!--TEMPLATE TO CLONE USING JS-->
+    <template id="cargoTemplate">
+    <div class="cargo-entry">
+    <div class="cargo-header">
+      <div class="cargo-number"></div>
+      <span class="btn-remove-cargo" title="Delete Cargo">&times;</span>
+    </div>
+
+    <div class="cargo-details">
+      <div class="form-group" style="width: 100%">
+        <label class="form-label">Cargo Description</label>
+        <textarea
+          class="form-control"
+          name="cargo_description[]"
+          required
+        ></textarea>
+        <small class="form-helper">*Describe the item clearly.</small>
+      </div>
+      <div class="form-group" style="width: 100%">
+        <label class="form-label">Additional Info</label>
+        <textarea class="form-control" name="additional_info[]"></textarea>
+        <small class="form-helper">*Optional notes for handling.</small>
+      </div>
+    </div>
+
+    <div class="cargo-details-two">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input
+            type="number"
+            class="form-control"
+            name="quantity[]"
+            min="1"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Weight (kg)</label>
+          <input
+            type="number"
+            class="form-control"
+            name="weight[]"
+            min="0"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Value (₱)</label>
+          <input
+            type="number"
+            class="form-control"
+            name="value[]"
+            min="0"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            HS Code
+            <div class="tooltip-wrapper">
+              <span class="tooltip-trigger">?</span>
+              <div class="tooltip-box">
+                <p>
+                  The HS Code is usually found in the Bill of Lading or
+                  Packing List.
+                </p>
+                <p>If it's not available:</p>
+                <ul style="padding-left: 1.2rem; margin: 0">
+                  <li>You may enter it manually if you know it,</li>
+                  <li>
+                    Or
+                    <a
+                      href="https://www.census.gov/foreign-trade/schedules/b/2025/index.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      click here to look it up </a
+                    >,
+                  </li>
+                  <li>
+                    Or simply leave it blank, and customs will review it for
+                    you.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </label>
+
+          <input type="text" class="form-control" name="hscode[]" />
+        </div>
+      </div>
+    </div>
+
+    <div class="cargo-btn-container">
+      <button type="button" class="btn-confirm-delivery addCargoBtn">
+        + Add Another Cargo
+      </button>
+    </div>
+    </div>
+    </template>
 
     <!-- Special Instructions -->
     <div class="form-section">
@@ -378,7 +478,7 @@
           rows="4"
           placeholder="e.g. Fragile – handle with care. Keep upright at all times. Avoid exposure to direct sunlight or moisture. Use forklift from bottom only."
           value=""
-        ></textarea>
+        >{{ submanifest.handling_instruction }}</textarea>
       </div>
     </div>
 
@@ -420,6 +520,7 @@
           name="bill_of_lading_number"
           placeholder="e.g. MSCU123456789"
           data-required
+          value="{{ submanifest.bill_of_lading_no }}"
         />
         <small class="form-helper">
           *Unique reference for the shipment issued by the carrier or freight
@@ -430,67 +531,57 @@
 
     <!-- Document Cards Section -->
     <div class="document-types">
-      <!-- BILL OF LADING -->
-      <div
-        class="document-type-card"
-        id="billOfLadingCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-file-alt document-type-icon"></i>
-        <div class="document-type-title">Bill of Lading</div>
-        <div class="document-type-desc">
-          Transport document that serves as a receipt of goods, evidence of the
-          contract of carriage, and a document of title.
-        </div>
-        <div class="uploaded-file-name" id="billOfLadingFileName"></div>
-        <div class="file-preview-area" id="billOfLadingPreview"></div>
-      </div>
-      <!-- INVOICE -->
-      <div
-        class="document-type-card"
-        id="commercialInvoiceCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-file-invoice-dollar document-type-icon"></i>
-        <div class="document-type-title">Commercial Invoice</div>
-        <div class="document-type-desc">
-          Document containing details of the sale transaction including item,
-          quantity, and value.
-        </div>
-        <div class="uploaded-file-name" id="commercialInvoiceFileName"></div>
-        <div class="file-preview-area" id="commercialInvoicePreview"></div>
-      </div>
+      {% for doc_type in document_data %}
+        <div class="document-type-card {% if doc_type.is_other %}others-card{% endif %}"
+            id="{{ doc_type.key|slugify }}Card"
+            style="cursor: pointer">
+          
+          <i class="{{ doc_type.icon }} document-type-icon"></i>
+          <div class="document-type-title">{{ doc_type.title }}</div>
+          <div class="document-type-desc">{{ doc_type.desc }}</div>
 
-      <!-- PACKING LIST -->
-      <div
-        class="document-type-card"
-        id="packingListCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-list-ol document-type-icon"></i>
-        <div class="document-type-title">Packing List</div>
-        <div class="document-type-desc">
-          Document detailing the contents of a shipment, including item counts,
-          dimensions, and weights.
-        </div>
-        <div class="uploaded-file-name" id="packingListFileName"></div>
-        <div class="file-preview-area" id="packingListPreview"></div>
-      </div>
+          {# === FILE NAME AREA === #}
+          <div class="uploaded-file-name" id="{{ doc_type.key|slugify }}FileName">
+            {% if doc_type.docs %}
+              {% for doc in doc_type.docs %}
+                {{ doc.file_name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            {% endif %}
+          </div>
 
-      <!-- CERTIFICATE OF ORIGIN -->
-      <div
-        class="document-type-card"
-        id="certificateOriginCard"
-        style="cursor: pointer"
-      >
-        <i class="fas fa-certificate document-type-icon"></i>
-        <div class="document-type-title">Certificate of Origin</div>
-        <div class="document-type-desc">
-          Document certifying the country of origin of the goods being shipped.
+          {# === FILE PREVIEW AREA === #}
+          <div class="file-preview-area" id="{{ doc_type.key|slugify }}Preview">
+            {% if doc_type.docs %}
+              {% for doc in doc_type.docs %}
+                <div class="file-preview-wrapper">
+                  
+                  {% if doc.file.url|lower|slice:"-4:" == ".jpg" or doc.file.url|lower|slice:"-5:" == ".jpeg" or doc.file.url|lower|slice:"-4:" == ".png" %}
+                    <img src="{{ doc.file.url }}" class="file-preview-image" alt="Document preview">
+                  {% elif doc.file.url|lower|slice:"-4:" == ".pdf" %}
+                    <i class="fas fa-file-pdf pdf-icon"></i>
+                  {% elif doc.file.url|lower|slice:"-4:" == ".doc" or doc.file.url|lower|slice:"-5:" == ".docx" %}
+                    <i class="fas fa-file-word word-icon"></i>
+                  {% elif doc.file.url|lower|slice:"-4:" == ".txt" %}
+                    <i class="fas fa-file-alt txt-icon"></i>
+                  {% else %}
+                    <i class="fas fa-file file-icon"></i>
+                  {% endif %}
+
+                  <span class="file-name-label">{{ doc.original_filename }}</span>
+                  <button type="button" class="remove-preview-btn" title="Remove file" data-doc-id="{{ doc.document_id }}">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+
         </div>
-        <div class="uploaded-file-name" id="certificateOriginFileName"></div>
-        <div class="file-preview-area" id="certificateOriginPreview"></div>
-      </div>
+
+        {# FILE INPUT — hidden but connected to JS preview #}
+        <input type="file" name="{{ doc_type.key }}" id="{{ doc_type.key|slugify }}Input" hidden>
+      {% endfor %}
+
       <!-- OTHERS -->
       <div
         class="document-type-card others-card"
@@ -507,22 +598,14 @@
       </div>
 
       <input type="file" name="bill_of_lading" id="billOfLadingInput" hidden />
-      <input
-        type="file"
-        name="commercial_invoice"
-        id="commercialInvoiceInput"
-        hidden
-      />
+      <input type="file" name="commercial_invoice" id="commercialInvoiceInput" hidden />
       <input type="file" name="packing_list" id="packingListInput" hidden />
-      <input
-        type="file"
-        name="certificate_origin"
-        id="certificateOriginInput"
-        hidden
-      />
+      <input type="file" name="certificate_origin" id="certificateOriginInput" hidden />
       <input type="file" name="other_documents" id="othersInput" hidden />
     </div>
 
+
+    
     <!-- Submit Button -->
     <div style="display: flex; justify-content: end">
       <button type="submit" class="btn-submit">
@@ -536,7 +619,7 @@
 {% endblock %}
 <!---->
 {% block modal %}
-<div id="confirmRemoveOthersModal" class="modal-overlay" style="display: none">
+<div id="confirmDeleteDocsModal" class="modal-overlay" style="display: none">
   <div class="modal">
     <div class="modal-header">
       <h2 class="modal-title">
@@ -544,7 +627,7 @@
       </h2>
       <button
         class="modal-close"
-        id="closeRemoveUploadModal"
+        id="closeDeleteDocsModal"
         aria-label="Close Modal"
       >
         &times;
@@ -553,7 +636,7 @@
     <div class="modal-body">
       <div class="modal-warning">
         <i class="fas fa-exclamation-triangle icon"></i>
-        Are you sure you want to remove this uploaded file? This action cannot
+        Are you sure you want to delete this uploadeded file? This action cannot
         be undone.
       </div>
 
@@ -564,7 +647,7 @@
         <button class="btn btn-cancel" id="cancelRemoveUploadBtn">
           Cancel
         </button>
-        <button class="btn btn-danger" id="confirmRemoveUploadBtn">
+        <button class="btn btn-danger" id="confirmDeleteDocsBtn">
           <span class="btn-text">Remove</span>
           <span class="spinner" style="display: none"></span>
         </button>
@@ -614,5 +697,5 @@
 
 <!---->
 {% block script %}
-<!-- <script src="{% static 'shipper/js/submit-shipment.js' %}"></script> -->
+<script src="{% static 'shipper/js/edit-shipment.js' %}"></script>
 {% endblock %}
