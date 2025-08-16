@@ -69,11 +69,16 @@ document.addEventListener("DOMContentLoaded", () => {
       return previewArea && previewArea.children.length === 0;
     });
 
-    if (hasEmpty) return; // Don't add another if an empty one already exists
+    if (hasEmpty) {
+      console.log("Empty others card already exists, skipping creation");
+      return; // Don't add another if an empty one already exists
+    }
 
     otherDocCount += 1;
     const idSuffix = `others${otherDocCount}`;
     const container = document.querySelector(".document-types");
+
+    console.log(`Creating new others card: ${idSuffix}`);
 
     // Create the new card
     const cardDiv = document.createElement("div");
@@ -95,22 +100,45 @@ document.addEventListener("DOMContentLoaded", () => {
     fileInput.id = `${idSuffix}Input`;
     fileInput.hidden = true;
 
-    // Find the position to insert (after all existing cards but before existing inputs)
+    // Find the position to insert
     const existingInputs = container.querySelectorAll('input[type="file"]');
     const lastInput = existingInputs[existingInputs.length - 1];
 
     if (lastInput) {
-      // Insert the card before the inputs section
       container.insertBefore(cardDiv, lastInput);
-      // Insert the input after the last input
       container.appendChild(fileInput);
     } else {
-      // Fallback: just append both
       container.appendChild(cardDiv);
       container.appendChild(fileInput);
     }
 
     console.log(`Created new others card: ${idSuffix}`);
+  };
+
+  // Clean up unused dynamic others cards and inputs
+  const cleanupDynamicOthersCards = () => {
+    const allOthersCards = document.querySelectorAll(".others-card");
+    const emptyOthersCards = Array.from(allOthersCards).filter((card) => {
+      const previewArea = card.querySelector(".file-preview-area");
+      return previewArea && previewArea.children.length === 0;
+    });
+
+    // If we have more than one empty others card, remove the extras (keep original + 1)
+    if (emptyOthersCards.length > 1) {
+      emptyOthersCards.forEach((card, index) => {
+        // Keep the original othersCard and one additional empty card
+        if (index > 0 && card.id !== "othersCard") {
+          const inputId = getInputIdFromCard(card.id);
+          const associatedInput = document.getElementById(inputId);
+
+          if (associatedInput) {
+            associatedInput.remove();
+          }
+          card.remove();
+          console.log("Cleaned up empty others card:", card.id);
+        }
+      });
+    }
   };
 
   // ========================================
@@ -310,7 +338,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Check if this is an "other" type card - if so, remove the entire card
                 const isOtherCard =
-                  cardElement.id && cardElement.id.startsWith("other_");
+                  cardElement.id &&
+                  (cardElement.id.startsWith("other_") ||
+                    (cardElement.id.startsWith("others") &&
+                      cardElement.id !== "othersCard"));
+
                 console.log("Is other card?", isOtherCard);
                 console.log(
                   "Card ID starts with 'other_'?",
@@ -369,7 +401,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     previewArea.children.length === 0 &&
                     cardElement &&
                     cardElement.id &&
-                    cardElement.id.startsWith("other_")
+                    (cardElement.id.startsWith("other_") ||
+                      (cardElement.id.startsWith("others") &&
+                        cardElement.id !== "othersCard"))
                   ) {
                     console.log(
                       "FORCE REMOVING OTHER CARD after cleaning wrappers"
@@ -881,10 +915,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Mark card as having files
     card.classList.add("has-existing-file");
 
-    // If this is an "others" card, create a new one after upload
+    // If this is an "others" card that now has files, create a new empty one
     const isOthersCard =
       card.classList.contains("others-card") || card.id === "othersCard";
     if (isOthersCard) {
+      console.log("Others card now has files, creating new empty card");
       createAnotherOthersCard();
     }
   };
@@ -923,6 +958,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Handle removal of newly uploaded files (not yet saved to database)
+
   const handleNewFileRemoval = (e) => {
     if (!e.target.closest(".remove-preview-btn")) return;
 
@@ -936,6 +972,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const wrapper = removeBtn.closest(".file-preview-wrapper");
       const previewArea = wrapper.closest(".file-preview-area");
       const card = wrapper.closest(".document-type-card");
+
+      console.log("=== FILE REMOVAL DEBUG START ===");
+      console.log("Card ID:", card.id);
 
       // Animate removal
       wrapper.style.opacity = "0";
@@ -959,24 +998,150 @@ document.addEventListener("DOMContentLoaded", () => {
           if (fileInput) {
             fileInput.value = "";
           }
+
+          // SIMPLE LOGIC: If this is an others card, check if we should remove it
+          const isOthersCard =
+            card.classList.contains("others-card") || card.id === "othersCard";
+
+          if (isOthersCard) {
+            console.log("Others card cleared, checking if should remove...");
+
+            // Count all others cards
+            const allOthersCards = document.querySelectorAll(".others-card");
+            console.log("Total others cards:", allOthersCards.length);
+
+            // If there are multiple others cards, remove this empty one
+            if (allOthersCards.length > 1) {
+              console.log(
+                "Multiple others cards exist, REMOVING this empty card:",
+                card.id
+              );
+
+              // Animate card removal
+              card.style.opacity = "0";
+              card.style.transform = "scale(0.95)";
+              card.style.transition = "all 0.2s ease";
+
+              setTimeout(() => {
+                // Remove both the card and its associated input
+                if (fileInput) {
+                  fileInput.remove();
+                  console.log("Removed associated input:", inputId);
+                }
+                card.remove();
+                console.log("Others card removed successfully:", card.id);
+
+                // Make sure we still have at least one empty others card
+                ensureAtLeastOneEmptyOthersCard();
+              }, 200);
+            } else {
+              console.log(
+                "Only one others card exists, keeping it for uploads"
+              );
+            }
+          }
         }
 
+        console.log("=== FILE REMOVAL DEBUG END ===");
         showToast("File removed successfully", false);
       }, 300);
     }
   };
 
-  const getInputIdFromCard = (cardId) => {
-    const cardToInputMap = {
-      bill_of_ladingCard: "billOfLadingInput",
-      commercial_invoiceCard: "commercialInvoiceInput",
-      packing_listCard: "packingListInput",
-      certificate_originCard: "certificateOriginInput",
-      othersCard: "othersInput",
-    };
+  // function to ensure there's always an empty others card available
+  const ensureAtLeastOneEmptyOthersCard = () => {
+    console.log("=== ENSURING AT LEAST ONE EMPTY OTHERS CARD ===");
 
-    if (cardId && cardId.startsWith("other_")) {
-      return "othersInput";
+    const allOthersCards = document.querySelectorAll(".others-card");
+    const emptyOthersCards = Array.from(allOthersCards).filter((card) => {
+      const previewArea = card.querySelector(".file-preview-area");
+      return previewArea && previewArea.children.length === 0;
+    });
+
+    console.log("Total others cards:", allOthersCards.length);
+    console.log("Empty others cards:", emptyOthersCards.length);
+
+    // If there are NO empty others cards, create one
+    if (emptyOthersCards.length === 0) {
+      console.log("No empty others cards found, creating one");
+      createAnotherOthersCard();
+    } else {
+      console.log("At least one empty others card exists");
+    }
+  };
+
+  const debugOthersCards = () => {
+    const allOthersCards = document.querySelectorAll(".others-card");
+    console.log("=== OTHERS CARDS DEBUG ===");
+    allOthersCards.forEach((card, index) => {
+      const previewArea = card.querySelector(".file-preview-area");
+      const hasFiles = previewArea && previewArea.children.length > 0;
+      console.log(`Card ${index + 1}:`, {
+        id: card.id,
+        hasFiles: hasFiles,
+        childrenCount: previewArea
+          ? previewArea.children.length
+          : "No preview area",
+      });
+    });
+    console.log("=== END OTHERS CARDS DEBUG ===");
+  };
+
+  const cleanupExtraEmptyOthersCards = () => {
+    const allOthersCards = document.querySelectorAll(".others-card");
+    const emptyOthersCards = Array.from(allOthersCards).filter((card) => {
+      const previewArea = card.querySelector(".file-preview-area");
+      return previewArea && previewArea.children.length === 0;
+    });
+
+    console.log(
+      "Cleanup: Found",
+      emptyOthersCards.length,
+      "empty others cards"
+    );
+
+    // If we have more than one empty card, remove the extras (keep only one)
+    if (emptyOthersCards.length > 1) {
+      // Always keep the original othersCard if it exists and is empty
+      const originalCard = emptyOthersCards.find(
+        (card) => card.id === "othersCard"
+      );
+
+      emptyOthersCards.forEach((card, index) => {
+        // Remove all empty cards except the first one (or the original if it exists)
+        if (originalCard) {
+          // If original exists, remove all others except the original
+          if (card.id !== "othersCard") {
+            console.log("Removing extra empty card:", card.id);
+            const inputId = getInputIdFromCard(card.id);
+            const associatedInput = document.getElementById(inputId);
+            if (associatedInput) {
+              associatedInput.remove();
+            }
+            card.remove();
+          }
+        } else {
+          // If no original, keep the first empty card, remove the rest
+          if (index > 0) {
+            console.log("Removing extra empty card:", card.id);
+            const inputId = getInputIdFromCard(card.id);
+            const associatedInput = document.getElementById(inputId);
+            if (associatedInput) {
+              associatedInput.remove();
+            }
+            card.remove();
+          }
+        }
+      });
+    }
+  };
+
+  // Helper function to get input ID from card ID
+  const getInputIdFromCard = (cardId) => {
+    const cardToInputMap = getDynamicCardToInputMap();
+
+    if (cardId && cardId.startsWith("others")) {
+      return cardToInputMap[cardId] || "othersInput";
     }
 
     return cardToInputMap[cardId] || "othersInput";
@@ -993,6 +1158,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("change", (e) => {
     if (e.target.type === "file") {
       handleFileSelection(e);
+    }
+  });
+
+  // Optional: Clean up empty cards periodically
+  document.addEventListener("click", (e) => {
+    // Only cleanup when clicking outside of others cards to avoid interference
+    if (!e.target.closest(".others-card")) {
+      setTimeout(cleanupDynamicOthersCards, 100);
     }
   });
 });
