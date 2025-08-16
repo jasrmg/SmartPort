@@ -199,17 +199,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Event delegation for remove buttons (handles dynamically added content)
   document.addEventListener("click", function (e) {
+    // Handle all remove button clicks (both new and existing files)
     if (e.target.closest(".remove-preview-btn")) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const button = e.target.closest(".remove-preview-btn");
-      const documentId = button.dataset.docId;
-      const documentWrapper = button.closest(".file-preview-wrapper");
-
-      if (documentId && documentWrapper) {
-        showDeleteModal(documentId, documentWrapper);
-      }
+      handleFileRemoval(e);
     }
   });
 
@@ -242,199 +234,185 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Confirm deletion
-  if (confirmBtn) {
-    confirmBtn.addEventListener("click", async function () {
-      if (!pendingDocumentId || !pendingDocumentElement) return;
+  const confirmDocumentDeletion = async () => {
+    if (!pendingDocumentId || !pendingDocumentElement) return;
 
-      showDocLoadingState();
-      try {
-        const response = await fetch(
-          `/documents/delete/${pendingDocumentId}/`,
-          {
-            method: "POST",
-            headers: {
-              "X-CSRFToken": csrftoken,
-              "Content-Type": "application/json",
-            },
-          }
+    showDocLoadingState();
+    try {
+      console.log("Deleting document from backend:", pendingDocumentId);
+
+      const response = await fetch(`/documents/delete/${pendingDocumentId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        console.log("Document successfully deleted from backend");
+
+        // Find the parent elements before removal
+        const previewArea =
+          pendingDocumentElement.closest(".file-preview-area");
+        const cardElement = pendingDocumentElement.closest(
+          ".document-type-card"
         );
 
-        const result = await response.json();
+        console.log("=== BACKEND DELETION DEBUG START ===");
+        console.log("pendingDocumentElement:", pendingDocumentElement);
+        console.log("previewArea:", previewArea);
+        console.log("cardElement:", cardElement);
+        console.log(
+          "cardElement.id:",
+          cardElement ? cardElement.id : "NO CARD ELEMENT"
+        );
 
-        if (response.ok && result.success) {
-          // Find the parent elements before removal
-          const previewArea =
-            pendingDocumentElement.closest(".file-preview-area");
-          const cardElement = pendingDocumentElement.closest(
-            ".document-type-card"
-          );
+        // Animate the document element removal
+        pendingDocumentElement.style.opacity = "0";
+        pendingDocumentElement.style.transform = "scale(0.8)";
+        pendingDocumentElement.style.transition = "all 0.3s ease";
 
-          console.log("=== DELETION DEBUG START ===");
-          console.log("pendingDocumentElement:", pendingDocumentElement);
-          console.log("previewArea:", previewArea);
-          console.log("cardElement:", cardElement);
+        setTimeout(() => {
+          console.log("Removing document element from DOM");
+
+          // Remove the document element
+          if (pendingDocumentElement && pendingDocumentElement.parentNode) {
+            pendingDocumentElement.parentNode.removeChild(
+              pendingDocumentElement
+            );
+            console.log(
+              "Document element removed using parentNode.removeChild"
+            );
+          } else if (pendingDocumentElement) {
+            pendingDocumentElement.remove();
+            console.log("Document element removed using element.remove()");
+          }
+
+          // Check if the preview area is now empty
+          const remainingElements = previewArea
+            ? previewArea.querySelectorAll(".file-preview-wrapper")
+            : [];
           console.log(
-            "cardElement.id:",
-            cardElement ? cardElement.id : "NO CARD ELEMENT"
+            "Remaining file-preview-wrapper elements:",
+            remainingElements.length
+          );
+          console.log(
+            "Preview area children count AFTER removal:",
+            previewArea ? previewArea.children.length : "NO PREVIEW AREA"
           );
 
-          // Animate the document element removal
-          pendingDocumentElement.style.opacity = "0";
-          pendingDocumentElement.style.transform = "scale(0.8)";
-          pendingDocumentElement.style.transition = "all 0.3s ease";
+          // Update card state if empty
+          if (
+            previewArea &&
+            (previewArea.children.length === 0 ||
+              remainingElements.length === 0)
+          ) {
+            console.log("Preview area is empty, processing card...");
 
-          setTimeout(() => {
-            console.log("About to remove document element");
+            if (cardElement) {
+              console.log("Processing card element with ID:", cardElement.id);
 
-            // Try multiple ways to remove the element
-            if (pendingDocumentElement && pendingDocumentElement.parentNode) {
-              pendingDocumentElement.parentNode.removeChild(
-                pendingDocumentElement
+              // Clear the filename container
+              const fileNameContainer = cardElement.querySelector(
+                ".uploaded-file-name"
               );
-              console.log(
-                "Document element removed using parentNode.removeChild"
-              );
-            } else if (pendingDocumentElement) {
-              pendingDocumentElement.remove();
-              console.log("Document element removed using element.remove()");
-            }
+              if (fileNameContainer) {
+                fileNameContainer.textContent = "";
+                console.log("Cleared filename container");
+              }
+              cardElement.classList.remove("has-existing-file");
+              console.log("Removed 'has-existing-file' class");
 
-            // Double-check by looking for elements in the preview area
-            const remainingElements = previewArea
-              ? previewArea.querySelectorAll(".file-preview-wrapper")
-              : [];
-            console.log(
-              "Remaining file-preview-wrapper elements:",
-              remainingElements.length
-            );
+              // Check if this is an "other" type card - if so, remove the entire card
+              const isOtherCard =
+                cardElement.id &&
+                (cardElement.id.startsWith("other_") ||
+                  (cardElement.id.startsWith("others") &&
+                    cardElement.id !== "othersCard"));
 
-            // Check if the preview area is now empty AFTER the element is removed
-            console.log(
-              "Preview area children count AFTER removal:",
-              previewArea ? previewArea.children.length : "NO PREVIEW AREA"
-            );
+              console.log("Is other card?", isOtherCard);
 
-            // Use both checks: children.length === 0 AND no file-preview-wrapper elements
-            if (
-              previewArea &&
-              (previewArea.children.length === 0 ||
-                remainingElements.length === 0)
-            ) {
-              console.log("Preview area is empty, processing card...");
+              if (isOtherCard) {
+                console.log("REMOVING OTHER CARD - Starting animation...");
 
-              // Clear the filename container if it exists
-              if (cardElement) {
-                console.log("Processing card element with ID:", cardElement.id);
+                setTimeout(() => {
+                  console.log("Applying removal styles to card");
+                  cardElement.style.opacity = "0";
+                  cardElement.style.transform = "scale(0.95)";
+                  cardElement.style.transition = "all 0.2s ease";
 
-                const fileNameContainer = cardElement.querySelector(
-                  ".uploaded-file-name"
-                );
-                if (fileNameContainer) {
-                  fileNameContainer.textContent = "";
-                  console.log("Cleared filename container");
-                }
-                cardElement.classList.remove("has-existing-file");
-                console.log("Removed 'has-existing-file' class");
-
-                // Check if this is an "other" type card - if so, remove the entire card
-                const isOtherCard =
-                  cardElement.id &&
-                  (cardElement.id.startsWith("other_") ||
-                    (cardElement.id.startsWith("others") &&
-                      cardElement.id !== "othersCard"));
-
-                console.log("Is other card?", isOtherCard);
-                console.log(
-                  "Card ID starts with 'other_'?",
-                  cardElement.id ? cardElement.id.startsWith("other_") : "NO ID"
-                );
-
-                if (isOtherCard) {
-                  console.log("REMOVING OTHER CARD - Starting animation...");
-                  // Remove the entire card for "other" type
                   setTimeout(() => {
-                    console.log("Applying removal styles to card");
-                    cardElement.style.opacity = "0";
-                    cardElement.style.transform = "scale(0.95)";
-                    cardElement.style.transition = "all 0.2s ease";
+                    console.log("Removing card from DOM");
 
-                    setTimeout(() => {
-                      console.log("Removing card from DOM");
-                      cardElement.remove();
-                      console.log("Card removed successfully");
-                    }, 200);
-                  }, 100);
-                } else {
-                  console.log(
-                    "NOT an other card - keeping card for new uploads"
-                  );
-                }
-                // For non-other cards, keep the card but make it clickable for new uploads
+                    // Remove associated input
+                    const inputId = getInputIdFromCard(cardElement.id);
+                    const associatedInput = document.getElementById(inputId);
+                    if (associatedInput) {
+                      associatedInput.remove();
+                      console.log("Removed associated input:", inputId);
+                    }
+
+                    cardElement.remove();
+                    console.log("Card removed successfully");
+
+                    // Ensure we have at least one empty others card
+                    ensureAtLeastOneEmptyOthersCard();
+                  }, 200);
+                }, 100);
               } else {
-                console.log("NO CARD ELEMENT FOUND!");
+                console.log("NOT an other card - keeping card for new uploads");
               }
             } else {
-              console.log("Preview area still has children or doesn't exist");
-              if (previewArea) {
-                console.log("Remaining children:", previewArea.children);
-                // Force remove any remaining file-preview-wrapper elements
-                const wrappers = previewArea.querySelectorAll(
-                  ".file-preview-wrapper"
-                );
-                console.log(
-                  "Found",
-                  wrappers.length,
-                  "file-preview-wrapper elements to remove"
-                );
-                wrappers.forEach((wrapper, index) => {
-                  console.log(`Forcing removal of wrapper ${index}:`, wrapper);
-                  wrapper.remove();
-                });
-
-                // Check again after force removal
-                setTimeout(() => {
-                  console.log(
-                    "After force removal - children count:",
-                    previewArea.children.length
-                  );
-                  if (
-                    previewArea.children.length === 0 &&
-                    cardElement &&
-                    cardElement.id &&
-                    (cardElement.id.startsWith("other_") ||
-                      (cardElement.id.startsWith("others") &&
-                        cardElement.id !== "othersCard"))
-                  ) {
-                    console.log(
-                      "FORCE REMOVING OTHER CARD after cleaning wrappers"
-                    );
-                    cardElement.style.opacity = "0";
-                    cardElement.style.transform = "scale(0.95)";
-                    cardElement.style.transition = "all 0.2s ease";
-
-                    setTimeout(() => {
-                      cardElement.remove();
-                      console.log("Card force removed successfully");
-                    }, 200);
-                  }
-                }, 50);
-              }
+              console.log("NO CARD ELEMENT FOUND!");
             }
-            console.log("=== DELETION DEBUG END ===");
-          }, 300);
+          } else {
+            console.log("Preview area still has children or doesn't exist");
 
-          // Show success message
-          showToast("Document deleted successfully", false);
-          hideDeleteModal();
-        } else {
-          throw new Error(result.error || "Failed to delete document");
-        }
-      } catch (error) {
-        console.error("Delete error:", error);
-        showToast(error.message || "Error deleting document", true);
-        resetDocConfirmButton();
+            // Force cleanup if needed
+            if (previewArea) {
+              const wrappers = previewArea.querySelectorAll(
+                ".file-preview-wrapper"
+              );
+              console.log(
+                "Found",
+                wrappers.length,
+                "file-preview-wrapper elements to verify"
+              );
+
+              // Remove any orphaned wrappers without document IDs (shouldn't happen, but safety check)
+              wrappers.forEach((wrapper, index) => {
+                const removeBtn = wrapper.querySelector(".remove-preview-btn");
+                const docId = removeBtn?.dataset?.docId;
+                if (!docId && removeBtn?.dataset?.newFile !== "true") {
+                  console.log(`Removing orphaned wrapper ${index}:`, wrapper);
+                  wrapper.remove();
+                }
+              });
+            }
+          }
+
+          console.log("=== BACKEND DELETION DEBUG END ===");
+        }, 300);
+
+        // Show success message and hide modal
+        showToast("Document deleted successfully", false);
+        hideDeleteModal();
+      } else {
+        throw new Error(result.error || "Failed to delete document");
       }
-    });
+    } catch (error) {
+      console.error("Delete error:", error);
+      showToast(error.message || "Error deleting document", true);
+      resetDocConfirmButton();
+    }
+  };
+
+  // Update the confirm button event listener
+  if (confirmBtn) {
+    confirmBtn.addEventListener("click", confirmDocumentDeletion);
   }
 
   // =====================================
@@ -957,95 +935,106 @@ document.addEventListener("DOMContentLoaded", () => {
     return wrapper;
   };
 
-  // Handle removal of newly uploaded files (not yet saved to database)
-
-  const handleNewFileRemoval = (e) => {
+  // Handle removal of both new and existing files with proper modal flow
+  const handleFileRemoval = (e) => {
     if (!e.target.closest(".remove-preview-btn")) return;
 
+    e.preventDefault();
+    e.stopPropagation();
+
     const removeBtn = e.target.closest(".remove-preview-btn");
+    const wrapper = removeBtn.closest(".file-preview-wrapper");
+    const documentId = removeBtn.dataset.docId;
     const isNewFile = removeBtn.dataset.newFile === "true";
 
-    if (isNewFile) {
-      e.preventDefault();
-      e.stopPropagation();
+    console.log("File removal triggered:", {
+      documentId,
+      isNewFile,
+      hasDocId: !!documentId,
+    });
 
-      const wrapper = removeBtn.closest(".file-preview-wrapper");
-      const previewArea = wrapper.closest(".file-preview-area");
-      const card = wrapper.closest(".document-type-card");
+    if (isNewFile || !documentId) {
+      // Handle new files immediately (no modal, no backend call)
+      handleNewFileRemovalImmediate(wrapper);
+    } else {
+      // Handle existing files with modal confirmation
+      showDeleteModal(documentId, wrapper);
+    }
+  };
 
-      console.log("=== FILE REMOVAL DEBUG START ===");
-      console.log("Card ID:", card.id);
+  // Immediate removal for new files (no modal needed)
+  const handleNewFileRemovalImmediate = (wrapper) => {
+    const previewArea = wrapper.closest(".file-preview-area");
+    const card = wrapper.closest(".document-type-card");
 
-      // Animate removal
-      wrapper.style.opacity = "0";
-      wrapper.style.transform = "scale(0.8)";
-      wrapper.style.transition = "all 0.3s ease";
+    console.log("=== NEW FILE REMOVAL START ===");
+    console.log("Card ID:", card?.id);
 
-      setTimeout(() => {
-        wrapper.remove();
+    // Animate removal
+    wrapper.style.opacity = "0";
+    wrapper.style.transform = "scale(0.8)";
+    wrapper.style.transition = "all 0.3s ease";
 
-        // Update card state if no files remain
-        if (previewArea.children.length === 0) {
-          card.classList.remove("has-existing-file");
-          const fileNameContainer = card.querySelector(".uploaded-file-name");
-          if (fileNameContainer) {
-            fileNameContainer.textContent = "";
-          }
+    setTimeout(() => {
+      wrapper.remove();
 
-          // Clear the corresponding file input
-          const inputId = getInputIdFromCard(card.id);
-          const fileInput = document.getElementById(inputId);
-          if (fileInput) {
-            fileInput.value = "";
-          }
-
-          // SIMPLE LOGIC: If this is an others card, check if we should remove it
-          const isOthersCard =
-            card.classList.contains("others-card") || card.id === "othersCard";
-
-          if (isOthersCard) {
-            console.log("Others card cleared, checking if should remove...");
-
-            // Count all others cards
-            const allOthersCards = document.querySelectorAll(".others-card");
-            console.log("Total others cards:", allOthersCards.length);
-
-            // If there are multiple others cards, remove this empty one
-            if (allOthersCards.length > 1) {
-              console.log(
-                "Multiple others cards exist, REMOVING this empty card:",
-                card.id
-              );
-
-              // Animate card removal
-              card.style.opacity = "0";
-              card.style.transform = "scale(0.95)";
-              card.style.transition = "all 0.2s ease";
-
-              setTimeout(() => {
-                // Remove both the card and its associated input
-                if (fileInput) {
-                  fileInput.remove();
-                  console.log("Removed associated input:", inputId);
-                }
-                card.remove();
-                console.log("Others card removed successfully:", card.id);
-
-                // Make sure we still have at least one empty others card
-                ensureAtLeastOneEmptyOthersCard();
-              }, 200);
-            } else {
-              console.log(
-                "Only one others card exists, keeping it for uploads"
-              );
-            }
-          }
+      // Update card state if no files remain
+      if (previewArea && previewArea.children.length === 0) {
+        card.classList.remove("has-existing-file");
+        const fileNameContainer = card.querySelector(".uploaded-file-name");
+        if (fileNameContainer) {
+          fileNameContainer.textContent = "";
         }
 
-        console.log("=== FILE REMOVAL DEBUG END ===");
-        showToast("File removed successfully", false);
-      }, 300);
-    }
+        // Clear the corresponding file input
+        const inputId = getInputIdFromCard(card.id);
+        const fileInput = document.getElementById(inputId);
+        if (fileInput) {
+          fileInput.value = "";
+        }
+
+        // Handle others card cleanup
+        const isOthersCard =
+          card.classList.contains("others-card") || card.id === "othersCard";
+        if (isOthersCard) {
+          console.log("Others card cleared, checking if should remove...");
+
+          const allOthersCards = document.querySelectorAll(".others-card");
+          console.log("Total others cards:", allOthersCards.length);
+
+          // If there are multiple others cards, remove this empty one
+          if (allOthersCards.length > 1) {
+            console.log(
+              "Multiple others cards exist, REMOVING this empty card:",
+              card.id
+            );
+
+            // Animate card removal
+            card.style.opacity = "0";
+            card.style.transform = "scale(0.95)";
+            card.style.transition = "all 0.2s ease";
+
+            setTimeout(() => {
+              // Remove both the card and its associated input
+              if (fileInput) {
+                fileInput.remove();
+                console.log("Removed associated input:", inputId);
+              }
+              card.remove();
+              console.log("Others card removed successfully:", card.id);
+
+              // Ensure we still have at least one empty others card
+              ensureAtLeastOneEmptyOthersCard();
+            }, 200);
+          } else {
+            console.log("Only one others card exists, keeping it for uploads");
+          }
+        }
+      }
+
+      console.log("=== NEW FILE REMOVAL END ===");
+      showToast("File removed successfully", false);
+    }, 300);
   };
 
   // function to ensure there's always an empty others card available
@@ -1152,8 +1141,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================
 
   document.addEventListener("click", handleDocumentCardClick);
-
-  document.addEventListener("click", handleNewFileRemoval);
 
   document.addEventListener("change", (e) => {
     if (e.target.type === "file") {
