@@ -1,4 +1,4 @@
-// Complete Edit Shipment JavaScript - Merged functionality with Fixed Cargo Numbering
+// Complete Edit Shipment JavaScript - Fixed Others Card Deletion
 document.addEventListener("DOMContentLoaded", () => {
   // === SHARED TOAST FUNCTION ===
   const showToast = (msg, isError = false, duration = 2500) => {
@@ -31,13 +31,29 @@ document.addEventListener("DOMContentLoaded", () => {
       commercial_invoiceCard: "commercialInvoiceInput",
       packing_listCard: "packingListInput",
       certificate_originCard: "certificateOriginInput",
+      certificate_of_originCard: "certificateOriginInput", // Handle both variations
       othersCard: "othersInput",
+      invoiceCard: "commercialInvoiceInput", // Map invoiceCard to commercial invoice input
     };
 
-    // Add dynamic others cards
+    // Add dynamic others cards (client-created)
     for (let i = 2; i <= otherDocCount; i++) {
       baseMap[`others${i}Card`] = `others${i}Input`;
     }
+
+    // IMPORTANT: Add backend "other_" cards mapping
+    // These come from your backend with IDs like "other_1Card", "other_2Card", etc.
+    // We need to map them to the base othersInput since they don't have individual inputs
+    const backendOtherCards = document.querySelectorAll(
+      '[id^="other_"]:not([id*="Input"]):not([id*="Preview"]):not([id*="FileName"])'
+    );
+    backendOtherCards.forEach((card) => {
+      if (card.id && card.id.endsWith("Card")) {
+        // For backend other cards, we'll use the main othersInput as fallback
+        // Or create a dynamic input if needed
+        baseMap[card.id] = "othersInput";
+      }
+    });
 
     return baseMap;
   };
@@ -52,12 +68,100 @@ document.addEventListener("DOMContentLoaded", () => {
       othersInput: "othersCard",
     };
 
-    // Add dynamic others cards
+    // Add dynamic others cards (client-created)
     for (let i = 2; i <= otherDocCount; i++) {
       baseMap[`others${i}Input`] = `others${i}Card`;
     }
 
     return baseMap;
+  };
+
+  const ensureInputExists = (cardId) => {
+    console.log("ensureInputExists called with cardId:", cardId);
+
+    // Handle backend "other_" cards (other_1Card, other_2Card, etc.)
+    if (cardId && cardId.startsWith("other_") && cardId.endsWith("Card")) {
+      const inputId = cardId.replace("Card", "Input");
+      let input = document.getElementById(inputId);
+
+      if (!input) {
+        console.log(`Creating missing input for backend card: ${cardId}`);
+
+        // Create the missing input
+        input = document.createElement("input");
+        input.type = "file";
+        input.id = inputId;
+        input.name = "other_documents";
+        input.hidden = true;
+
+        // Append to the document container
+        const container = document.querySelector(".document-types");
+        if (container) {
+          container.appendChild(input);
+        }
+      }
+
+      return inputId;
+    }
+
+    // ADDED: Handle the main othersCard specifically
+    if (cardId === "othersCard") {
+      let input = document.getElementById("othersInput");
+
+      if (!input) {
+        console.log("Creating missing othersInput for othersCard");
+
+        // Create the missing input
+        input = document.createElement("input");
+        input.type = "file";
+        input.id = "othersInput";
+        input.name = "other_documents";
+        input.hidden = true;
+
+        // Append to the document container
+        const container = document.querySelector(".document-types");
+        if (container) {
+          container.appendChild(input);
+        }
+      }
+
+      return "othersInput";
+    }
+
+    // Handle dynamic others cards (others2Card, others3Card, etc.)
+    if (
+      cardId &&
+      cardId.startsWith("others") &&
+      cardId.endsWith("Card") &&
+      cardId !== "othersCard"
+    ) {
+      const inputId = cardId.replace("Card", "Input");
+      let input = document.getElementById(inputId);
+
+      if (!input) {
+        console.log(
+          `Creating missing input for dynamic others card: ${cardId}`
+        );
+
+        // Create the missing input
+        input = document.createElement("input");
+        input.type = "file";
+        input.id = inputId;
+        input.name = "other_documents";
+        input.hidden = true;
+
+        // Append to the document container
+        const container = document.querySelector(".document-types");
+        if (container) {
+          container.appendChild(input);
+        }
+      }
+
+      return inputId;
+    }
+
+    console.log("No input creation needed for cardId:", cardId);
+    return null;
   };
 
   // Create another "Others" card after file upload
@@ -71,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (hasEmpty) {
       console.log("Empty others card already exists, skipping creation");
-      return; // Don't add another if an empty one already exists
+      return;
     }
 
     otherDocCount += 1;
@@ -113,32 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     console.log(`Created new others card: ${idSuffix}`);
-  };
-
-  // Clean up unused dynamic others cards and inputs
-  const cleanupDynamicOthersCards = () => {
-    const allOthersCards = document.querySelectorAll(".others-card");
-    const emptyOthersCards = Array.from(allOthersCards).filter((card) => {
-      const previewArea = card.querySelector(".file-preview-area");
-      return previewArea && previewArea.children.length === 0;
-    });
-
-    // If we have more than one empty others card, remove the extras (keep original + 1)
-    if (emptyOthersCards.length > 1) {
-      emptyOthersCards.forEach((card, index) => {
-        // Keep the original othersCard and one additional empty card
-        if (index > 0 && card.id !== "othersCard") {
-          const inputId = getInputIdFromCard(card.id);
-          const associatedInput = document.getElementById(inputId);
-
-          if (associatedInput) {
-            associatedInput.remove();
-          }
-          card.remove();
-          console.log("Cleaned up empty others card:", card.id);
-        }
-      });
-    }
   };
 
   // ========================================
@@ -233,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Confirm deletion
+  // FIXED: Confirm deletion with proper others card removal
   const confirmDocumentDeletion = async () => {
     if (!pendingDocumentId || !pendingDocumentElement) return;
 
@@ -291,110 +369,139 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("Document element removed using element.remove()");
           }
 
-          // Check if the preview area is now empty
-          const remainingElements = previewArea
-            ? previewArea.querySelectorAll(".file-preview-wrapper")
-            : [];
-          console.log(
-            "Remaining file-preview-wrapper elements:",
-            remainingElements.length
-          );
-          console.log(
-            "Preview area children count AFTER removal:",
-            previewArea ? previewArea.children.length : "NO PREVIEW AREA"
-          );
+          // FIXED: Wait a bit more for DOM to update, then check again
+          setTimeout(() => {
+            // Check if the preview area is now empty AFTER DOM updates
+            const remainingElements = previewArea
+              ? previewArea.querySelectorAll(".file-preview-wrapper")
+              : [];
 
-          // Update card state if empty
-          if (
-            previewArea &&
-            (previewArea.children.length === 0 ||
-              remainingElements.length === 0)
-          ) {
-            console.log("Preview area is empty, processing card...");
+            console.log(
+              "AFTER DOM update - Remaining file-preview-wrapper elements:",
+              remainingElements.length
+            );
+            console.log(
+              "AFTER DOM update - Preview area children count:",
+              previewArea ? previewArea.children.length : "NO PREVIEW AREA"
+            );
 
-            if (cardElement) {
-              console.log("Processing card element with ID:", cardElement.id);
-
-              // Clear the filename container
-              const fileNameContainer = cardElement.querySelector(
-                ".uploaded-file-name"
-              );
-              if (fileNameContainer) {
-                fileNameContainer.textContent = "";
-                console.log("Cleared filename container");
+            // Filter out elements that are being animated out (have opacity: 0)
+            const visibleElements = Array.from(remainingElements).filter(
+              (el) => {
+                const style = window.getComputedStyle(el);
+                return style.opacity !== "0";
               }
-              cardElement.classList.remove("has-existing-file");
-              console.log("Removed 'has-existing-file' class");
+            );
 
-              // Check if this is an "other" type card - if so, remove the entire card
-              const isOtherCard =
-                cardElement.id &&
-                (cardElement.id.startsWith("other_") ||
-                  (cardElement.id.startsWith("others") &&
-                    cardElement.id !== "othersCard"));
+            console.log(
+              "Visible (non-animated) elements:",
+              visibleElements.length
+            );
 
-              console.log("Is other card?", isOtherCard);
+            // Update card state if empty OR if all remaining elements are being animated out
+            if (
+              previewArea &&
+              (previewArea.children.length === 0 ||
+                remainingElements.length === 0 ||
+                visibleElements.length === 0)
+            ) {
+              console.log(
+                "Preview area is empty (or only has animated elements), processing card..."
+              );
 
-              if (isOtherCard) {
-                console.log("REMOVING OTHER CARD - Starting animation...");
+              if (cardElement) {
+                console.log("Processing card element with ID:", cardElement.id);
 
-                setTimeout(() => {
-                  console.log("Applying removal styles to card");
-                  cardElement.style.opacity = "0";
-                  cardElement.style.transform = "scale(0.95)";
-                  cardElement.style.transition = "all 0.2s ease";
+                // Clear the filename container
+                const fileNameContainer = cardElement.querySelector(
+                  ".uploaded-file-name"
+                );
+                if (fileNameContainer) {
+                  fileNameContainer.textContent = "";
+                  console.log("Cleared filename container");
+                }
+                cardElement.classList.remove("has-existing-file");
+                console.log("Removed 'has-existing-file' class");
+
+                const isOtherCard =
+                  cardElement.id &&
+                  (cardElement.id.startsWith("other_") || // Backend others (other_1Card, other_2Card, etc.)
+                    cardElement.classList.contains("others-card") || // Has others-card class
+                    (cardElement.id.startsWith("others") &&
+                      cardElement.id !== "othersCard")); // Client-side others (others2Card, others3Card, etc.)
+
+                console.log("Is other card?", isOtherCard);
+                console.log("Card ID:", cardElement.id);
+                console.log("Card classes:", cardElement.className);
+
+                if (isOtherCard) {
+                  console.log("REMOVING OTHER CARD - Starting animation...");
 
                   setTimeout(() => {
-                    console.log("Removing card from DOM");
+                    console.log("Applying removal styles to card");
+                    cardElement.style.opacity = "0";
+                    cardElement.style.transform = "scale(0.95)";
+                    cardElement.style.transition = "all 0.2s ease";
 
-                    // Remove associated input
-                    const inputId = getInputIdFromCard(cardElement.id);
-                    const associatedInput = document.getElementById(inputId);
-                    if (associatedInput) {
-                      associatedInput.remove();
-                      console.log("Removed associated input:", inputId);
-                    }
+                    setTimeout(() => {
+                      console.log("Removing card from DOM");
 
-                    cardElement.remove();
-                    console.log("Card removed successfully");
+                      // Remove associated input
+                      const inputId = getInputIdFromCard(cardElement.id);
+                      const associatedInput = document.getElementById(inputId);
+                      if (associatedInput) {
+                        associatedInput.remove();
+                        console.log("Removed associated input:", inputId);
+                      }
 
-                    // Ensure we have at least one empty others card
-                    ensureAtLeastOneEmptyOthersCard();
-                  }, 200);
-                }, 100);
+                      cardElement.remove();
+                      console.log("Card removed successfully");
+
+                      // Ensure we have at least one empty others card
+                      ensureAtLeastOneEmptyOthersCard();
+                    }, 200);
+                  }, 100);
+                } else {
+                  console.log(
+                    "NOT an other card - keeping card for new uploads"
+                  );
+                  console.log(
+                    "This is likely a standard document type (bill_of_lading, commercial_invoice, etc.)"
+                  );
+                }
               } else {
-                console.log("NOT an other card - keeping card for new uploads");
+                console.log("NO CARD ELEMENT FOUND!");
               }
             } else {
-              console.log("NO CARD ELEMENT FOUND!");
+              console.log("Preview area still has visible children");
+
+              // Force cleanup if needed
+              if (previewArea) {
+                const wrappers = previewArea.querySelectorAll(
+                  ".file-preview-wrapper"
+                );
+                console.log(
+                  "Found",
+                  wrappers.length,
+                  "file-preview-wrapper elements to verify"
+                );
+
+                // Remove any orphaned wrappers without document IDs (shouldn't happen, but safety check)
+                wrappers.forEach((wrapper, index) => {
+                  const removeBtn = wrapper.querySelector(
+                    ".remove-preview-btn"
+                  );
+                  const docId = removeBtn?.dataset?.docId;
+                  if (!docId && removeBtn?.dataset?.newFile !== "true") {
+                    console.log(`Removing orphaned wrapper ${index}:`, wrapper);
+                    wrapper.remove();
+                  }
+                });
+              }
             }
-          } else {
-            console.log("Preview area still has children or doesn't exist");
 
-            // Force cleanup if needed
-            if (previewArea) {
-              const wrappers = previewArea.querySelectorAll(
-                ".file-preview-wrapper"
-              );
-              console.log(
-                "Found",
-                wrappers.length,
-                "file-preview-wrapper elements to verify"
-              );
-
-              // Remove any orphaned wrappers without document IDs (shouldn't happen, but safety check)
-              wrappers.forEach((wrapper, index) => {
-                const removeBtn = wrapper.querySelector(".remove-preview-btn");
-                const docId = removeBtn?.dataset?.docId;
-                if (!docId && removeBtn?.dataset?.newFile !== "true") {
-                  console.log(`Removing orphaned wrapper ${index}:`, wrapper);
-                  wrapper.remove();
-                }
-              });
-            }
-          }
-
-          console.log("=== BACKEND DELETION DEBUG END ===");
+            console.log("=== BACKEND DELETION DEBUG END ===");
+          }, 100); // Wait 100ms for DOM to fully update
         }, 300);
 
         // Show success message and hide modal
@@ -689,34 +796,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (deleteCargoModal && deleteCargoModal.style.display === "flex") {
         closeCargoModal();
       }
-      // Note: Document deletion modal escape handler is above
     }
   });
 
   // ================================
-  // === INITIALIZATION ===
+  // === FILE UPLOAD FUNCTIONALITY ===
   // ================================
-
-  // Initialize cargo numbering and buttons on page load
-  console.log("Initializing edit shipment functionality");
-
-  // First, initialize the cargo numbering system
-  initializeCargoNumbering(); // Find the highest existing number
-
-  // Mark all existing cargo entries as existing (from database)
-  document.querySelectorAll(".cargo-entry").forEach((entry) => {
-    markCargoStatus(entry, false); // Mark as existing (from database)
-  });
-
-  renumberCargos(); // Handle any unnumbered entries (should be none on load)
-  updateAddButtons(); // Show add buttons correctly
-
-  console.log("Edit shipment JavaScript loaded successfully");
-
-  // You can add more functionality here like:
-  // - Form validation
-  // - Document upload functionality
-  // - Other edit shipment features
 
   // File upload handler for document cards
   const handleDocumentCardClick = (e) => {
@@ -737,21 +822,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // Map card IDs to their corresponding file inputs
     const cardToInputMap = getDynamicCardToInputMap();
 
-    // Handle dynamic "other" cards (created for additional document types)
-    if (cardId && cardId.startsWith("others") && cardId !== "othersCard") {
+    // FIXED: Handle various card types properly
+    if (cardId && cardToInputMap[cardId]) {
       inputId = cardToInputMap[cardId];
     } else {
-      inputId = cardToInputMap[cardId];
-    }
-
-    if (!inputId) {
-      console.error("No matching input found for card:", cardId);
-      return;
+      // Fallback: try to ensure input exists for backend cards
+      const ensuredInputId = ensureInputExists(cardId);
+      if (ensuredInputId) {
+        inputId = ensuredInputId;
+      } else {
+        console.error("No matching input found for card:", cardId);
+        console.log("Available mappings:", cardToInputMap);
+        return;
+      }
     }
 
     const fileInput = document.getElementById(inputId);
     if (!fileInput) {
       console.error("File input not found:", inputId);
+      console.log("Trying to create input for backend card...");
+
+      // Try to create input for backend card
+      const createdInputId = ensureInputExists(cardId);
+      if (createdInputId) {
+        const newInput = document.getElementById(createdInputId);
+        if (newInput) {
+          configureFileInput(newInput, cardId);
+          newInput.click();
+          return;
+        }
+      }
+
+      console.error("Could not create or find input for card:", cardId);
       return;
     }
 
@@ -802,7 +904,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "Expected card ID:",
         cardId
       );
-      // Try to find the card by examining all cards on the page
       const allCards = document.querySelectorAll(".document-type-card");
       console.log(
         "Available cards:",
@@ -935,7 +1036,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return wrapper;
   };
 
-  // Handle removal of both new and existing files with proper modal flow
+  // UNIFIED: Handle removal of both new and existing files
   const handleFileRemoval = (e) => {
     if (!e.target.closest(".remove-preview-btn")) return;
 
@@ -1037,7 +1138,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 300);
   };
 
-  // function to ensure there's always an empty others card available
+  // Ensure there's always an empty others card available
   const ensureAtLeastOneEmptyOthersCard = () => {
     console.log("=== ENSURING AT LEAST ONE EMPTY OTHERS CARD ===");
 
@@ -1059,72 +1160,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const debugOthersCards = () => {
-    const allOthersCards = document.querySelectorAll(".others-card");
-    console.log("=== OTHERS CARDS DEBUG ===");
-    allOthersCards.forEach((card, index) => {
-      const previewArea = card.querySelector(".file-preview-area");
-      const hasFiles = previewArea && previewArea.children.length > 0;
-      console.log(`Card ${index + 1}:`, {
-        id: card.id,
-        hasFiles: hasFiles,
-        childrenCount: previewArea
-          ? previewArea.children.length
-          : "No preview area",
-      });
-    });
-    console.log("=== END OTHERS CARDS DEBUG ===");
-  };
-
-  const cleanupExtraEmptyOthersCards = () => {
-    const allOthersCards = document.querySelectorAll(".others-card");
-    const emptyOthersCards = Array.from(allOthersCards).filter((card) => {
-      const previewArea = card.querySelector(".file-preview-area");
-      return previewArea && previewArea.children.length === 0;
-    });
-
-    console.log(
-      "Cleanup: Found",
-      emptyOthersCards.length,
-      "empty others cards"
-    );
-
-    // If we have more than one empty card, remove the extras (keep only one)
-    if (emptyOthersCards.length > 1) {
-      // Always keep the original othersCard if it exists and is empty
-      const originalCard = emptyOthersCards.find(
-        (card) => card.id === "othersCard"
-      );
-
-      emptyOthersCards.forEach((card, index) => {
-        // Remove all empty cards except the first one (or the original if it exists)
-        if (originalCard) {
-          // If original exists, remove all others except the original
-          if (card.id !== "othersCard") {
-            console.log("Removing extra empty card:", card.id);
-            const inputId = getInputIdFromCard(card.id);
-            const associatedInput = document.getElementById(inputId);
-            if (associatedInput) {
-              associatedInput.remove();
-            }
-            card.remove();
-          }
-        } else {
-          // If no original, keep the first empty card, remove the rest
-          if (index > 0) {
-            console.log("Removing extra empty card:", card.id);
-            const inputId = getInputIdFromCard(card.id);
-            const associatedInput = document.getElementById(inputId);
-            if (associatedInput) {
-              associatedInput.remove();
-            }
-            card.remove();
-          }
-        }
-      });
-    }
-  };
-
   // Helper function to get input ID from card ID
   const getInputIdFromCard = (cardId) => {
     const cardToInputMap = getDynamicCardToInputMap();
@@ -1135,6 +1170,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return cardToInputMap[cardId] || "othersInput";
   };
+
+  // Clean up unused dynamic others cards and inputs
+  const cleanupDynamicOthersCards = () => {
+    const allOthersCards = document.querySelectorAll(".others-card");
+    const emptyOthersCards = Array.from(allOthersCards).filter((card) => {
+      const previewArea = card.querySelector(".file-preview-area");
+      return previewArea && previewArea.children.length === 0;
+    });
+
+    // If we have more than one empty others card, remove the extras (keep original + 1)
+    if (emptyOthersCards.length > 1) {
+      emptyOthersCards.forEach((card, index) => {
+        // Keep the original othersCard and one additional empty card
+        if (index > 0 && card.id !== "othersCard") {
+          const inputId = getInputIdFromCard(card.id);
+          const associatedInput = document.getElementById(inputId);
+
+          if (associatedInput) {
+            associatedInput.remove();
+          }
+          card.remove();
+          console.log("Cleaned up empty others card:", card.id);
+        }
+      });
+    }
+  };
+
+  // ================================
+  // === INITIALIZATION ===
+  // ================================
+
+  // Initialize cargo numbering and buttons on page load
+  console.log("Initializing edit shipment functionality");
+
+  // First, initialize the cargo numbering system
+  initializeCargoNumbering(); // Find the highest existing number
+
+  // Mark all existing cargo entries as existing (from database)
+  document.querySelectorAll(".cargo-entry").forEach((entry) => {
+    markCargoStatus(entry, false); // Mark as existing (from database)
+  });
+
+  renumberCargos(); // Handle any unnumbered entries (should be none on load)
+  updateAddButtons(); // Show add buttons correctly
+
+  console.log("Edit shipment JavaScript loaded successfully");
 
   // =====================================
   // === EVENT LISTENERS SETUP ===
