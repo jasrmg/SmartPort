@@ -613,4 +613,306 @@ document.addEventListener("DOMContentLoaded", () => {
   // - Form validation
   // - Document upload functionality
   // - Other edit shipment features
+
+  // File upload handler for document cards
+  const handleDocumentCardClick = (e) => {
+    const card = e.target.closest(".document-type-card");
+    if (!card) return;
+
+    // Don't trigger upload if clicking on remove button or file preview
+    if (
+      e.target.closest(".remove-preview-btn") ||
+      e.target.closest(".file-preview-wrapper")
+    ) {
+      return;
+    }
+
+    const cardId = card.id;
+    let inputId = "";
+
+    // Map card IDs to their corresponding file inputs
+    const cardToInputMap = {
+      bill_of_ladingCard: "billOfLadingInput",
+      commercial_invoiceCard: "commercialInvoiceInput",
+      packing_listCard: "packingListInput",
+      certificate_originCard: "certificateOriginInput",
+      othersCard: "othersInput",
+    };
+
+    // Handle dynamic "other_" cards (created for additional document types)
+    if (cardId && cardId.startsWith("other_")) {
+      inputId = "othersInput";
+    } else {
+      inputId = cardToInputMap[cardId];
+    }
+
+    if (!inputId) {
+      console.error("No matching input found for card:", cardId);
+      return;
+    }
+
+    const fileInput = document.getElementById(inputId);
+    if (!fileInput) {
+      console.error("File input not found:", inputId);
+      return;
+    }
+
+    // Configure file input based on card type
+    configureFileInput(fileInput, cardId);
+
+    // Trigger file selection dialog
+    fileInput.click();
+  };
+
+  // Configure file input properties
+  const configureFileInput = (fileInput, cardId) => {
+    // Set accepted file types
+    const acceptedTypes = "image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx";
+    fileInput.accept = acceptedTypes;
+
+    // Allow multiple files for "others" card
+    if (cardId === "othersCard" || cardId.startsWith("other_")) {
+      fileInput.multiple = true;
+    } else {
+      fileInput.multiple = false;
+    }
+  };
+
+  // Handle file selection
+  const handleFileSelection = (e) => {
+    const fileInput = e.target;
+    const files = Array.from(fileInput.files);
+
+    if (files.length === 0) return;
+
+    // Find the corresponding card
+    const inputId = fileInput.id;
+    const cardId = getCardIdFromInput(inputId);
+
+    console.log("File selection debug:", {
+      inputId: inputId,
+      expectedCardId: cardId,
+      cardExists: !!document.getElementById(cardId),
+    });
+
+    const card = document.getElementById(cardId);
+
+    if (!card) {
+      console.error(
+        "Card not found for input:",
+        inputId,
+        "Expected card ID:",
+        cardId
+      );
+      // Try to find the card by examining all cards on the page
+      const allCards = document.querySelectorAll(".document-type-card");
+      console.log(
+        "Available cards:",
+        Array.from(allCards).map((c) => c.id)
+      );
+      return;
+    }
+
+    // Validate files
+    const validFiles = validateFiles(files);
+    if (validFiles.length === 0) {
+      fileInput.value = ""; // Clear the input
+      return;
+    }
+
+    // Update card appearance and preview
+    updateCardWithFiles(card, validFiles);
+
+    // Show success message
+    const fileCount = validFiles.length;
+    const message =
+      fileCount === 1
+        ? `File "${validFiles[0].name}" uploaded successfully`
+        : `${fileCount} files uploaded successfully`;
+    showToast(message, false);
+  };
+
+  // Map input IDs back to card IDs
+  const getCardIdFromInput = (inputId) => {
+    const inputToCardMap = {
+      billOfLadingInput: "bill_of_ladingCard",
+      commercialInvoiceInput: "commercial_invoiceCard",
+      packingListInput: "packing_listCard",
+      certificateOriginInput: "certificate_originCard",
+      othersInput: "othersCard",
+    };
+
+    return inputToCardMap[inputId] || "othersCard";
+  };
+
+  // Validate selected files
+  const validateFiles = (files) => {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+
+    return files.filter((file) => {
+      // Check file size
+      if (file.size > maxSize) {
+        showToast(
+          `File "${file.name}" is too large. Maximum size is 10MB.`,
+          true
+        );
+        return false;
+      }
+
+      // Check file type
+      if (!allowedTypes.includes(file.type)) {
+        showToast(`File "${file.name}" has an unsupported format.`, true);
+        return false;
+      }
+
+      return true;
+    });
+  };
+
+  // Update card with uploaded files
+  const updateCardWithFiles = (card, files) => {
+    const fileNameContainer = card.querySelector(".uploaded-file-name");
+    const previewArea = card.querySelector(".file-preview-area");
+
+    if (!previewArea) {
+      console.error("Preview area not found in card");
+      return;
+    }
+
+    previewArea.innerHTML = "";
+
+    // Create preview for each file
+    files.forEach((file) => {
+      const previewWrapper = createFilePreview(file);
+      previewArea.appendChild(previewWrapper);
+    });
+
+    // Mark card as having files
+    card.classList.add("has-existing-file");
+  };
+
+  // Create file preview element
+  const createFilePreview = (file) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "file-preview-wrapper";
+
+    // Create file icon/preview based on type
+    let fileElement = "";
+    if (file.type.startsWith("image/")) {
+      const imageUrl = URL.createObjectURL(file);
+      fileElement = `<img src="${imageUrl}" class="file-preview-image" alt="Document preview">`;
+    } else if (file.type === "application/pdf") {
+      fileElement = '<i class="fas fa-file-pdf pdf-icon"></i>';
+    } else if (file.type.includes("word")) {
+      fileElement = '<i class="fas fa-file-word word-icon"></i>';
+    } else if (file.type === "text/plain") {
+      fileElement = '<i class="fas fa-file-alt txt-icon"></i>';
+    } else if (file.type.includes("excel") || file.type.includes("sheet")) {
+      fileElement = '<i class="fas fa-file-excel excel-icon"></i>';
+    } else {
+      fileElement = '<i class="fas fa-file file-icon"></i>';
+    }
+
+    wrapper.innerHTML = `
+    ${fileElement}
+    <span class="file-name-label">${file.name}</span>
+    <button type="button" class="remove-preview-btn" title="Remove file" data-new-file="true">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
+
+    return wrapper;
+  };
+
+  // Handle removal of newly uploaded files (not yet saved to database)
+  const handleNewFileRemoval = (e) => {
+    if (!e.target.closest(".remove-preview-btn")) return;
+
+    const removeBtn = e.target.closest(".remove-preview-btn");
+    const isNewFile = removeBtn.dataset.newFile === "true";
+
+    if (isNewFile) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const wrapper = removeBtn.closest(".file-preview-wrapper");
+      const previewArea = wrapper.closest(".file-preview-area");
+      const card = wrapper.closest(".document-type-card");
+
+      // Animate removal
+      wrapper.style.opacity = "0";
+      wrapper.style.transform = "scale(0.8)";
+      wrapper.style.transition = "all 0.3s ease";
+
+      setTimeout(() => {
+        wrapper.remove();
+
+        // Update card state if no files remain
+        if (previewArea.children.length === 0) {
+          card.classList.remove("has-existing-file");
+          const fileNameContainer = card.querySelector(".uploaded-file-name");
+          if (fileNameContainer) {
+            fileNameContainer.textContent = "";
+          }
+
+          // Clear the corresponding file input
+          const inputId = getInputIdFromCard(card.id);
+          const fileInput = document.getElementById(inputId);
+          if (fileInput) {
+            fileInput.value = "";
+          }
+        }
+
+        showToast("File removed successfully", false);
+      }, 300);
+    }
+  };
+
+  // Helper function to get input ID from card ID
+  const getInputIdFromCard = (cardId) => {
+    const cardToInputMap = {
+      bill_of_ladingCard: "billOfLadingInput",
+      commercial_invoiceCard: "commercialInvoiceInput",
+      packing_listCard: "packingListInput",
+      certificate_originCard: "certificateOriginInput",
+      othersCard: "othersInput",
+    };
+
+    if (cardId && cardId.startsWith("other_")) {
+      return "othersInput";
+    }
+
+    return cardToInputMap[cardId] || "othersInput";
+  };
+
+  // =====================================
+  // === EVENT LISTENERS SETUP ===
+  // =====================================
+
+  // Add click event listeners to all document cards
+  document.addEventListener("click", handleDocumentCardClick);
+
+  // Add click event listener for removing new files
+  document.addEventListener("click", handleNewFileRemoval);
+
+  // Add change event listeners to all file inputs
+  document.addEventListener("change", (e) => {
+    if (e.target.type === "file") {
+      handleFileSelection(e);
+    }
+  });
+
+  console.log("File upload functionality initialized");
 });
