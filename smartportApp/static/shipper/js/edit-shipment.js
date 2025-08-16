@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const getDynamicInputToCardMap = () => {
     const baseMap = {
       billOfLadingInput: "bill_of_ladingCard",
-      commercialInvoiceInput: "commercial_invoiceCard",
+      commercialInvoiceInput: "invoiceCard",
       packingListInput: "packing_listCard",
       certificateOriginInput: "certificate_of_originCard",
       othersInput: "othersCard",
