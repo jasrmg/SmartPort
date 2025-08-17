@@ -29,6 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let deletionWasSuccessful = false;
 
+  let pendingPickerTrigger = null;
+
   // Create dynamic card-to-input mappings
   const getDynamicCardToInputMap = () => {
     const baseMap = {
@@ -418,6 +420,12 @@ document.addEventListener("DOMContentLoaded", () => {
         // Mark deletion as successful immediately
         deletionWasSuccessful = true;
 
+        // Store picker trigger info if this is a replacement flow
+        if (pendingFileReplacement && pendingFileReplacement.cardId) {
+          pendingPickerTrigger = pendingFileReplacement.cardId;
+          console.log("Stored picker trigger for card:", pendingPickerTrigger);
+        }
+
         // Find the parent elements before removal
         const previewArea =
           pendingDocumentElement.closest(".file-preview-area");
@@ -425,6 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ".document-type-card"
         );
 
+        // Continue with existing deletion logic...
         console.log("=== BACKEND DELETION DEBUG START ===");
         console.log("pendingDocumentElement:", pendingDocumentElement);
         console.log("previewArea:", previewArea);
@@ -582,45 +591,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     currentCardId: cardElement.id,
                     matches: pendingFileReplacement?.cardId === cardElement.id,
                   });
-
-                  // ADDED: Trigger file replacement after card is fully reset
-                  if (
-                    pendingFileReplacement &&
-                    pendingFileReplacement.cardId === cardElement.id
-                  ) {
-                    console.log(
-                      "Card reset complete, scheduling file replacement trigger"
-                    );
-
-                    const tempCardId = cardElement.id;
-
-                    // Schedule file picker trigger after all DOM updates complete
-                    setTimeout(() => {
-                      console.log(
-                        "Triggering file replacement for:",
-                        tempCardId
-                      );
-
-                      // Verify card is actually reset
-                      const resetCard = document.getElementById(tempCardId);
-                      if (resetCard) {
-                        console.log("Final verification - Card state:", {
-                          hasExistingFile:
-                            resetCard.classList.contains("has-existing-file"),
-                          previewChildren:
-                            resetCard.querySelector(".file-preview-area")
-                              ?.children.length,
-                          hasBackendFiles: hasExistingBackendFiles(resetCard),
-                        });
-                      }
-
-                      triggerFileSelection(tempCardId);
-                      pendingFileReplacement = null;
-                      console.log(
-                        "Cleared pendingFileReplacement after triggering file picker"
-                      );
-                    }, 500); // Shorter delay since we're already after card reset
-                  }
                 }
               } else {
                 console.log("NO CARD ELEMENT FOUND!");
@@ -652,7 +622,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
               }
             }
+            // Trigger file picker if this was a replacement flow
+            if (
+              pendingPickerTrigger &&
+              cardElement &&
+              cardElement.id === pendingPickerTrigger
+            ) {
+              console.log(
+                "Triggering file picker for replacement:",
+                pendingPickerTrigger
+              );
+              const cardToTrigger = pendingPickerTrigger;
+              pendingPickerTrigger = null;
 
+              setTimeout(() => {
+                console.log(
+                  "Executing file picker trigger for:",
+                  cardToTrigger
+                );
+                triggerFileSelection(cardToTrigger);
+              }, 500);
+            }
             console.log("=== BACKEND DELETION DEBUG END ===");
           }, 100); // Wait 100ms for DOM to fully update
         }, 300);
@@ -1075,6 +1065,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Trigger file selection dialog
     safelyTriggerFileInput(fileInput);
+
+    // Clear any pending picker trigger after successful trigger
+    pendingPickerTrigger = null;
   };
 
   // Configure file input properties
