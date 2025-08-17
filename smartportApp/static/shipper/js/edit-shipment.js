@@ -334,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     pendingDocumentId = null;
     pendingDocumentElement = null;
-    pendingFileReplacement = null;
+    // pendingFileReplacement = null;
 
     // Reset success flag
     deletionWasSuccessful = false;
@@ -622,17 +622,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
               }
             }
-            // Trigger file picker if this was a replacement flow
+            // DEBUG: Log the state before file picker trigger
+            console.log("=== FILE PICKER TRIGGER DEBUG ===");
+            console.log("pendingPickerTrigger:", pendingPickerTrigger);
+            console.log("cardElement exists:", !!cardElement);
+            console.log("cardElement.id:", cardElement?.id);
+            console.log("pendingFileReplacement:", pendingFileReplacement);
+            console.log(
+              "shouldAutoTrigger:",
+              pendingFileReplacement?.shouldAutoTrigger
+            );
+            console.log("=== END FILE PICKER TRIGGER DEBUG ===");
+
+            // Trigger file picker if this was a replacement flow AND should auto-trigger
             if (
               pendingPickerTrigger &&
               cardElement &&
-              cardElement.id === pendingPickerTrigger
+              cardElement.id === pendingPickerTrigger &&
+              pendingFileReplacement &&
+              pendingFileReplacement.shouldAutoTrigger
             ) {
               console.log(
                 "Triggering file picker for replacement:",
                 pendingPickerTrigger
               );
               const cardToTrigger = pendingPickerTrigger;
+
+              // Clear the trigger BEFORE the timeout to prevent conflicts
               pendingPickerTrigger = null;
 
               setTimeout(() => {
@@ -641,7 +657,17 @@ document.addEventListener("DOMContentLoaded", () => {
                   cardToTrigger
                 );
                 triggerFileSelection(cardToTrigger);
+                // Clear pendingFileReplacement after successful trigger
+                pendingFileReplacement = null;
               }, 500);
+            } else if (pendingPickerTrigger) {
+              console.log(
+                "File picker trigger skipped for others card:",
+                pendingPickerTrigger
+              );
+              // Clear both the trigger and file replacement since we're not using them
+              pendingPickerTrigger = null;
+              pendingFileReplacement = null;
             }
             console.log("=== BACKEND DELETION DEBUG END ===");
           }, 100); // Wait 100ms for DOM to fully update
@@ -649,7 +675,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Show success message and hide modal
         const isReplacementFlow = !!pendingFileReplacement;
-        const message = isReplacementFlow
+        const shouldAutoTrigger =
+          isReplacementFlow && pendingFileReplacement.shouldAutoTrigger;
+
+        const message = shouldAutoTrigger
           ? "File deleted successfully. Please select a new file."
           : "Document deleted successfully";
         showToast(message, false);
@@ -979,8 +1008,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const documentId = removeBtn?.dataset?.docId;
 
       if (documentId && firstExistingFile) {
-        // Set up file replacement flow
-        pendingFileReplacement = { cardId };
+        // Check if this is an "others" type card
+        const isOthersCard =
+          cardId === "othersCard" ||
+          cardId.startsWith("other_") ||
+          card.classList.contains("others-card");
+
+        console.log("=== CARD TYPE DEBUG ===");
+        console.log("cardId:", cardId);
+        console.log("isOthersCard:", isOthersCard);
+        console.log("shouldAutoTrigger will be:", !isOthersCard);
+        console.log("=== END CARD TYPE DEBUG ===");
+
+        // Set up file replacement flow with auto-trigger flag
+        pendingFileReplacement = {
+          cardId,
+          shouldAutoTrigger: !isOthersCard, // Only auto-trigger for non-others cards
+        };
 
         // Show deletion modal with replacement context
         showDeleteModal(documentId, firstExistingFile, true);
@@ -1065,9 +1109,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Trigger file selection dialog
     safelyTriggerFileInput(fileInput);
-
-    // Clear any pending picker trigger after successful trigger
-    pendingPickerTrigger = null;
   };
 
   // Configure file input properties
