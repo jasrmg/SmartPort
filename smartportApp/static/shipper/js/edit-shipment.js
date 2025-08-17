@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Counter for dynamic others cards
   let otherDocCount = 1;
 
+  // Variables for file replacement flow
+  let pendingFileReplacement = null;
+
   // Create dynamic card-to-input mappings
   const getDynamicCardToInputMap = () => {
     const baseMap = {
@@ -61,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Create dynamic input-to-card mappings
   const getDynamicInputToCardMap = () => {
     const baseMap = {
-      billOfLadingInput: "bill_of_ladingCard",
+      billOfLadingInput: "invoiceCard",
       commercialInvoiceInput: "invoiceCard",
       packingListInput: "packing_listCard",
       certificateOriginInput: "certificate_of_originCard",
@@ -238,10 +241,82 @@ document.addEventListener("DOMContentLoaded", () => {
   let pendingDocumentId = null;
   let pendingDocumentElement = null;
 
+  // Check if a card has existing backend files
+  const hasExistingBackendFiles = (card) => {
+    if (!card) return false;
+
+    const previewArea = card.querySelector(".file-preview-area");
+    if (!previewArea) return false;
+
+    // Check if there are any file preview wrappers with backend document IDs
+    const existingFiles = previewArea.querySelectorAll(".file-preview-wrapper");
+    const hasBackendFiles = Array.from(existingFiles).some((wrapper) => {
+      const removeBtn = wrapper.querySelector(".remove-preview-btn");
+      const hasDocId =
+        removeBtn &&
+        removeBtn.dataset.docId &&
+        removeBtn.dataset.newFile !== "true";
+
+      // Also check if the element is not being animated out (opacity 0)
+      const style = window.getComputedStyle(wrapper);
+      const isVisible = style.opacity !== "0";
+
+      return hasDocId && isVisible;
+    });
+
+    console.log("hasExistingBackendFiles check:", {
+      cardId: card.id,
+      totalWrappers: existingFiles.length,
+      hasBackendFiles: hasBackendFiles,
+    });
+
+    return hasBackendFiles;
+  };
+
   // Show modal function
-  const showDeleteModal = (documentId, documentElement) => {
+  const showDeleteModal = (
+    documentId,
+    documentElement,
+    isForReplacement = false
+  ) => {
     pendingDocumentId = documentId;
     pendingDocumentElement = documentElement;
+
+    // Update modal content for replacement flow
+    if (isForReplacement) {
+      const modalTitle = deleteModal.querySelector(".modal-title");
+      const modalWarning = deleteModal.querySelector(".modal-warning");
+      const confirmBtnText = deleteModal.querySelector(
+        "#confirmDeleteDocsBtn .btn-text"
+      );
+
+      if (modalTitle) modalTitle.textContent = "Replace Existing File?";
+      if (modalWarning) {
+        modalWarning.innerHTML = `
+          <i class="fas fa-exclamation-triangle icon"></i>
+          This file will be permanently deleted. 
+          To upload a new one, the current file must be removed first.
+        `;
+      }
+      if (confirmBtnText) confirmBtnText.textContent = "Remove & Upload";
+    } else {
+      // Reset to default delete modal content
+      const modalTitle = deleteModal.querySelector(".modal-title");
+      const modalWarning = deleteModal.querySelector(".modal-warning");
+      const confirmBtnText = deleteModal.querySelector(
+        "#confirmDeleteDocsBtn .btn-text"
+      );
+
+      if (modalTitle) modalTitle.textContent = "Delete Existing File?";
+      if (modalWarning) {
+        modalWarning.innerHTML = `
+          <i class="fas fa-exclamation-triangle icon"></i>
+          This file will be permanently deleted and cannot be recovered.
+        `;
+      }
+      if (confirmBtnText) confirmBtnText.textContent = "Remove";
+    }
+
     if (deleteModal) {
       deleteModal.style.display = "flex";
     }
@@ -254,6 +329,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     pendingDocumentId = null;
     pendingDocumentElement = null;
+
+    // FIXED: Reset file replacement state properly
+    pendingFileReplacement = null;
+
     resetDocConfirmButton();
   };
 
@@ -468,6 +547,26 @@ document.addEventListener("DOMContentLoaded", () => {
                   console.log(
                     "This is likely a standard document type (bill_of_lading, commercial_invoice, etc.)"
                   );
+                  console.log("Forcing card reset to empty state");
+                  // Clear any remaining file input values
+                  const inputId = getInputIdFromCard(cardElement.id);
+                  const fileInput = document.getElementById(inputId);
+                  if (fileInput) {
+                    fileInput.value = "";
+                    console.log("Cleared file input:", inputId);
+                  }
+                  // Remove has-existing-file class if not already done
+                  cardElement.classList.remove("has-existing-file");
+
+                  // Clear filename display
+                  const fileNameContainer = cardElement.querySelector(
+                    ".uploaded-file-name"
+                  );
+                  if (fileNameContainer) {
+                    fileNameContainer.textContent = "";
+                  }
+
+                  console.log("Card reset complete for:", cardElement.id);
                 }
               } else {
                 console.log("NO CARD ELEMENT FOUND!");
@@ -501,11 +600,33 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             console.log("=== BACKEND DELETION DEBUG END ===");
+
+            // UPDATED: Handle file replacement flow after deletion
+            if (pendingFileReplacement) {
+              console.log(
+                "File replacement flow: triggering file picker after deletion"
+              );
+              const { cardId } = pendingFileReplacement;
+
+              // Reset the file replacement state first
+              const tempCardId = cardId;
+              pendingFileReplacement = null;
+
+              // Trigger file selection for the card after brief delay
+              setTimeout(() => {
+                console.log("Triggering file selection for:", tempCardId);
+                triggerFileSelection(tempCardId);
+              }, 800);
+            }
           }, 100); // Wait 100ms for DOM to fully update
         }, 300);
 
         // Show success message and hide modal
-        showToast("Document deleted successfully", false);
+        const isReplacementFlow = !!pendingFileReplacement;
+        const message = isReplacementFlow
+          ? "File deleted successfully. Please select a new file."
+          : "Document deleted successfully";
+        showToast(message, false);
         hideDeleteModal();
       } else {
         throw new Error(result.error || "Failed to delete document");
@@ -817,6 +938,34 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const cardId = card.id;
+
+    // NEW: Check if card has existing backend files
+    if (hasExistingBackendFiles(card)) {
+      console.log("Card has existing backend files, showing replacement modal");
+
+      // Find the first existing file to use for the deletion process
+      const previewArea = card.querySelector(".file-preview-area");
+      const firstExistingFile = previewArea.querySelector(
+        ".file-preview-wrapper"
+      );
+      const removeBtn = firstExistingFile?.querySelector(".remove-preview-btn");
+      const documentId = removeBtn?.dataset?.docId;
+
+      if (documentId && firstExistingFile) {
+        // Set up file replacement flow
+        pendingFileReplacement = { cardId };
+
+        // Show deletion modal with replacement context
+        showDeleteModal(documentId, firstExistingFile, true);
+        return;
+      }
+    }
+
+    // Original logic for empty cards or cards with only new files
+    triggerFileSelection(cardId);
+  };
+
+  const triggerFileSelection = (cardId) => {
     let inputId = "";
 
     // Map card IDs to their corresponding file inputs
@@ -1058,8 +1207,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Handle new files immediately (no modal, no backend call)
       handleNewFileRemovalImmediate(wrapper);
     } else {
-      // Handle existing files with modal confirmation
-      showDeleteModal(documentId, wrapper);
+      // Handle existing files with modal confirmation (no replacement flow)
+      showDeleteModal(documentId, wrapper, false);
     }
   };
 
