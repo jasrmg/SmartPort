@@ -167,12 +167,8 @@ def shipper_submit_shipment_view(request):
   }
   return render(request, "smartportApp/shipper/submit-shipment.html", context)
 
-"""
-POST: Process all updates for the shipment
-GET: Display the form with the existing data
-"""
-def edit_submit_shipment(request, submanifest_id):
-
+def handle_get_request(request, submanifest_id):
+  """Handle GET request - display the edit form"""
   submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
   cargos = Cargo.objects.filter(submanifest=submanifest)
   voyages = Voyage.objects.select_related("departure_port", "arrival_port", "vessel") \
@@ -226,6 +222,204 @@ def edit_submit_shipment(request, submanifest_id):
     "document_data": document_data,
   }
   return render(request, "smartportApp/shipper/edit-shipment.html", context)
+
+def handle_post_request(request, submanifest_id):
+  """Handle POST request - update the submanifest"""
+  try: 
+    submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
+    
+    # validate required fields
+    required_fields = [
+      'voyage_id', 'container_number', 'seal_number',
+      'consignor_name', 'consignor_email', 'consignor_address',
+      'consignee_name', 'consignee_email', 'consignee_address',
+      'bill_of_lading_number'
+    ]
+
+    errors = {}
+    for field in required_fields:
+      if not request.POST.get(field, '').strip():
+        errors[field] = [f'{field.replace("_", " ").title()} is required']
+
+    # validate voyage exists
+    try:
+      voyage = Voyage.objects.get(pk=request.POST.get('voyage_id'))
+    except Voyage.DoesNotExist:
+      errors['voyage_id'] = ['Selected voyage does not exist']
+
+    # validate container number format (basic validation)
+    container_number = request.POST.get('container_number', '').strip().upper()
+    if container_number and len(container_number) != 11:
+      errors['container_number'] = ['Container number must be exactly 11 characters']
+
+    # validate cargo data
+    cargo_descriptions = request.POST.getlist('cargo_description[]')
+    quantities = request.POST.getlist('quantity[]')
+    weights = request.POST.getlist('weight[]')
+    values = request.POST.getlist('value[]')
+    hscodes = request.POST.getlist('hscode[]')
+    additional_infos = request.POST.getlist('additional_info[]')
+
+    if not cargo_descriptions or len(cargo_descriptions) == 0:
+      errors['cargo_description'] = ['At least one cargo entry is required']
+    
+    # validate each cargo entry
+    for i, desc in enumerate(cargo_descriptions):
+      if not desc.strip():
+        errors[f'cargo_description[{i}]'] = ['Cargo description is required']
+      
+      try:
+        qty = int(quantities[i]) if i < len(quantities) else 0
+        if qty <= 0:
+          errors[f'quantity[{i}]'] = ['Quantity must be greater than 0']
+      except (ValueError, IndexError):
+        errors[f'quantity[{i}]'] = ['Invalid quantity value']
+      
+      try:
+        weight = float(weights[i]) if i < len(weights) else 0
+        if weight <= 0:
+          errors[f'weight[{i}]'] = ['Weight must be greater than 0']
+      except (ValueError, IndexError):
+        errors[f'weight[{i}]'] = ['Invalid weight value']
+
+      try:
+        value = float(values[i]) if i < len(values) else 0
+        if value <= 0:
+          errors[f'value[{i}]'] = ['Value must be greater than 0']
+      except (ValueError, IndexError):
+        errors[f'value[{i}]'] = ['Invalid value amount']
+    
+    if errors:
+      return JsonResponse({'success': False, 'error': 'Please fix the validation errors', 'errors': errors}, status=400)
+    
+    # update submanifest fields:
+    submanifest.voyage_id = voyage.pk
+    submanifest.container_no = container_number
+    submanifest.seal_no = request.POST.get('seal_number', '').strip()
+    submanifest.consignor_name = request.POST.get('consignor_name', '').strip()
+    submanifest.consignor_email = request.POST.get('consignor_email', '').strip()
+    submanifest.consignor_address = request.POST.get('consignor_address', '').strip()
+    submanifest.consignee_name = request.POST.get('consignee_name', '').strip()
+    submanifest.consignee_email = request.POST.get('consignee_email', '').strip()
+    submanifest.consignee_address = request.POST.get('consignee_address', '').strip()
+    submanifest.bill_of_lading_no = request.POST.get('bill_of_lading_number', '').strip()
+    submanifest.handling_instruction = request.POST.get('handling_instructions', '').strip()
+
+    # update status to pending admin
+    submanifest.status = 'pending_admin'
+    submanifest.updated_at = timezone.now()
+    submanifest.save()
+
+    # update cargo entry
+    existing_cargos = list(Cargo.objects.filter(submanifest=submanifest).order_by('cargo_id'))
+    updated_cargo_ids = []
+    next_item_number = 1
+
+    for i, desc in enumerate(cargo_descriptions):
+      cargo_data = {
+        'description': desc.strip(),
+        'quantity': int(quantities[i]) if i < len(quantities) else 0,
+        'weight': float(weights[i]) if i < len(weights) else 0,
+        'value': float(values[i]) if i < len(values) else 0,
+        'hs_code': hscodes[i].strip() if i < len(hscodes) else '',
+        'additional_info': additional_infos[i].strip() if i < len(additional_infos) else '',
+        'item_number': next_item_number,
+      }
+      next_item_number += 1
+        
+      if i < len(existing_cargos):
+        # Update existing cargo
+        cargo = existing_cargos[i]
+        for key, value in cargo_data.items():
+          setattr(cargo, key, value)
+        cargo.save()
+        updated_cargo_ids.append(cargo.cargo_id)
+      else:
+        # Create new cargo
+        cargo = Cargo.objects.create(
+          submanifest=submanifest,
+          **cargo_data
+        )
+        updated_cargo_ids.append(cargo.cargo_id)
+
+        # delete cargo entries that were removed
+        # Cargo.objects.filter(
+        #   submanifest=submanifest
+        # ).exclude(
+        #   cargo_id__in=updated_cargo_ids
+        # ).delete()
+
+    # Handle file uploads
+    handle_document_uploads(request, submanifest)
+
+    return JsonResponse({
+      "success": True, 
+      "message": "Submanifest updated and resubmitted successfully", 
+      "status": submanifest.status, 
+      "redirect_url": ""
+    })
+  except Exception as e:
+    return JsonResponse({
+      'success': False,
+      'error': f'Error updating submanifest: {str(e)}'
+    }, status=500)
+
+def handle_document_uploads(request, submanifest):
+  """Handle document file uploads"""
+  document_field_mapping = {
+    'bill_of_lading': 'bill_of_lading',
+    'commercial_invoice': 'invoice',  # Note: your template uses 'invoice', not 'commercial_invoice'
+    'packing_list': 'packing_list',
+    'certificate_origin': 'certificate_of_origin',
+  }
+
+  # Handle standard document types
+  for frontend_field, doc_type in document_field_mapping.items():
+    if frontend_field in request.FILES:
+      file = request.FILES[frontend_field]
+      # Delete existing document of this type
+      Document.objects.filter(
+        submanifest=submanifest,
+        document_type=doc_type
+      ).delete()
+
+      # Create new document
+      Document.objects.create(
+        submanifest=submanifest,
+        document_type=doc_type,
+        file=file,
+        original_filename=file.name,
+        # Add other fields as per your Document model
+        uploaded_at=timezone.now()
+      )
+
+      # Handle "other" documents (can be multiple)
+      if 'other_documents' in request.FILES:
+        files = request.FILES.getlist('other_documents')
+        for file in files:
+          Document.objects.create(
+            submanifest=submanifest,
+            document_type='other',
+            file=file,
+            original_filename=file.name,
+            # Add other fields as per your Document model
+            uploaded_at=timezone.now()
+          )
+
+
+
+
+def edit_submit_shipment(request, submanifest_id):
+  """
+  POST: Process all updates for the shipment
+  GET: Display the form with the existing data
+  """
+  if request.method == "GET":
+    return handle_get_request(request, submanifest_id)
+  elif request.method == "POST":
+    return handle_post_request(request, submanifest_id)
+
+
 
 
 # reused admin logic for the incident feed view:
@@ -934,6 +1128,8 @@ def delete_cargo(request, cargo_id):
     return JsonResponse({'success': False, 'error': 'Cargo not found'}, status=404)
   except Exception as e:
     return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
 
 # --------------- INCIDENT FEED ---------------
 # giusa ra ug logic sa admin side

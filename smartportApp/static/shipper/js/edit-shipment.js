@@ -1,28 +1,14 @@
 // Complete Edit Shipment JavaScript - Fixed Others Card Deletion
 document.addEventListener("DOMContentLoaded", () => {
-  // === SHARED TOAST FUNCTION ===
-  const showToast = (msg, isError = false, duration = 2500) => {
-    const toast = document.createElement("div");
-    toast.className = `custom-toast ${isError ? "error" : ""}`;
-    toast.textContent = msg;
-
-    let container = document.getElementById("toast-container");
-    if (!container) {
-      container = document.createElement("div");
-      container.id = "toast-container";
-      document.body.appendChild(container);
-    }
-
-    container.appendChild(toast);
-
-    setTimeout(() => {
-      toast.classList.add("fade-out");
-      toast.addEventListener("transitionend", () => toast.remove());
-    }, duration);
-  };
-
   // Counter for dynamic others cards
   let otherDocCount = 1;
+
+  // Variables for file replacement flow
+  let pendingFileReplacement = null;
+
+  let deletionWasSuccessful = false;
+
+  let pendingPickerTrigger = null;
 
   // Create dynamic card-to-input mappings
   const getDynamicCardToInputMap = () => {
@@ -61,10 +47,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Create dynamic input-to-card mappings
   const getDynamicInputToCardMap = () => {
     const baseMap = {
-      billOfLadingInput: "bill_of_ladingCard",
-      commercialInvoiceInput: "commercial_invoiceCard",
+      billOfLadingInput: "invoiceCard",
+      commercialInvoiceInput: "invoiceCard",
       packingListInput: "packing_listCard",
-      certificateOriginInput: "certificate_originCard",
+      certificateOriginInput: "certificate_of_originCard",
       othersInput: "othersCard",
     };
 
@@ -238,10 +224,82 @@ document.addEventListener("DOMContentLoaded", () => {
   let pendingDocumentId = null;
   let pendingDocumentElement = null;
 
+  // Check if a card has existing backend files
+  const hasExistingBackendFiles = (card) => {
+    if (!card) return false;
+
+    const previewArea = card.querySelector(".file-preview-area");
+    if (!previewArea) return false;
+
+    // Check if there are any file preview wrappers with backend document IDs
+    const existingFiles = previewArea.querySelectorAll(".file-preview-wrapper");
+    const hasBackendFiles = Array.from(existingFiles).some((wrapper) => {
+      const removeBtn = wrapper.querySelector(".remove-preview-btn");
+      const hasDocId =
+        removeBtn &&
+        removeBtn.dataset.docId &&
+        removeBtn.dataset.newFile !== "true";
+
+      // Also check if the element is not being animated out (opacity 0)
+      const style = window.getComputedStyle(wrapper);
+      const isVisible = style.opacity !== "0";
+
+      return hasDocId && isVisible;
+    });
+
+    console.log("hasExistingBackendFiles check:", {
+      cardId: card.id,
+      totalWrappers: existingFiles.length,
+      hasBackendFiles: hasBackendFiles,
+    });
+
+    return hasBackendFiles;
+  };
+
   // Show modal function
-  const showDeleteModal = (documentId, documentElement) => {
+  const showDeleteModal = (
+    documentId,
+    documentElement,
+    isForReplacement = false
+  ) => {
     pendingDocumentId = documentId;
     pendingDocumentElement = documentElement;
+
+    // Update modal content for replacement flow
+    if (isForReplacement) {
+      const modalTitle = deleteModal.querySelector(".modal-title");
+      const modalWarning = deleteModal.querySelector(".modal-warning");
+      const confirmBtnText = deleteModal.querySelector(
+        "#confirmDeleteDocsBtn .btn-text"
+      );
+
+      if (modalTitle) modalTitle.textContent = "Replace Existing File?";
+      if (modalWarning) {
+        modalWarning.innerHTML = `
+          <i class="fas fa-exclamation-triangle icon"></i>
+          This file will be permanently deleted. 
+          To upload a new one, the current file must be removed first.
+        `;
+      }
+      if (confirmBtnText) confirmBtnText.textContent = "Remove & Upload";
+    } else {
+      // Reset to default delete modal content
+      const modalTitle = deleteModal.querySelector(".modal-title");
+      const modalWarning = deleteModal.querySelector(".modal-warning");
+      const confirmBtnText = deleteModal.querySelector(
+        "#confirmDeleteDocsBtn .btn-text"
+      );
+
+      if (modalTitle) modalTitle.textContent = "Delete Existing File?";
+      if (modalWarning) {
+        modalWarning.innerHTML = `
+          <i class="fas fa-exclamation-triangle icon"></i>
+          This file will be permanently deleted and cannot be recovered.
+        `;
+      }
+      if (confirmBtnText) confirmBtnText.textContent = "Remove";
+    }
+
     if (deleteModal) {
       deleteModal.style.display = "flex";
     }
@@ -252,8 +310,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (deleteModal) {
       deleteModal.style.display = "none";
     }
+
     pendingDocumentId = null;
     pendingDocumentElement = null;
+    // pendingFileReplacement = null;
+
+    // Reset success flag
+    deletionWasSuccessful = false;
+
     resetDocConfirmButton();
   };
 
@@ -332,6 +396,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.ok && result.success) {
         console.log("Document successfully deleted from backend");
 
+        // Mark deletion as successful immediately
+        deletionWasSuccessful = true;
+
+        // Store picker trigger info if this is a replacement flow
+        if (pendingFileReplacement && pendingFileReplacement.cardId) {
+          pendingPickerTrigger = pendingFileReplacement.cardId;
+          console.log("Stored picker trigger for card:", pendingPickerTrigger);
+        }
+
         // Find the parent elements before removal
         const previewArea =
           pendingDocumentElement.closest(".file-preview-area");
@@ -339,6 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ".document-type-card"
         );
 
+        // Continue with existing deletion logic...
         console.log("=== BACKEND DELETION DEBUG START ===");
         console.log("pendingDocumentElement:", pendingDocumentElement);
         console.log("previewArea:", previewArea);
@@ -468,6 +542,34 @@ document.addEventListener("DOMContentLoaded", () => {
                   console.log(
                     "This is likely a standard document type (bill_of_lading, commercial_invoice, etc.)"
                   );
+                  console.log("Forcing card reset to empty state");
+                  // Clear any remaining file input values
+                  const inputId = getInputIdFromCard(cardElement.id);
+                  const fileInput = document.getElementById(inputId);
+                  if (fileInput) {
+                    fileInput.value = "";
+                    console.log("Cleared file input:", inputId);
+                  }
+                  // Remove has-existing-file class if not already done
+                  cardElement.classList.remove("has-existing-file");
+
+                  // Clear filename display
+                  const fileNameContainer = cardElement.querySelector(
+                    ".uploaded-file-name"
+                  );
+                  if (fileNameContainer) {
+                    fileNameContainer.textContent = "";
+                  }
+
+                  console.log("Card reset complete for:", cardElement.id);
+
+                  // DEBUG: Check file replacement state
+                  console.log("DEBUG - File replacement check:", {
+                    hasPendingReplacement: !!pendingFileReplacement,
+                    pendingCardId: pendingFileReplacement?.cardId,
+                    currentCardId: cardElement.id,
+                    matches: pendingFileReplacement?.cardId === cardElement.id,
+                  });
                 }
               } else {
                 console.log("NO CARD ELEMENT FOUND!");
@@ -499,13 +601,67 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
               }
             }
+            // DEBUG: Log the state before file picker trigger
+            console.log("=== FILE PICKER TRIGGER DEBUG ===");
+            console.log("pendingPickerTrigger:", pendingPickerTrigger);
+            console.log("cardElement exists:", !!cardElement);
+            console.log("cardElement.id:", cardElement?.id);
+            console.log("pendingFileReplacement:", pendingFileReplacement);
+            console.log(
+              "shouldAutoTrigger:",
+              pendingFileReplacement?.shouldAutoTrigger
+            );
+            console.log("=== END FILE PICKER TRIGGER DEBUG ===");
 
+            // Trigger file picker if this was a replacement flow AND should auto-trigger
+            if (
+              pendingPickerTrigger &&
+              cardElement &&
+              cardElement.id === pendingPickerTrigger &&
+              pendingFileReplacement &&
+              pendingFileReplacement.shouldAutoTrigger
+            ) {
+              console.log(
+                "Triggering file picker for replacement:",
+                pendingPickerTrigger
+              );
+              const cardToTrigger = pendingPickerTrigger;
+
+              // Clear the trigger BEFORE the timeout to prevent conflicts
+              pendingPickerTrigger = null;
+
+              setTimeout(() => {
+                console.log(
+                  "Executing file picker trigger for:",
+                  cardToTrigger
+                );
+                triggerFileSelection(cardToTrigger);
+                // Clear pendingFileReplacement after successful trigger
+                pendingFileReplacement = null;
+              }, 500);
+            } else if (pendingPickerTrigger) {
+              console.log(
+                "File picker trigger skipped for others card:",
+                pendingPickerTrigger
+              );
+              // Clear both the trigger and file replacement since we're not using them
+              pendingPickerTrigger = null;
+              pendingFileReplacement = null;
+            }
             console.log("=== BACKEND DELETION DEBUG END ===");
           }, 100); // Wait 100ms for DOM to fully update
         }, 300);
 
         // Show success message and hide modal
-        showToast("Document deleted successfully", false);
+        const isReplacementFlow = !!pendingFileReplacement;
+        const shouldAutoTrigger =
+          isReplacementFlow && pendingFileReplacement.shouldAutoTrigger;
+
+        const message = shouldAutoTrigger
+          ? "File deleted successfully. Please select a new file."
+          : "Document deleted successfully";
+        showToast(message, false);
+
         hideDeleteModal();
       } else {
         throw new Error(result.error || "Failed to delete document");
@@ -817,6 +973,76 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const cardId = card.id;
+
+    // NEW: Check if card has existing backend files
+    if (hasExistingBackendFiles(card)) {
+      console.log("Card has existing backend files, showing replacement modal");
+
+      // Find the first existing file to use for the deletion process
+      const previewArea = card.querySelector(".file-preview-area");
+      const firstExistingFile = previewArea.querySelector(
+        ".file-preview-wrapper"
+      );
+      const removeBtn = firstExistingFile?.querySelector(".remove-preview-btn");
+      const documentId = removeBtn?.dataset?.docId;
+
+      if (documentId && firstExistingFile) {
+        // Check if this is an "others" type card
+        const isOthersCard =
+          cardId === "othersCard" ||
+          cardId.startsWith("other_") ||
+          card.classList.contains("others-card");
+
+        console.log("=== CARD TYPE DEBUG ===");
+        console.log("cardId:", cardId);
+        console.log("isOthersCard:", isOthersCard);
+        console.log("shouldAutoTrigger will be:", !isOthersCard);
+        console.log("=== END CARD TYPE DEBUG ===");
+
+        // Set up file replacement flow with auto-trigger flag
+        pendingFileReplacement = {
+          cardId,
+          shouldAutoTrigger: !isOthersCard, // Only auto-trigger for non-others cards
+        };
+
+        // Show deletion modal with replacement context
+        showDeleteModal(documentId, firstExistingFile, true);
+        return;
+      }
+    }
+
+    // Original logic for empty cards or cards with only new files
+    triggerFileSelection(cardId);
+  };
+
+  // Helper function to safely trigger file input with retries
+  const safelyTriggerFileInput = (fileInput, retries = 3) => {
+    console.log("Attempting to trigger file input, retries left:", retries);
+
+    if (!fileInput || retries <= 0) {
+      console.error("Failed to trigger file input after all retries");
+      return;
+    }
+
+    try {
+      // Ensure input is properly configured
+      fileInput.style.display = "none";
+      fileInput.disabled = false;
+
+      // Try to trigger
+      fileInput.click();
+      console.log("File input clicked successfully");
+    } catch (error) {
+      console.error("Error triggering file input:", error);
+
+      // Retry after short delay
+      setTimeout(() => {
+        safelyTriggerFileInput(fileInput, retries - 1);
+      }, 200);
+    }
+  };
+
+  const triggerFileSelection = (cardId) => {
     let inputId = "";
 
     // Map card IDs to their corresponding file inputs
@@ -861,7 +1087,7 @@ document.addEventListener("DOMContentLoaded", () => {
     configureFileInput(fileInput, cardId);
 
     // Trigger file selection dialog
-    fileInput.click();
+    safelyTriggerFileInput(fileInput);
   };
 
   // Configure file input properties
@@ -1058,8 +1284,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Handle new files immediately (no modal, no backend call)
       handleNewFileRemovalImmediate(wrapper);
     } else {
-      // Handle existing files with modal confirmation
-      showDeleteModal(documentId, wrapper);
+      // Handle existing files with modal confirmation (no replacement flow)
+      showDeleteModal(documentId, wrapper, false);
     }
   };
 
@@ -1237,3 +1463,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// === SHARED TOAST FUNCTION ===
+const showToast = (msg, isError = false, duration = 2500) => {
+  const toast = document.createElement("div");
+  toast.className = `custom-toast ${isError ? "error" : ""}`;
+  toast.textContent = msg;
+
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    toast.addEventListener("transitionend", () => toast.remove());
+  }, duration);
+};

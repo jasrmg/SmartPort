@@ -193,7 +193,8 @@ textarea.form-control {
   font-weight: 600;
 }
 
-.btn-submit {
+.btn-submit,
+.btn-resubmit {
   background-color: var(--accent);
   color: white;
   padding: 1rem 2rem;
