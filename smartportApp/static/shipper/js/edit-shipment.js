@@ -1,26 +1,5 @@
 // Complete Edit Shipment JavaScript - Fixed Others Card Deletion
 document.addEventListener("DOMContentLoaded", () => {
-  // === SHARED TOAST FUNCTION ===
-  const showToast = (msg, isError = false, duration = 2500) => {
-    const toast = document.createElement("div");
-    toast.className = `custom-toast ${isError ? "error" : ""}`;
-    toast.textContent = msg;
-
-    let container = document.getElementById("toast-container");
-    if (!container) {
-      container = document.createElement("div");
-      container.id = "toast-container";
-      document.body.appendChild(container);
-    }
-
-    container.appendChild(toast);
-
-    setTimeout(() => {
-      toast.classList.add("fade-out");
-      toast.addEventListener("transitionend", () => toast.remove());
-    }, duration);
-  };
-
   // Counter for dynamic others cards
   let otherDocCount = 1;
 
@@ -1484,3 +1463,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+// === SHARED TOAST FUNCTION ===
+const showToast = (msg, isError = false, duration = 2500) => {
+  const toast = document.createElement("div");
+  toast.className = `custom-toast ${isError ? "error" : ""}`;
+  toast.textContent = msg;
+
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    toast.addEventListener("transitionend", () => toast.remove());
+  }, duration);
+};
