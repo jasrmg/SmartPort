@@ -65,3 +65,30 @@ def create_notification(user, title, message, link_url=None, triggered_by=None):
     link_url=link_url or "",
     triggered_by=triggered_by
   )
+
+# helper method for bulk creation of notification
+def create_notification_bulk(recipients, title, message, link_url="", triggered_by=None):
+  """
+  Creates notifications for multiple recipients efficiently using bulk_create.
+
+  Parameters:
+  - recipients: iterable of UserProfile objects
+  - title: notification title
+  - message: body message
+  - link_url: frontend URL to redirect to
+  - triggered_by: UserProfile who triggered the notification
+  """
+  if not all(isinstance(user, UserProfile) for user in recipients):
+    raise ValueError("All recipients must be instances of UseProfile")
+  
+  notifications = [
+    Notification(
+      user=user,
+      title=title,
+      message=message,
+      link_url=link_url or "",
+      triggered_by=triggered_by
+    )
+    for user in recipients
+  ]
+  Notification.objects.bulk_create(notifications)
