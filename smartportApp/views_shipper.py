@@ -420,8 +420,9 @@ def handle_document_uploads(request, submanifest, user_profile):
         submanifest=submanifest,
         document_type=doc_type,
         file=file,
+        uploaded_by=user_profile,
         original_filename=file.name,
-        uploaded_at=timezone.now()
+        uploaded_at=timezone.now(),
       )
 
       # Handle "other" documents (can be multiple)
