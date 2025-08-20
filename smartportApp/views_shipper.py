@@ -217,6 +217,7 @@ def handle_get_request(request, submanifest_id):
 
   context = {
     "submanifest": submanifest,
+    "status_display": submanifest.get_status_display(),
     "cargos": cargos,
     "voyages": voyages,
     "document_data": document_data,
