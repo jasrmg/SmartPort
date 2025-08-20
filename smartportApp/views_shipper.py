@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 import json
 
+from smartportApp.utils.utils import with_approval_priority, serialize_incident, create_notification_bulk
+
 
 
 def enforce_shipper_access(request):
@@ -217,6 +219,7 @@ def handle_get_request(request, submanifest_id):
 
   context = {
     "submanifest": submanifest,
+    "status_display": submanifest.get_status_display(),
     "cargos": cargos,
     "voyages": voyages,
     "document_data": document_data,
@@ -350,7 +353,36 @@ def handle_post_request(request, submanifest_id):
         # ).delete()
 
     # Handle file uploads
-    handle_document_uploads(request, submanifest)
+    user = request.user.userprofile
+    handle_document_uploads(request, submanifest, user)
+    
+    # notify admins
+    try:
+      print("USERRRRRRRRR: ", user)
+      print("USERRRRRRRRR FIRSTNAME: ", user.first_name)
+      # get all admin users
+      admin_users = UserProfile.objects.filter(role='admin')
+      print("ADMIN USERS: ", admin_users)
+      if admin_users.exists():
+        # get the user who made the update
+        triggered_by = None
+        if hasattr(request, 'user') and hasattr(request.user, 'userprofile'):
+          triggered_by = user
+          title = "Submanifest Updated"
+          message = f"{user.first_name} {user.last_name} resubmitted submanifest {submanifest.submanifest_number} for review"
+          link_url = f"/submanifest/{submanifest.submanifest_id}/"
+
+          # Send notifications to all admins
+          create_notification_bulk(
+            recipients=admin_users,
+            title=title,
+            message=message,
+            link_url=link_url,
+            triggered_by=triggered_by
+          )
+    except Exception as e:
+      print(f"Failed to send admin notifications: {str(e)}")
+
 
     return JsonResponse({
       "success": True, 
@@ -364,7 +396,7 @@ def handle_post_request(request, submanifest_id):
       'error': f'Error updating submanifest: {str(e)}'
     }, status=500)
 
-def handle_document_uploads(request, submanifest):
+def handle_document_uploads(request, submanifest, user_profile):
   """Handle document file uploads"""
   document_field_mapping = {
     'bill_of_lading': 'bill_of_lading',
@@ -388,9 +420,9 @@ def handle_document_uploads(request, submanifest):
         submanifest=submanifest,
         document_type=doc_type,
         file=file,
+        uploaded_by=user_profile,
         original_filename=file.name,
-        # Add other fields as per your Document model
-        uploaded_at=timezone.now()
+        uploaded_at=timezone.now(),
       )
 
       # Handle "other" documents (can be multiple)
@@ -401,9 +433,10 @@ def handle_document_uploads(request, submanifest):
             submanifest=submanifest,
             document_type='other',
             file=file,
+            uploaded_by=user_profile,
             original_filename=file.name,
-            # Add other fields as per your Document model
-            uploaded_at=timezone.now()
+            custom_filename=file.name,
+            uploaded_at=timezone.now() # updates when the file was uploaded
           )
 
 
@@ -427,7 +460,7 @@ from django.db.models import F, Q
 from django.db.models import Case, When, IntegerField
 from django.core.paginator import Paginator, EmptyPage
 
-from smartportApp.utils.utils import with_approval_priority, serialize_incident
+
 
 def shipper_incident_feed_view(request):
   sort = request.GET.get("sort", "newest")
@@ -750,32 +783,6 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal, InvalidOperation
 
 
-# helper method for bulk creation of notification
-def create_notification_bulk(recipients, title, message, link_url="", triggered_by=None):
-  """
-  Creates notifications for multiple recipients efficiently using bulk_create.
-
-  Parameters:
-  - recipients: iterable of UserProfile objects
-  - title: notification title
-  - message: body message
-  - link_url: frontend URL to redirect to
-  - triggered_by: UserProfile who triggered the notification
-  """
-  if not all(isinstance(user, UserProfile) for user in recipients):
-    raise ValueError("All recipients must be instances of UseProfile")
-  
-  notifications = [
-    Notification(
-      user=user,
-      title=title,
-      message=message,
-      link_url=link_url or "",
-      triggered_by=triggered_by
-    )
-    for user in recipients
-  ]
-  Notification.objects.bulk_create(notifications)
 
 logger = logging.getLogger(__name__)
 

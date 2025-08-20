@@ -26,10 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 2; i <= otherDocCount; i++) {
       baseMap[`others${i}Card`] = `others${i}Input`;
     }
-
-    // IMPORTANT: Add backend "other_" cards mapping
-    // These come from your backend with IDs like "other_1Card", "other_2Card", etc.
-    // We need to map them to the base othersInput since they don't have individual inputs
     const backendOtherCards = document.querySelectorAll(
       '[id^="other_"]:not([id*="Input"]):not([id*="Preview"]):not([id*="FileName"])'
     );
@@ -47,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Create dynamic input-to-card mappings
   const getDynamicInputToCardMap = () => {
     const baseMap = {
-      billOfLadingInput: "invoiceCard",
+      billOfLadingInput: "bill_of_ladingCard",
       commercialInvoiceInput: "invoiceCard",
       packingListInput: "packing_listCard",
       certificateOriginInput: "certificate_of_originCard",

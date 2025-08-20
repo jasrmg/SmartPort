@@ -42,7 +42,7 @@
       </a>
     </li>
     <li class="nav-item">
-      <a href="#" class="nav-link">
+      <a href="{% url 'shipper-incident-feed' %}" class="nav-link">
         <i class="fas fa-chart-bar"></i>
         <span>Incident Feed</span>
       </a>
@@ -86,8 +86,8 @@
       <h1>Edit Submitted Shipment</h1>
       <p>Fill in the shipment details to create a new submanifest</p>
     </div>
-    <div class="submanifest-status">
-      Pending Admin
+    <div class="submanifest-status {{ submanifest.status }}">
+      {{ status_display }}
     </div>
   </div>
 
@@ -580,9 +580,6 @@
           </div>
 
         </div>
-
-        {# FILE INPUT — hidden but connected to JS preview #}
-        <input type="file" name="{{ doc_type.key }}" id="{{ doc_type.key|slugify }}Input" hidden>
       {% endfor %}
 
       <!-- OTHERS -->
