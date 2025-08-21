@@ -217,12 +217,20 @@ def handle_get_request(request, submanifest_id):
       "docs": [doc]  # single doc per card
     })
 
+  # pick rejection reason depending on status
+  reject_reason = None
+  if submanifest.status == "rejected_by_admin":
+    reject_reason = submanifest.admin_note
+  elif submanifest.status == "rejected_by_customs":
+    reject_reason = submanifest.customs_note
+
   context = {
     "submanifest": submanifest,
     "status_display": submanifest.get_status_display(),
     "cargos": cargos,
     "voyages": voyages,
     "document_data": document_data,
+    "reject_reason": reject_reason,
   }
   return render(request, "smartportApp/shipper/edit-shipment.html", context)
 
