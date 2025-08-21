@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const numberDisplay = document.getElementById("submanifest-number-display");
   const backBtn = document.getElementById("back-to-list-btn");
   const viewClearanceBtn = document.getElementById("view-clearance-btn");
+  const editSubmanifestBtn = document.getElementById("edit-submanifest-btn");
 
   let totalPages = parseInt(paginationContainer.dataset.totalPages);
   let currentPage = parseInt(paginationContainer.dataset.currentPage);
@@ -112,6 +113,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Update edit button visibility and state
+  const updateEditButton = (status = null) => {
+    if (!editSubmanifestBtn) return;
+
+    if (currentSubmanifestId) {
+      editSubmanifestBtn.style.display = "flex";
+
+      // Disable button for certain statuses
+      const disabledStatuses = ["pending_admin", "pending_customs", "approved"];
+      const isDisabled = status && disabledStatuses.includes(status);
+
+      editSubmanifestBtn.disabled = isDisabled;
+
+      // Add visual indication for disabled state
+      if (isDisabled) {
+        editSubmanifestBtn.classList.add("disabled");
+        editSubmanifestBtn.title =
+          "Cannot edit - Status: " + status.replace("_", " ");
+      } else {
+        editSubmanifestBtn.classList.remove("disabled");
+        editSubmanifestBtn.title = "Edit Submanifest";
+      }
+    } else {
+      editSubmanifestBtn.style.display = "none";
+    }
+  };
+
   const bindCardClickEvents = () => {
     const cards = document.querySelectorAll(".submanifest-card");
 
@@ -168,6 +196,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Update clearance button based on the fetched data
       updateClearanceButton(data.has_clearance, data.clearance_status);
+
+      // Update edit button visibility
+      updateEditButton(data.status);
 
       document.querySelector(".submanifest-cargo").style.display = "block";
 
@@ -237,6 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
       cardsContainer.style.display = "grid";
       cargoContainer.style.display = "none";
       currentSubmanifestId = null; // Clear current ID
+      updateEditButton();
     });
   }
 
@@ -246,6 +278,29 @@ document.addEventListener("DOMContentLoaded", () => {
       if (parseInt(currentSubmanifestId)) {
         // Navigate to clearance view page
         window.open(`/clearance/${currentSubmanifestId}/`, "_blank");
+      }
+    });
+  }
+
+  // Bind edit submanifest button click
+  if (editSubmanifestBtn) {
+    editSubmanifestBtn.addEventListener("click", (e) => {
+      // Prevent action if button is disabled
+      if (
+        editSubmanifestBtn.disabled ||
+        editSubmanifestBtn.classList.contains("disabled")
+      ) {
+        console.log("blocked");
+        e.preventDefault();
+        return;
+      }
+
+      if (currentSubmanifestId) {
+        // Navigate to edit submanifest page
+        window.open(
+          `/edit/submitted-shipment/${currentSubmanifestId}/`,
+          "_blank"
+        );
       }
     });
   }

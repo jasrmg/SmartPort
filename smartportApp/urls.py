@@ -115,7 +115,7 @@ urlpatterns = [
   # SUBMIT SHIPMENT
   path("submit-shipment/", views_shipper.submit_shipment, name="submit-shipment"),
   # EDIT SHIPMENT
-  path("edit/submit-shipment/<int:submanifest_id>/", views_shipper.edit_submit_shipment, name="edit-submit-shipment"),
+  path("edit/submitted-shipment/<int:submanifest_id>/", views_shipper.edit_submit_shipment, name="edit-submit-shipment"),
   # DELETE DOCUMENT
   path("documents/delete/<int:document_id>/", views_shipper.delete_document, name="delete-document"),
   # DELETE CARGO

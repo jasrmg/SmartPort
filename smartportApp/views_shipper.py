@@ -639,7 +639,8 @@ def get_cargo_items(request, submanifest_id):
       'cargo': cargo_data,
       'has_clearance': has_clearance,
       'clearance_status': clearance_status,
-      'submanifest_id': submanifest_id
+      'submanifest_id': submanifest_id,
+      'status': sm.status
     }
     return JsonResponse(response_data)
   except SubManifest.DoesNotExist:

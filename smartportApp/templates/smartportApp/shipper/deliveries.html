@@ -249,7 +249,7 @@
           </tr>
         </thead>
         <tbody id="cargo-tbody">
-          <!-- <pre>{{ submanifests.0.cargo|safe }}</pre> -->
+          <pre>{{ submanifests.0.cargo|safe }}</pre>
 
           {% for item in submanifests.0.cargo %}
           <tr>
@@ -280,6 +280,13 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
+
+    <div class="submanifest-buttons">
+      <a class="btn edit-submanifest-btn" id="edit-submanifest-btn">
+        <i class="fas fa-pen"></i>
+        Edit Submanifest
+      </a>
     </div>
   </div>
 </div>
