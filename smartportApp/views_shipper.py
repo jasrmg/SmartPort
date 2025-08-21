@@ -113,15 +113,13 @@ def shipper_deliveries_view(request):
       Q(voyage__arrival_date__date=parsed_date) 
     )
 
-  # Order results by departure date descending
-  submanifests = submanifests.order_by("-voyage__departure_date")
+  # Order results by newest voyages, edited/updated recently, creation date
+  submanifests = submanifests.order_by("-voyage__departure_date", "-updated_at", "-created_at") 
+
   print("PARSED DATE: ", parsed_date)
   print(f"Submanifests count after filters: {submanifests.count()}")
   logger.debug(f"Final queryset count after date filter: {submanifests.count()}")
 
-  # TODO: ordering by departure date
-
-  # TODO: pagination
   paginator = Paginator(submanifests, 1)
   page_number = request.GET.get("page", 1)
 
