@@ -39,8 +39,8 @@
 /* Approved */
 .submanifest-status.approved {
   background-color: rgba(16, 185, 129, 0.15);
-  color: var(--success);
-  border: 1px solid var(--success);
+  color: var(--accent);
+  border: 1px solid var(--accent);
 }
 
 .reject-reason {
