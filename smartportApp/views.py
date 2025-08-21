@@ -1309,7 +1309,7 @@ def admin_reject_submanifest(request, submanifest_id):
     sub.save()
 
 
-    link_url = f"submanifest/{sub.submanifest_id}/" # sample link only
+    link_url = f"/edit/submitted-shipment/{sub.submanifest_id}/" # sample link only
     print("SAMPLE LINK URL: ", link_url)
     # send notification to the shipper
     create_notification(
