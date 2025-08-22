@@ -66,7 +66,7 @@ L.polygon(
 // Fetch real vessel data from backend
 async function fetchAndRenderVessels() {
   try {
-    const res = await fetch("/api/vessels-on-map/");
+    const res = await fetch("/api/shipper-vessels-on-map/");
     const vessels = await res.json();
 
     vessels.forEach((vessel) => {

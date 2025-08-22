@@ -46,6 +46,32 @@ from datetime import timedelta
 from django.utils.timezone import now
 from datetime import date
 
+def shipper_vessels(request):
+  user = request.user.userprofile
+
+  # get voyages where the shipper has submanifests
+  voyages = Voyage.objects.filter(
+    submanifest__created_by=user
+  ).distinct()
+
+  vessels = []
+  for voyage in voyages:
+    if voyage.vessel:
+      vessels.append({
+        "vessel_name": voyage.vessel.name,
+        "status": voyage.status,
+        "departure": {
+          "lat": voyage.departure_port.latitude,
+          "lng": voyage.departure_port.longitude
+        },
+        "arrival": {
+          "lat": voyage.arrival_port.latitude,
+          "lng": voyage.arrival_port.longitude
+        },
+      })
+
+  return JsonResponse(vessels, safe=False)
+
 @login_required
 def shipper_dashboard(request):
   # check if authenticated and role is shipper
