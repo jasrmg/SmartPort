@@ -1,3 +1,5 @@
+console.log("ADMIN DASHBOARD IN SHIPPER");
+
 /* ------------------------------- GLOBAL CHART COLORS ------------------------------- */
 const bgColors = ["#0a1f44", "#1e3a8a", "#4682b4"];
 

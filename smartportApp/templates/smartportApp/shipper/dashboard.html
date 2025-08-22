@@ -115,7 +115,11 @@
       <h1>Smart Port Management Dashboard</h1>
       <p>Welcome back! Here's what's happening with your port today.</p>
     </div>
-    <a class="btn btn-secondary" id="addAdmin">
+    <a
+      href="{% url 'submit-shipment-view' %}"
+      class="btn btn-secondary no-underline"
+      id="addAdmin"
+    >
       <i class="fas fa-plus"></i>
       New Shipment
     </a>
@@ -130,8 +134,22 @@
           <i class="fas fa-ship"></i>
         </div>
       </div>
-      <div class="card-value">24</div>
-      <p class="card-description">5 new arrivals today</p>
+      <div class="card-value">{{ active_shipments_count }}</div>
+      <p class="card-description">
+        {% if new_arrivals_today_count > 0 %}
+        <!---->
+        {{ new_arrivals_today_count }}
+        <!---->
+        new arrival{% if new_arrivals_today_count > 1 %}s
+        <!---->
+        {% endif %} today
+        <!---->
+        {% else %}
+        <!---->
+        No new arrival today
+        <!---->
+        {% endif %}
+      </p>
     </div>
 
     <div class="card">
@@ -141,8 +159,8 @@
           <i class="fas fa-file-alt"></i>
         </div>
       </div>
-      <div class="card-value">12</div>
-      <p class="card-description">Cargo Manifest</p>
+      <div class="card-value">{{ pending_clearance }}</div>
+      <p class="card-description">Cargo Submanifest</p>
     </div>
 
     <div class="card">
@@ -152,8 +170,22 @@
           <i class="fas fa-boxes"></i>
         </div>
       </div>
-      <div class="card-value">26</div>
-      <p class="card-description">8 new report incidents</p>
+      <div class="card-value">{{ recent_incidents_count }}</div>
+      <p class="card-description">
+        {% if recent_incidents_count > 0 %}
+        <!---->
+        {{ recent_incidents_count }}
+        <!---->
+        recent incident{% if recent_incidents_count > 1 %}s
+        <!---->
+        {% endif %} reported today
+        <!---->
+        {% else %}
+        <!---->
+        No new incidents reported today
+        <!---->
+        {% endif %}
+      </p>
     </div>
   </div>
 

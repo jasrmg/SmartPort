@@ -42,6 +42,10 @@ def enforce_shipper_access(request):
 
 # --------------------------------- SHIPPER ---------------------------------
 # -------------------- TEMPLATES --------------------
+from datetime import timedelta
+from django.utils.timezone import now
+from datetime import date
+
 @login_required
 def shipper_dashboard(request):
   # check if authenticated and role is shipper
@@ -49,8 +53,55 @@ def shipper_dashboard(request):
   if auth_check:
     return auth_check
 
+  # getting the logged user
+  user = request.user.userprofile
+  print("BOBONG USER: ", user.first_name)
+  print("BOBONG USER: ", user.role)
+
+  # data for the table
+  # active shipments with select_related to avoid N+1 queries
+  active_shipments = SubManifest.objects.filter(
+    created_by=user,
+    voyage__status__in=[
+      Voyage.VoyageStatus.IN_TRANSIT,
+      Voyage.VoyageStatus.ASSIGNED,
+      Voyage.VoyageStatus.DELAYED
+    ]
+  ).select_related(
+    "voyage", "voyage__vessel", "voyage__departure_port", "voyage__arrival_port"
+  )
+  active_shipments_count = active_shipments.count()
+
+  # new arrivals today
+  today = now().date()
+  new_arrivals_today_count = Voyage.objects.filter(
+    arrival_date=today,
+    status=Voyage.VoyageStatus.ARRIVED
+  ).count()
+
+
+  # pending clearance card count
+  pending_clearance = SubManifest.objects.filter(
+    created_by=user
+  ).filter(
+    Q(custom_clearance__isnull=True) |
+    Q(custom_clearance__clearance_status=CustomClearance.ClearanceStatus.PENDING)
+  ).count()
+
+  # recent incident card count
+  todate = date.today()
+  recent_incidents_count = IncidentReport.objects.filter(
+    is_approved=True,
+    created_at__date=today
+  ).count()
+
   context = {
     'show_logo_text': True,
+    'active_shipments': active_shipments,
+    'active_shipments_count': active_shipments_count,
+    'new_arrivals_today_count': new_arrivals_today_count,
+    'pending_clearance': pending_clearance,
+    'recent_incidents_count': recent_incidents_count,
   }
 
 
