@@ -215,7 +215,7 @@
         <h2><i class="fa-solid fa-clipboard-check fa-icon"></i> Review Logs</h2>
         <div class="notes">
           <strong>Admin Note:</strong> {{ submanifest.admin_note }}<br />
-          <strong>Customs Note:</strong> Compliant with import regulations.
+          <strong>Customs Note:</strong> {{ submanifest.customs_note }}
         </div>
       </div>
 
@@ -240,11 +240,12 @@
       });
 
       // Download as PDF
+      const filename = "{{ submanifest.submanifest_number }}";
       pdfBtn.addEventListener("click", () => {
         const element = document.getElementById("submanifestDetails");
         const opt = {
           margin: [0.5, 0.5, 0.5, 0.5],
-          filename: "submanifest-details.pdf",
+          filename: filename,
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: { scale: 2 },
           jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
