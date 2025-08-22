@@ -102,6 +102,7 @@ urlpatterns = [
   # -------------------------------- SHIPPER TEMPLATES LOAD --------------------------------
   path("shipper-dashboard/", views_shipper.shipper_dashboard, name="shipper-dashboard"),
   path("api/shipper-vessels-on-map/", views_shipper.shipper_vessels, name="shipper-vessels"),
+  path('api/shipment-volume-chart/', views_shipper.shipper_shipment_volume_chart_api, name='shipment-volume-chart-api'),
   path("vessel-info/", views_shipper.shipper_vessel_info_view, name="vessel-info"),
   path("deliveries/", views_shipper.shipper_deliveries_view, name="deliveries"),
   path("submit-shipment-view/", views_shipper.shipper_submit_shipment_view, name="submit-shipment-view"),

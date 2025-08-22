@@ -204,31 +204,31 @@
     <div id="activeVesselsSection" class="section">
       <div class="section-header">
         <h2 class="section-title">Active Shipments</h2>
-        <button class="btn btn-outline">View All</button>
       </div>
 
       <div class="table-responsive">
+        {% if active_shipments %}
         <table class="vessels-table">
           <thead>
             <tr>
               <th>
                 <button class="sort-btn" data-column="0" data-order="none">
-                  Vessel Name <i class="fas fa-sort"></i>
+                  SubManifest No. <i class="fas fa-sort"></i>
                 </button>
               </th>
               <th>
                 <button class="sort-btn" data-column="1" data-order="none">
-                  Type <i class="fas fa-sort"></i>
+                  Vessel <i class="fas fa-sort"></i>
                 </button>
               </th>
               <th>
                 <button class="sort-btn" data-column="2" data-order="none">
-                  Origin <i class="fas fa-sort"></i>
+                  Route (Origin → Destination) <i class="fas fa-sort"></i>
                 </button>
               </th>
               <th>
                 <button class="sort-btn" data-column="3" data-order="none">
-                  Destination <i class="fas fa-sort"></i>
+                  Cargo Count<i class="fas fa-sort"></i>
                 </button>
               </th>
               <th>
@@ -244,57 +244,38 @@
             </tr>
           </thead>
           <tbody>
+            {% for shipment in active_shipments %}
             <tr>
-              <td>Manila Bay Express</td>
-              <td>Container Ship</td>
-              <td>Hong Kong</td>
-              <td>Manila</td>
-              <td><span class="status-badge arrived">Arrived</span></td>
-              <td>Today, 08:45</td>
-            </tr>
-            <tr>
-              <td>Cebu Pearl</td>
-              <td>Bulk Carrier</td>
-              <td>Singapore</td>
-              <td>Cebu</td>
-              <td><span class="status-badge docked">Docked</span></td>
-              <td>Today, 11:30</td>
-            </tr>
-            <tr>
-              <td>Mindanao Explorer</td>
-              <td>Tanker</td>
-              <td>Kaohsiung</td>
-              <td>Davao</td>
+              <td>{{ shipment.submanifest_number }}</td>
+              <td>{{ shipment.voyage.vessel.name }}</td>
               <td>
-                <span class="status-badge in-transit">In Transit</span>
+                {{ shipment.voyage.departure_port.port_name }} →
+                <!---->
+                {{ shipment.voyage.arrival_port.port_name }}
               </td>
-              <td>Tomorrow, 14:15</td>
+              <td>{{ shipment.cargo_count }}</td>
+              <td>{{ shipment.get_status_display }}</td>
+              <td>{{ shipment.created_at|date:"Y-m-d" }}</td>
             </tr>
-            <tr>
-              <td>Visayas Navigator</td>
-              <td>Container Ship</td>
-              <td>Jakarta</td>
-              <td>Iloilo</td>
-              <td>
-                <span class="status-badge in-transit">In Transit</span>
-              </td>
-              <td>May 18, 09:00</td>
-            </tr>
+            {% endfor %}
           </tbody>
         </table>
+        {% else %} {% endif %}
       </div>
 
       <!-- Charts Section -->
       <div id="analyticsSection" class="analytics-section">
         <!-- Row 1 -->
-        <div class="card chart-card">
+        <div class="card chart-card full-width">
           <div class="card-header">
             <h3 class="card-title">Monthly Shipment Volume</h3>
             <div class="chart-actions">
               <select class="chart-filter">
+                <option selected>This Month</option>
+                <option>Last 3 Months</option>
                 <option>Last 6 Months</option>
+                <option>Year to Date</option>
                 <option>Last Year</option>
-                <option>Custom Range</option>
               </select>
             </div>
           </div>
@@ -318,60 +299,6 @@
             </div>
           </div>
         </div>
-
-        <div class="card chart-card">
-          <div class="card-header">
-            <h3 class="card-title">Vessel Status Distribution</h3>
-          </div>
-          <div class="chart-container">
-            <canvas id="vesselChart" height="250"></canvas>
-          </div>
-          <div class="chart-footer">
-            <div class="chart-stats-grid">
-              <div class="stat-item">
-                <div class="stat-value" style="color: #2d9c5a">60%</div>
-                <div class="stat-label">Operational</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value" style="color: #fcddb0">25%</div>
-                <div class="stat-label">Maintenance</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value" style="color: #d14343">15%</div>
-                <div class="stat-label">Damage</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Row 3 -->
-        <div class="card chart-card full-width">
-          <div class="card-header">
-            <h3 class="card-title">Incident Reports</h3>
-            <div class="chart-actions">
-              <select class="chart-filter">
-                <option>Last 6 Months</option>
-                <option>Last Year</option>
-                <option>All Time</option>
-              </select>
-            </div>
-          </div>
-          <div class="chart-container">
-            <canvas id="incidentChart" height="300"></canvas>
-          </div>
-          <div class="chart-footer">
-            <div class="chart-stat">
-              <span class="stat-value" style="color: #d14343">+8</span>
-              <span class="stat-label">new reports this month</span>
-            </div>
-            <div class="chart-legend">
-              <span class="legend-item"
-                ><i class="fas fa-square" style="color: #d14343"></i>
-                Incidents</span
-              >
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -380,6 +307,6 @@
 <!---->
 {% block script %}
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<!-- <script src="{% static 'shipper/js/shipper-dashboard.js' %}"></script> -->
-<script src="{% static 'shipper/js/dashboard-map.js' %}"></script>
+<script src="{% static 'shipper/js/shipper-dashboard-map.js' %}"></script>
+<script src="{% static 'shipper/js/chart.js' %}"></script>
 {% endblock %}
