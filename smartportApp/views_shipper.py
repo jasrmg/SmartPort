@@ -106,7 +106,7 @@ def shipper_deliveries_view(request):
 
     except ValueError:
       logger.warning(f"Invalid date: {date}")
-  
+  # TODO: manifest creation date filter(?)
   if parsed_date:
     submanifests = submanifests.filter(
       Q(voyage__departure_date__date=parsed_date) |
@@ -120,7 +120,7 @@ def shipper_deliveries_view(request):
   print(f"Submanifests count after filters: {submanifests.count()}")
   logger.debug(f"Final queryset count after date filter: {submanifests.count()}")
 
-  paginator = Paginator(submanifests, 1)
+  paginator = Paginator(submanifests, 25)
   page_number = request.GET.get("page", 1)
 
   try:
