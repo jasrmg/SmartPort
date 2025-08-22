@@ -1304,7 +1304,7 @@ def admin_reject_submanifest(request, submanifest_id):
 
     sub = SubManifest.objects.get(submanifest_id=submanifest_id)
     sub.status = "rejected_by_admin"
-    sub.admin_note = f"{user.first_name} {user.last_name}: {note}"
+    sub.admin_note = note
     sub.updated_by = user
     sub.save()
 
