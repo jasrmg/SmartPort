@@ -78,13 +78,11 @@ def shipper_shipment_volume_chart_api(request):
   API endpoint for monthly shipment volume chart data
   Returns cargo counts grouped by month
   """
-
   auth_check = enforce_shipper_access(request)
   if auth_check:
     return JsonResponse({'error': 'Unauthorized'}, status=403)
   
   user = request.user.userprofile
-  # Get filter parameter (default to last month)
   period = request.GET.get('period', 'thismonth')
 
   # Calculate date range based on period
@@ -93,22 +91,43 @@ def shipper_shipment_volume_chart_api(request):
     start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     months_back = 1
   elif period == '3months':
-    start_date = now - timedelta(days=90)
+    # Use exact 3 months back instead of 90 days
+    start_date = (now - timedelta(days=90)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     months_back = 3
   elif period == '6months':
-    start_date = now - timedelta(days=180)
+    start_date = (now - timedelta(days=180)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     months_back = 6
-  elif period == 'ytd': # year to date
+  elif period == 'ytd':
     start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     months_back = now.month
   elif period == 'lastyear':
-    start_date = now - timedelta(days=365)
+    start_date = (now - timedelta(days=365)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     months_back = 12
-  else:  # fallback to this month
+  else:
     start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     months_back = 1
   
-  # Get shipment data grouped by month
+  # DEBUG: Check if we have any SubManifest records at all
+  total_records = SubManifest.objects.filter(created_by=user).count()
+  records_in_range = SubManifest.objects.filter(
+    created_by=user,
+    created_at__gte=start_date
+  ).count()
+  
+  # print(f"DEBUG - Total SubManifest records for user: {total_records}")
+  # print(f"DEBUG - Records in date range ({start_date} to {now}): {records_in_range}")
+  # print(f"DEBUG - Date range: {start_date} to {now}")
+  
+  # Check the cargo_items relationship
+  sample_manifest = SubManifest.objects.filter(created_by=user).first()
+  if sample_manifest:
+    cargo_count = sample_manifest.cargo_items.count()
+    print(f"DEBUG - Sample manifest cargo items count: {cargo_count}")
+    if cargo_count > 0:
+      sample_cargo = sample_manifest.cargo_items.first()
+      print(f"DEBUG - Sample cargo quantity: {sample_cargo.quantity}")
+
+  # Get shipment data grouped by month with debugging
   shipment_data = SubManifest.objects.filter(
     created_by=user,
     created_at__gte=start_date
@@ -118,13 +137,27 @@ def shipper_shipment_volume_chart_api(request):
     shipment_count=Count('submanifest_id'),
     total_cargo=Sum('cargo_items__quantity')
   ).order_by('month')
+  
+  # print(f"DEBUG - Shipment data query result: {list(shipment_data)}")
+  
+  # Alternative query - try without the cargo_items relationship first
+  simple_shipment_data = SubManifest.objects.filter(
+    created_by=user,
+    created_at__gte=start_date
+  ).annotate(
+    month=TruncMonth('created_at')
+  ).values('month').annotate(
+    shipment_count=Count('submanifest_id')
+  ).order_by('month')
+  
+  # print(f"DEBUG - Simple shipment data (no cargo): {list(simple_shipment_data)}")
 
   # Create a complete list of time periods for the chart
   labels = []
   current_period_data = []
 
   if period == 'thismonth':
-  # Show daily data for current month
+    # Show daily data for current month
     current_date = start_date
     while current_date <= now:
       day_start = current_date
@@ -135,11 +168,14 @@ def shipper_shipment_volume_chart_api(request):
         created_at__gte=day_start,
         created_at__lte=day_end
       ).aggregate(
-        total_cargo=Sum('cargo_items__quantity')
+        total_cargo=Sum('cargo_items__quantity'),
+        shipment_count=Count('submanifest_id')
       )
       
-      labels.append(current_date.strftime('%b %d'))  # e.g., "Jan 15"
-      current_period_data.append(day_data['total_cargo'] or 0)
+      labels.append(current_date.strftime('%b %d'))
+      # Use shipment count as fallback if cargo quantity is 0
+      cargo_value = day_data['total_cargo'] or day_data['shipment_count'] or 0
+      current_period_data.append(cargo_value)
       
       current_date += timedelta(days=1)
   else:
@@ -149,40 +185,47 @@ def shipper_shipment_volume_chart_api(request):
 
     while current_month <= now:
       months_list.append(current_month)
-      # Move to next month
       if current_month.month == 12:
         current_month = current_month.replace(year=current_month.year + 1, month=1)
       else:
         current_month = current_month.replace(month=current_month.month + 1)
 
     # Convert query results to dictionary for easy lookup
-    data_dict = {
-      item['month'].replace(day=1): item for item in shipment_data
-    }
+    # Normalize the keys to avoid timezone/day mismatch issues
+    data_dict = {}
+    for item in shipment_data:
+      # Create a normalized key (year, month) for matching
+      key = (item['month'].year, item['month'].month)
+      data_dict[key] = item
+      print(f"DEBUG - Data dict key created: {key} -> cargo={item['total_cargo']}, shipments={item['shipment_count']}")
     
     # Build the response data
     for month in months_list:
-      labels.append(month.strftime('%b %Y'))  # e.g., "Jan 2024"
+      labels.append(month.strftime('%b %Y'))
       
-      if month in data_dict:
-        current_period_data.append(data_dict[month]['total_cargo'] or 0)
+      # Create matching key for lookup
+      lookup_key = (month.year, month.month)
+      print(f"DEBUG - Looking up key: {lookup_key}")
+      
+      if lookup_key in data_dict:
+        cargo_value = data_dict[lookup_key]['total_cargo'] or data_dict[lookup_key]['shipment_count'] or 0
+        current_period_data.append(cargo_value)
+        print(f"DEBUG - Month {month.strftime('%b %Y')}: FOUND cargo={data_dict[lookup_key]['total_cargo']}, shipments={data_dict[lookup_key]['shipment_count']}")
       else:
         current_period_data.append(0)
+        print(f"DEBUG - Month {month.strftime('%b %Y')}: No data found for key {lookup_key}")
   
   # Calculate previous period data for comparison
   if period == 'thismonth':
-    # Compare with last month
     if now.month == 1:
       previous_start = now.replace(year=now.year-1, month=12, day=1, hour=0, minute=0, second=0, microsecond=0)
     else:
       previous_start = now.replace(month=now.month-1, day=1, hour=0, minute=0, second=0, microsecond=0)
     previous_end = start_date
   elif period == 'ytd':
-    # Compare with same period last year
     previous_start = now.replace(year=now.year-1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
     previous_end = now.replace(year=now.year-1, month=now.month, day=now.day, hour=0, minute=0, second=0, microsecond=0)
   else:
-    # Compare with equivalent previous period
     days_diff = (now - start_date).days
     previous_start = start_date - timedelta(days=days_diff)
     previous_end = start_date
@@ -192,121 +235,47 @@ def shipper_shipment_volume_chart_api(request):
     created_at__gte=previous_start,
     created_at__lt=previous_end
   ).aggregate(
-    total_cargo=Sum('cargo_items__quantity')
+    total_cargo=Sum('cargo_items__quantity'),
+    shipment_count=Count('submanifest_id')
   )
 
   # Calculate percentage change
   current_total = sum(current_period_data)
-  previous_total = previous_data['total_cargo'] or 0
+  previous_total = previous_data['total_cargo'] or previous_data['shipment_count'] or 0
   
   if previous_total > 0:
     percentage_change = ((current_total - previous_total) / previous_total) * 100
   else:
     percentage_change = 100 if current_total > 0 else 0
 
-  return JsonResponse({
-  'labels': labels,
-  'datasets': [
-    {
-      'label': 'Current Period',
-      'data': current_period_data,
-      'backgroundColor': '#1e3a8a',
-      'borderColor': '#1e3a8a',
-      'borderWidth': 2,
-      'fill': False
-    }
-  ],
-  'stats': {
-    'percentage_change': round(percentage_change, 1),
-    'current_total': current_total,
-    'previous_total': previous_total
-  }
-})
-  # =================================================================================
-  # Create a complete list of months for the chart (including months with no data)
-  # months_list = []
-  # current_month = start_date.replace(day=1)
-
-  # while current_month <= now:
-  #   months_list.append(current_month)
-  #   # Move to next month
-  #   if current_month.month == 12:
-  #     current_month = current_month.replace(year=current_month.year + 1, month=1)
-  #   else:
-  #     current_month = current_month.replace(month=current_month.month + 1)
-
-  # # Convert query results to dictionary for easy lookup
-  # data_dict = {
-  #   item['month'].replace(day=1): item for item in shipment_data
+  # Add debugging info to response
+  # debug_info = {
+  #   'total_user_records': total_records,
+  #   'records_in_range': records_in_range,
+  #   'date_range': f"{start_date} to {now}",
+  #   'raw_shipment_data': list(shipment_data),
+  #   'simple_shipment_data': list(simple_shipment_data)
   # }
 
-  # # Build the response data
-  # labels = []
-  # current_period_data = []
-
-  # for month in months_list:
-  #   labels.append(month.strftime('%b %Y'))  # e.g., "Jan 2024"
-
-  #   if month in data_dict:
-  #     # Use total_cargo (sum of all cargo quantities) or shipment_count
-  #     current_period_data.append(data_dict[month]['total_cargo'] or 0)
-  #   else:
-  #     current_period_data.append(0)
-
-  # # Calculate previous period data for comparison
-  # if period == 'thismonth':
-  #   # Compare with last month
-  #   if now.month == 1:
-  #     previous_start = now.replace(year=now.year-1, month=12, day=1, hour=0, minute=0, second=0, microsecond=0)
-  #   else:
-  #     previous_start = now.replace(month=now.month-1, day=1, hour=0, minute=0, second=0, microsecond=0)
-  #     previous_end = start_date
-  # elif period == 'ytd':
-  #   # Compare with same period last year
-  #   previous_start = now.replace(year=now.year-1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-  #   previous_end = now.replace(year=now.year-1, month=now.month, day=now.day, hour=0, minute=0, second=0, microsecond=0)
-  # else:
-  #   # Compare with equivalent previous period
-  #   days_diff = (now - start_date).days
-  #   previous_start = start_date - timedelta(days=days_diff)
-  #   previous_end = start_date
-  
-  # previous_data = SubManifest.objects.filter(
-  #   created_by=user,
-  #   created_at__gte=previous_start,
-  #   created_at__lt=previous_end
-  # ).aggregate(
-  #   total_cargo=Sum('cargo_items__quantity')
-  # )
-
-  # # Calculate percentage change
-  # current_total = sum(current_period_data)
-  # previous_total = previous_data['total_cargo'] or 0
-
-  # if previous_total > 0:
-  #   percentage_change = ((current_total - previous_total) / previous_total) * 100
-  # else:
-  #   percentage_change = 100 if current_total > 0 else 0
-
-  # return JsonResponse({
-  #   'labels': labels,
-  #   'datasets': [
-  #     {
-  #       'label': 'Current Period',
-  #       'data': current_period_data,
-  #       'backgroundColor': '#1e3a8a',
-  #       'borderColor': '#1e3a8a',
-  #       'borderWidth': 2,
-  #       'fill': False
-  #     }
-  #   ],
-  #   'stats': {
-  #     'percentage_change': round(percentage_change, 1),
-  #     'current_total': current_total,
-  #     'previous_total': previous_total
-  #   }
-  # })
-
+  return JsonResponse({
+    'labels': labels,
+    'datasets': [
+      {
+        'label': 'Current Period',
+        'data': current_period_data,
+        'backgroundColor': '#1e3a8a',
+        'borderColor': '#1e3a8a',
+        'borderWidth': 2,
+        'fill': False
+      }
+    ],
+    'stats': {
+      'percentage_change': round(percentage_change, 1),
+      'current_total': current_total,
+      'previous_total': previous_total
+    },
+    # 'debug': debug_info  # Remove this in production
+  })
 
 @login_required
 def shipper_dashboard(request):
