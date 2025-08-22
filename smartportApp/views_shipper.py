@@ -765,7 +765,7 @@ def custom_clearance_view(request, submanifest_id):
     'has_documents': len(documents_data) > 0,
   }
   
-  return render(request, 'smartportApp/custom-clearance.html', context)
+  return render(request, 'smartportApp/custom-clearance_test.html', context)
 
 # ENDPOINT TO SUBMIT THE SHIPMENT(SUBMANIFEST DETAIL)
 @login_required
