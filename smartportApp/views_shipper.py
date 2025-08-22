@@ -106,23 +106,21 @@ def shipper_deliveries_view(request):
 
     except ValueError:
       logger.warning(f"Invalid date: {date}")
-  
+  # TODO: manifest creation date filter(?)
   if parsed_date:
     submanifests = submanifests.filter(
       Q(voyage__departure_date__date=parsed_date) |
       Q(voyage__arrival_date__date=parsed_date) 
     )
 
-  # Order results by departure date descending
-  submanifests = submanifests.order_by("-voyage__departure_date")
+  # Order results by newest voyages, edited/updated recently, creation date
+  submanifests = submanifests.order_by("-voyage__departure_date", "-updated_at", "-created_at") 
+
   print("PARSED DATE: ", parsed_date)
   print(f"Submanifests count after filters: {submanifests.count()}")
   logger.debug(f"Final queryset count after date filter: {submanifests.count()}")
 
-  # TODO: ordering by departure date
-
-  # TODO: pagination
-  paginator = Paginator(submanifests, 1)
+  paginator = Paginator(submanifests, 25)
   page_number = request.GET.get("page", 1)
 
   try:
@@ -217,12 +215,20 @@ def handle_get_request(request, submanifest_id):
       "docs": [doc]  # single doc per card
     })
 
+  # pick rejection reason depending on status
+  reject_reason = None
+  if submanifest.status == "rejected_by_admin":
+    reject_reason = submanifest.admin_note
+  elif submanifest.status == "rejected_by_customs":
+    reject_reason = submanifest.customs_note
+
   context = {
     "submanifest": submanifest,
     "status_display": submanifest.get_status_display(),
     "cargos": cargos,
     "voyages": voyages,
     "document_data": document_data,
+    "reject_reason": reject_reason,
   }
   return render(request, "smartportApp/shipper/edit-shipment.html", context)
 
@@ -639,7 +645,8 @@ def get_cargo_items(request, submanifest_id):
       'cargo': cargo_data,
       'has_clearance': has_clearance,
       'clearance_status': clearance_status,
-      'submanifest_id': submanifest_id
+      'submanifest_id': submanifest_id,
+      'status': sm.status
     }
     return JsonResponse(response_data)
   except SubManifest.DoesNotExist:
@@ -758,7 +765,7 @@ def custom_clearance_view(request, submanifest_id):
     'has_documents': len(documents_data) > 0,
   }
   
-  return render(request, 'smartportApp/custom-clearance.html', context)
+  return render(request, 'smartportApp/custom-clearance_test.html', context)
 
 # ENDPOINT TO SUBMIT THE SHIPMENT(SUBMANIFEST DETAIL)
 @login_required

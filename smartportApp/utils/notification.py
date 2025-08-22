@@ -14,9 +14,9 @@ def poll_recent_notifications(request):
   now = timezone.now()
   one_minute_ago = now - timedelta(minutes=1)
 
-  print(f"Server timezone: {timezone.get_current_timezone()}")
-  print(f"Current time: {now}")
-  print(f"One minute ago: {one_minute_ago}")
+  # print(f"Server timezone: {timezone.get_current_timezone()}")
+  # print(f"Current time: {now}")
+  # print(f"One minute ago: {one_minute_ago}")
 
 
   # Get unread notifications from the last 60 seconds

@@ -183,6 +183,30 @@
 .back-button-container {
   margin-bottom: 1.5rem;
 }
+.submanifest-buttons {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+.btn.edit-submanifest-btn {
+  margin-top: 1rem;
+  background-color: var(--light);
+}
+.btn.edit-submanifest-btn:hover {
+  transform: translateY(-2px);
+  background-color: var(--gray);
+}
+/*DISABLED STATE*/
+.edit-submanifest-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.edit-submanifest-btn.disabled:hover {
+  background-color: inherit;
+  transform: none;
+  cursor: not-allowed;
+}
 
 .action-buttons {
   margin-top: 2rem;

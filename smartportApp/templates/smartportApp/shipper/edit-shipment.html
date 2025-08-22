@@ -90,7 +90,14 @@
       {{ status_display }}
     </div>
   </div>
-
+  {% if reject_reason %}
+  <div class="reject-reason">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>
+      {{ reject_reason }}
+    </span>
+  </div>
+  {% endif %}
   <form
     class="form-container"
     id="submitShipmentForm"
