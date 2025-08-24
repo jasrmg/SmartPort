@@ -8,7 +8,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/account/', include('accounts.urls')),
     path('', include('smartportApp.urls')),
-    path('reset-password/', TemplateView.as_view(template_name="accounts/reset_password.html"), name="reset-password")
+    path('reset-password/', TemplateView.as_view(template_name="accounts/reset_password.html"), name="reset-password"),
+    path("customs/", include("smartportApp.urls_customs")),
 ]
 
 if settings.DEBUG:
