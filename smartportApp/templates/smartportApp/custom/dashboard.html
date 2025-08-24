@@ -1,1 +1,188 @@
-<h1>CUSTOM DASHBOARD</h1>
+{% extends "smartportApp/custom/custom-base.html" %}
+<!---->
+{% load static %}
+<!---->
+{% block title %} Custom Dashboard {% endblock %}
+<!---->
+{% block head %}
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+/>
+<link rel="stylesheet" href="{% static 'custom/css/custom-dashboard.css' %}" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+<!--BODY-->
+
+<!-- START OF SIDEBAR -->
+{% block sidebar %}
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-anchor logo-icon"></i>
+      <span class="logo-text">SmartPort</span>
+      <button class="collapse-btn">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+  <ul class="nav-menu">
+    <li class="nav-item expanded">
+      <a href="" class="nav-link active">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="" class="nav-link">
+        <i class="fas fa-file-alt"></i>
+        <span>Submanifest Review</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+<!-- START OF MAIN CONTENT-->
+{% block content %}
+<!-- Dashboard Content -->
+<div class="dashboard-content">
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Customs Dashboard</h1>
+      <p>Welcome back! Manage customs clearance and shipping compliance.</p>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="dashboard-grid">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Submanifest Pending</h3>
+        <div class="card-icon blue">
+          <i class="fas fa-file-alt"></i>
+        </div>
+      </div>
+      <div class="card-value">12</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Submanifest Rejected</h3>
+        <div class="card-icon red">
+          <i class="fas fa-times"></i>
+        </div>
+      </div>
+      <div class="card-value">3</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Submanifest Cleared</h3>
+        <div class="card-icon gold">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+      <div class="card-value">15</div>
+    </div>
+  </div>
+
+  <!-- Recent Clearance Requests Section -->
+  <div class="section">
+    <div class="section-header">
+      <h2 class="section-title">Recent Clearance Requests</h2>
+      <a class="btn btn-outline" href="submanifest-review.html">View All</a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Submanifest ID</th>
+            <th>Consignee Name</th>
+            <th>Submitted By</th>
+            <th>Date Submitted</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CL-2023-5421</td>
+            <td>SHP001-Electronics</td>
+            <td>Manila Bay Express</td>
+            <td>May 15, 2023</td>
+            <td><span class="status-badge pending">Pending</span></td>
+            <td>
+              <button class="btn btn-outline">Review</button>
+            </td>
+          </tr>
+          <tr>
+            <td>CL-2023-5422</td>
+            <td>SHP002-Textiles</td>
+            <td>Cebu Pearl</td>
+            <td>May 16, 2023</td>
+            <td>
+              <span class="status-badge under-review">Under Review</span>
+            </td>
+            <td>
+              <button class="btn btn-outline">Review</button>
+            </td>
+          </tr>
+          <tr>
+            <td>CL-2023-5419</td>
+            <td>SHP003-Machinery</td>
+            <td>Philippines Pioneer</td>
+            <td>May 14, 2023</td>
+            <td><span class="status-badge approved">Approved</span></td>
+            <td>
+              <button class="btn btn-outline">View</button>
+            </td>
+          </tr>
+          <tr>
+            <td>CL-2023-5418</td>
+            <td>SHP004-Food Products</td>
+            <td>Mindanao Explorer</td>
+            <td>May 14, 2023</td>
+            <td><span class="status-badge rejected">Rejected</span></td>
+            <td>
+              <button class="btn btn-outline">View</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+<!---->
+{% block script %}
+<!-- <script src="custom-dashboard.js"></script> -->
+{% endblock %}
