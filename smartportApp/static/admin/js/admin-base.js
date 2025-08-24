@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Submenu toggle functionality
   const navItems = document.querySelectorAll(".nav-item");
   navItems.forEach((item) => {
+    console.log("ITEM: ", item);
     const link = item.querySelector(".nav-link");
     const hasSubmenu = item.querySelector(".nav-sub-menu");
 
@@ -140,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
 
-          // ✅ Re-highlight active sub-link (restore it after expanding)
+          // Re-highlight active sub-link (restore it after expanding)
           const currentPath = window.location.pathname;
           const subLinks = item.querySelectorAll(".nav-sub-link");
           subLinks.forEach((subLink) => {
