@@ -9,9 +9,7 @@
     />
     <!-- CSRF TOKEN FOR ADMIN -->
     <meta name="csrf-token" content="{{ csrf_token }}" />
-    <title>
-      {% block title %} Shipper Dashboard {% endblock %} | SmartPort
-    </title>
+    <title>{% block title %} Custom Dashboard {% endblock %} | SmartPort</title>
 
     <!--FONT STYLE-->
     <link
@@ -24,7 +22,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
     <!--CUSTOM CSS-->
-    <link rel="stylesheet" href="{% static 'shipper/css/shipper-base.css' %}" />
+    <link rel="stylesheet" href="{% static 'custom/css/custom-base.css' %}" />
     <link rel="stylesheet" href="{% static 'global/notifications.css' %}" />
     {% block head %} {% endblock %}
   </head>
@@ -345,6 +343,7 @@
       const csrftoken = document.querySelector(
         'meta[name="csrf-token"]'
       ).content;
+      console.log("CUSTOM");
       console.log("CSRF TOKEN: ", csrftoken);
     </script>
   </body>
