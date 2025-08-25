@@ -64,7 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!response.ok)
             throw new Error("Backend failed to authorize login.");
 
-          // REDIRECT THE USER:
+          // REDIRECT THE USER DIRI ILISANAN IG REDIRECT SA LOG IN:
+          // LOG IN DIRI
           const userRole = result.role;
           if (userRole === "admin") {
             window.location.href = "/admin-dashboard/";

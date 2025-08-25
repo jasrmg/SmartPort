@@ -5,7 +5,10 @@
 {% block title %} Submanifest Review {% endblock %}
 <!---->
 {% block head %}
-<link rel="stylesheet" href="submanifest-review.css" />
+<link
+  rel="stylesheet"
+  href="{% static 'custom/css/submanifest-review.css' %}"
+/>
 {% endblock %}
 <!---->
 {% block sidebar %}
@@ -19,202 +22,200 @@
         <i class="fas fa-bars"></i>
       </button>
     </div>
-
-    <ul class="nav-menu">
-      <li class="nav-item">
-        <a href="" class="nav-link">
-          <i class="fas fa-tachometer-alt"></i>
-          <span>Dashboard</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="" class="nav-link active">
-          <i class="fas fa-file-alt"></i>
-          <span>Submanifest Review</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a href="#" class="nav-link">
-          <i class="fas fa-cog"></i>
-          <span>Settings</span>
-        </a>
-        <ul class="nav-sub-menu">
-          <li>
-            <a href="#" id="sidebarChangePassword" class="nav-sub-link">
-              <i class="fas fa-key"></i>
-              <span>Change Password</span>
-            </a>
-          </li>
-          <li>
-            <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
-              <i class="fas fa-user-edit"></i>
-              <span>Edit Profile</span>
-            </a>
-          </li>
-        </ul>
-      </li>
-      <li class="nav-item">
-        <a id="SBlogout-btn" class="nav-link">
-          <i class="fas fa-sign-out-alt"></i>
-          <span>Logout</span>
-        </a>
-      </li>
-    </ul>
   </div>
-  {% endblock %}
-  <!-- Main Content -->
 
-  {% block content %}
-  <div class="section">
-    <div class="section-header">
-      <h2 class="section-title">Pending For Review</h2>
-    </div>
-
-    <div class="table-responsive">
-      <table class="custom-table">
-        <thead>
-          <tr>
-            <th>Submanifest ID</th>
-            <th>Consignee Name</th>
-            <th>Submitted By</th>
-            <th>Date Submitted</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>CL-2023-5421</td>
-            <td>SHP001-Electronics</td>
-            <td>Manila Bay Express</td>
-            <td>May 15, 2023</td>
-            <td><span class="status-badge pending">Pending</span></td>
-            <td>
-              <a class="btn btn-outline" href="submanifest-review1.html"
-                >Review</a
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>CL-2023-5421</td>
-            <td>SHP001-Electronics</td>
-            <td>Manila Bay Express</td>
-            <td>May 15, 2023</td>
-            <td><span class="status-badge pending">Pending</span></td>
-            <td>
-              <a class="btn btn-outline" href="submanifest-review1.html"
-                >Review</a
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>CL-2023-5421</td>
-            <td>SHP001-Electronics</td>
-            <td>Manila Bay Express</td>
-            <td>May 15, 2023</td>
-            <td><span class="status-badge pending">Pending</span></td>
-            <td>
-              <a class="btn btn-outline" href="submanifest-review1.html"
-                >Review</a
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>CL-2023-5421</td>
-            <td>SHP001-Electronics</td>
-            <td>Manila Bay Express</td>
-            <td>May 15, 2023</td>
-            <td><span class="status-badge pending">Pending</span></td>
-            <td>
-              <a class="btn btn-outline" href="submanifest-review1.html"
-                >Review</a
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>CL-2023-5421</td>
-            <td>SHP001-Electronics</td>
-            <td>Manila Bay Express</td>
-            <td>May 15, 2023</td>
-            <td><span class="status-badge pending">Pending</span></td>
-            <td>
-              <a class="btn btn-outline" href="submanifest-review1.html"
-                >Review</a
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>CL-2023-5421</td>
-            <td>SHP001-Electronics</td>
-            <td>Manila Bay Express</td>
-            <td>May 15, 2023</td>
-            <td><span class="status-badge pending">Pending</span></td>
-            <td>
-              <a class="btn btn-outline" href="submanifest-review1.html"
-                >Review</a
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>CL-2023-5421</td>
-            <td>SHP001-Electronics</td>
-            <td>Manila Bay Express</td>
-            <td>May 15, 2023</td>
-            <td><span class="status-badge pending">Pending</span></td>
-            <td>
-              <a class="btn btn-outline" href="submanifest-review1.html"
-                >Review</a
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>CL-2023-5421</td>
-            <td>SHP001-Electronics</td>
-            <td>Manila Bay Express</td>
-            <td>May 15, 2023</td>
-            <td><span class="status-badge pending">Pending</span></td>
-            <td>
-              <a class="btn btn-outline" href="submanifest-review1.html"
-                >Review</a
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>CL-2023-5422</td>
-            <td>SHP002-Textiles</td>
-            <td>Cebu Pearl</td>
-            <td>May 16, 2023</td>
-            <td>
-              <span class="status-badge under-review">Under Review</span>
-            </td>
-            <td>
-              <a
-                class="btn btn-outline review-btn"
-                href="submanifest-review.html"
-                >Review</a
-              >
-            </td>
-          </tr>
-          <tr>
-            <td>CL-2023-5419</td>
-            <td>SHP003-Machinery</td>
-            <td>Philippines Pioneer</td>
-            <td>May 14, 2023</td>
-            <td><span class="status-badge approved">Approved</span></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>CL-2023-5418</td>
-            <td>SHP004-Food Products</td>
-            <td>Mindanao Explorer</td>
-            <td>May 14, 2023</td>
-            <td><span class="status-badge rejected">Rejected</span></td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endblock %}
-  <script src="submanifest-review.js"></script>
+  <ul class="nav-menu">
+    <li class="nav-item">
+      <a href="{% url 'customs-dashboard' %}" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="" class="nav-link active">
+        <i class="fas fa-file-alt"></i>
+        <span>Submanifest Review</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
 </div>
+{% endblock %}
+<!-- Main Content -->
+
+{% block content %}
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">Pending For Review</h2>
+  </div>
+
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Submanifest ID</th>
+          <th>Consignee Name</th>
+          <th>Submitted By</th>
+          <th>Date Submitted</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CL-2023-5421</td>
+          <td>SHP001-Electronics</td>
+          <td>Manila Bay Express</td>
+          <td>May 15, 2023</td>
+          <td><span class="status-badge pending">Pending</span></td>
+          <td>
+            <a class="btn btn-outline" href="submanifest-review1.html"
+              >Review</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>CL-2023-5421</td>
+          <td>SHP001-Electronics</td>
+          <td>Manila Bay Express</td>
+          <td>May 15, 2023</td>
+          <td><span class="status-badge pending">Pending</span></td>
+          <td>
+            <a class="btn btn-outline" href="submanifest-review1.html"
+              >Review</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>CL-2023-5421</td>
+          <td>SHP001-Electronics</td>
+          <td>Manila Bay Express</td>
+          <td>May 15, 2023</td>
+          <td><span class="status-badge pending">Pending</span></td>
+          <td>
+            <a class="btn btn-outline" href="submanifest-review1.html"
+              >Review</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>CL-2023-5421</td>
+          <td>SHP001-Electronics</td>
+          <td>Manila Bay Express</td>
+          <td>May 15, 2023</td>
+          <td><span class="status-badge pending">Pending</span></td>
+          <td>
+            <a class="btn btn-outline" href="submanifest-review1.html"
+              >Review</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>CL-2023-5421</td>
+          <td>SHP001-Electronics</td>
+          <td>Manila Bay Express</td>
+          <td>May 15, 2023</td>
+          <td><span class="status-badge pending">Pending</span></td>
+          <td>
+            <a class="btn btn-outline" href="submanifest-review1.html"
+              >Review</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>CL-2023-5421</td>
+          <td>SHP001-Electronics</td>
+          <td>Manila Bay Express</td>
+          <td>May 15, 2023</td>
+          <td><span class="status-badge pending">Pending</span></td>
+          <td>
+            <a class="btn btn-outline" href="submanifest-review1.html"
+              >Review</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>CL-2023-5421</td>
+          <td>SHP001-Electronics</td>
+          <td>Manila Bay Express</td>
+          <td>May 15, 2023</td>
+          <td><span class="status-badge pending">Pending</span></td>
+          <td>
+            <a class="btn btn-outline" href="submanifest-review1.html"
+              >Review</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>CL-2023-5421</td>
+          <td>SHP001-Electronics</td>
+          <td>Manila Bay Express</td>
+          <td>May 15, 2023</td>
+          <td><span class="status-badge pending">Pending</span></td>
+          <td>
+            <a class="btn btn-outline" href="submanifest-review1.html"
+              >Review</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>CL-2023-5422</td>
+          <td>SHP002-Textiles</td>
+          <td>Cebu Pearl</td>
+          <td>May 16, 2023</td>
+          <td>
+            <span class="status-badge under-review">Under Review</span>
+          </td>
+          <td>
+            <a class="btn btn-outline review-btn" href="submanifest-review.html"
+              >Review</a
+            >
+          </td>
+        </tr>
+        <tr>
+          <td>CL-2023-5419</td>
+          <td>SHP003-Machinery</td>
+          <td>Philippines Pioneer</td>
+          <td>May 14, 2023</td>
+          <td><span class="status-badge approved">Approved</span></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>CL-2023-5418</td>
+          <td>SHP004-Food Products</td>
+          <td>Mindanao Explorer</td>
+          <td>May 14, 2023</td>
+          <td><span class="status-badge rejected">Rejected</span></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+<script src="submanifest-review.js"></script>

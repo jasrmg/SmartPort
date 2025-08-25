@@ -92,6 +92,22 @@
   color: var(--primary);
 }
 
+.table-responsive {
+  max-height: 80vh; /* Maximum height is 80% of viewport */
+  min-height: 200px; /* Optional: minimum height so it’s never too small */
+  overflow-y: auto; /* Vertical scrollbar */
+  overflow-x: auto; /* Horizontal scrollbar if needed */
+  border: 1px solid #ddd; /* Optional border */
+}
+
+/* Sticky table header */
+.table-responsive thead th {
+  position: sticky;
+  top: 0;
+  background: #fff; /* Keep background so header text is readable */
+  z-index: 2;
+}
+
 .btn {
   display: inline-block;
   padding: 0.6rem 1.2rem;
