@@ -152,6 +152,15 @@
   color: white;
   background-color: var(--danger);
 }
+.no-pending-submanifest {
+  text-align: center;
+  padding: 1rem;
+  font-style: italic;
+  color: var(--dark-gray);
+  background-color: var(--light);
+  font-size: 0.95rem;
+  border-radius: 6px;
+}
 
 .custom-table {
   width: 100%;

@@ -108,11 +108,16 @@
         </tr>
       </thead>
       <tbody>
+        {% for submanifest in submanifests %}
         <tr>
-          <td>CL-2023-5421</td>
-          <td>SHP001-Electronics</td>
-          <td>Manila Bay Express</td>
-          <td>May 15, 2023</td>
+          <td>{{ submanifest.submanifest_number }}</td>
+          <td>{{ submanifest.consignee_name }}</td>
+          <td>
+            {{ submanifest.created_by.user.first_name }}
+            <!---->
+            {{ submanifest.created_by.user.last_name }}
+          </td>
+          <td>{{ submanifest.created_at|date:"M d, Y" }}</td>
           <td>
             <button class="btn-icon view" title="Review">
               <i class="fas fa-eye"></i>
@@ -125,6 +130,13 @@
             </button>
           </td>
         </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="no-pending-submanifest">
+            No pending submanifests found.
+          </td>
+        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
