@@ -430,7 +430,7 @@ def submanifest_view(request, submanifest_id):
   context = {
     "submanifest": submanifest
   }
-  return render(request, "smartportApp/admin/submanifest.html", context)
+  return render(request, "smartportApp/submanifest.html", context)
 
 
 def master_manifest_detail_view(request, mastermanifest_id):

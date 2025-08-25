@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // TABLE SORT FUNCTIONALITY
   const table = document.querySelector(".custom-table");
   const sortButtons = document.querySelectorAll(".sort-btn");
 
@@ -72,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (originalOrder.length === 0) {
       const noDataRow = document.createElement("tr");
       noDataRow.innerHTML =
-        '<td colspan="5" class="no-pending-submanifest">No pending submanifests found.</td>';
+        '<td colspan="6" class="no-pending-submanifest">No pending submanifests found.</td>';
       tbody.appendChild(noDataRow);
     }
   };
@@ -126,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (rows.length === 0) {
       const noDataRow = document.createElement("tr");
       noDataRow.innerHTML =
-        '<td colspan="5" class="no-pending-submanifest">No pending submanifests found.</td>';
+        '<td colspan="6" class="no-pending-submanifest">No pending submanifests found.</td>';
       tbody.appendChild(noDataRow);
     }
   };
@@ -159,9 +160,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // Fallback to regular date parsing
     return new Date(dateString);
   };
+
+  // OPEN SUBMANIFEST BUTTON FUNCTIONALITY:
+  document.querySelectorAll(".btn-icon.view").forEach((button) => {
+    button.addEventListener("click", function () {
+      const submanifestId = this.dataset.submanifestId;
+      window.open(`/customs/submanifest/review/${submanifestId}/`, "_blank");
+    });
+  });
 });
 
-// Optional: CSS for better visual feedback
+// CSS for better visual feedback
 const style = document.createElement("style");
 style.textContent = `
     .sort-btn {
