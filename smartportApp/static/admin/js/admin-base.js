@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Submenu toggle functionality
   const navItems = document.querySelectorAll(".nav-item");
   navItems.forEach((item) => {
-    console.log("ITEM: ", item);
+    // console.log("ITEM: ", item);
     const link = item.querySelector(".nav-link");
     const hasSubmenu = item.querySelector(".nav-sub-menu");
 

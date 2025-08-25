@@ -35,9 +35,15 @@
       </a>
     </li>
     <li class="nav-item">
-      <a href="#" class="nav-link">
+      <a href="{% url 'submanifest-list' %}" class="nav-link">
         <i class="fas fa-file-alt"></i>
         <span>Submanifest Review</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'review-history' %}" class="nav-link">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>Review History</span>
       </a>
     </li>
     <li class="nav-item">
@@ -117,7 +123,9 @@
   <div class="section">
     <div class="section-header">
       <h2 class="section-title">Recent Clearance Requests</h2>
-      <a class="btn btn-outline" href="submanifest-review.html">View All</a>
+      <a class="btn btn-outline" href="{% url 'submanifest-review' %}"
+        >View All</a
+      >
     </div>
 
     <div class="table-responsive">

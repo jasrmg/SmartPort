@@ -64,12 +64,13 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!response.ok)
             throw new Error("Backend failed to authorize login.");
 
-          // REDIRECT THE USER:
+          // REDIRECT THE USER DIRI ILISANAN IG REDIRECT SA LOG IN:
+          // LOG IN DIRI
           const userRole = result.role;
           if (userRole === "admin") {
             window.location.href = "/admin-dashboard/";
           } else if (userRole === "custom") {
-            window.location.href = "/custom-dashboard/";
+            window.location.href = "/customs/dashboard/";
           } else if (userRole === "shipper") {
             window.location.href = "/shipper-dashboard/";
           } else {
@@ -529,7 +530,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (userInfo.role === "admin") {
             window.location.href = "/admin-dashboard/";
           } else if (userInfo.role === "custom") {
-            window.location.href = "/custom-dashboard/";
+            window.location.href = "/dashboard/";
           } else if (userInfo.role === "shipper") {
             window.location.href = "/shipper-dashboard/";
           } else {

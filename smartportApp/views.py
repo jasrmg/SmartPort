@@ -32,7 +32,7 @@ def role_redirect_view(request):
   if role == "admin":
     return redirect("admin_dashboard")
   elif role == "custom":
-    return redirect("custom_dashboard")
+    return redirect("customs-dashboard")
   elif role == "shipper":
     return redirect("shipper_dashboard")
   elif role == "employee":
@@ -430,7 +430,7 @@ def submanifest_view(request, submanifest_id):
   context = {
     "submanifest": submanifest
   }
-  return render(request, "smartportApp/admin/submanifest.html", context)
+  return render(request, "smartportApp/submanifest.html", context)
 
 
 def master_manifest_detail_view(request, mastermanifest_id):
@@ -1690,9 +1690,10 @@ def parse_manifest_page(page_obj):
 
 
 # --------------------------------- CUSTOM ---------------------------------
-@login_required
-def customs_dashboard(request):
-  return render(request, "smartportApp/custom/dashboard.html")
+# TODO: MIGRATE TO A DIFFERENT FILE
+# @login_required
+# def customs_dashboard(request):
+#   return render(request, "smartportApp/custom/dashboard.html")
 
 
 
@@ -1701,6 +1702,7 @@ def customs_dashboard(request):
 # NAA SA views_shippers.py
 
 # --------------------------------- EMPLOYEE ---------------------------------
+# TODO: MIGRATE TO A DIFFERENT FILE
 @login_required
 def employee_dashboard(request):
   return render(request, "smartportApp/employee/dashboard.html")

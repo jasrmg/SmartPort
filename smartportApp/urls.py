@@ -96,9 +96,10 @@ urlpatterns = [
 
 
   # -------------------------------- CUSTOM USING DIFFERENT VIEW --------------------------------
-  path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"),
+  # path("custom-dashboard/", views.customs_dashboard, name="custom-dashboard"), MIGRATE IT TO A DIFFERENT URL FILE
 
   # -------------------------------- SHIPPER USING DIFFERENT VIEW --------------------------------
+  # TODO: MIGRATE IT TO A DIFFERENT URLS FILE
   # -------------------------------- SHIPPER TEMPLATES LOAD --------------------------------
   path("shipper-dashboard/", views_shipper.shipper_dashboard, name="shipper-dashboard"),
   path("api/shipper-vessels-on-map/", views_shipper.shipper_vessels, name="shipper-vessels"),
@@ -124,5 +125,6 @@ urlpatterns = [
   path('cargo/delete/<int:cargo_id>/', views_shipper.delete_cargo, name='delete_cargo'),
 
   # -------------------------------- EMPLOYEE USING DIFFERENT VIEW --------------------------------
+  # TODO: MIGRATE IT TO A DIFFERENT FILE
   path("employee-dashboard/", views.employee_dashboard, name="employee-dashboard"),
 ]
