@@ -76,14 +76,15 @@
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  /* margin-bottom: 1.5rem; */
+  max-height: 90vh;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .section-title {
@@ -93,66 +94,63 @@
 }
 
 .table-responsive {
-  max-height: 80vh; /* Maximum height is 80% of viewport */
-  min-height: 200px; /* Optional: minimum height so it’s never too small */
-  overflow-y: auto; /* Vertical scrollbar */
-  overflow-x: auto; /* Horizontal scrollbar if needed */
-  border: 1px solid #ddd; /* Optional border */
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: auto;
+
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Sticky table header */
 .table-responsive thead th {
   position: sticky;
   top: 0;
-  background: #fff; /* Keep background so header text is readable */
+  background: var(--light);
   z-index: 2;
 }
 
-.btn {
-  display: inline-block;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  font-family: "Exo 2", sans-serif;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
+.btn-icon {
+  background: none;
   border: none;
-  text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
-
-.btn-primary {
-  background-color: var(--primary);
+.btn-icon.view {
+  color: var(--light-blue);
+  background-color: rgba(70, 130, 180, 0.1);
+}
+.btn-icon.view:hover {
   color: white;
-}
-
-.btn-primary:hover {
-  background-color: var(--secondary);
-}
-
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--primary);
-  color: var(--primary);
-}
-
-.btn-outline:hover {
-  background-color: rgba(10, 31, 68, 0.1);
-}
-
-.btn-secondary {
   background-color: var(--light-blue);
+}
+/* Accept Button */
+.btn-icon.accept {
+  color: var(--accent);
+  background-color: rgba(76, 175, 80, 0.15);
+}
+.btn-icon.accept:hover {
   color: white;
+  background-color: var(--accent);
 }
 
-.btn-secondary:hover {
-  background-color: #3a6d93;
+/* Reject Button */
+.btn-icon.reject {
+  color: var(--danger);
+  background-color: rgba(209, 67, 67, 0.1);
 }
-
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+.btn-icon.reject:hover {
+  color: white;
+  background-color: var(--danger);
 }
 
 .custom-table {
@@ -163,9 +161,10 @@
 
 .custom-table th {
   text-align: left;
-  padding: 1rem;
+  padding: 0.8rem 1rem;
   background-color: var(--light);
   font-weight: 600;
+  font-size: 0.9rem;
   color: var(--primary);
 }
 
@@ -182,6 +181,17 @@
   background-color: rgba(70, 130, 180, 0.05);
 }
 
+.sort-btn {
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+}
+
 .status-badge {
   display: inline-block;
   padding: 0.3rem 0.6rem;
@@ -190,9 +200,10 @@
   font-weight: 500;
 }
 
-.status-badge.pending {
-  background-color: rgba(212, 175, 55, 0.1);
+.status-badge.pending_customs {
+  background-color: rgba(212, 175, 55, 0.15);
   color: var(--highlight);
+  border: 1px solid var(--highlight);
 }
 
 .status-badge.approved {

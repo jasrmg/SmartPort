@@ -5,4 +5,5 @@ from . import views_customs
 urlpatterns = [
   path("dashboard/", views_customs.dashboard_view, name="customs-dashboard"),
   path("submanifest-review/", views_customs.submanifest_review_view, name="submanifest-review"),
+  path("review-history/", views_customs.review_history_view, name="review-history"),
 ]
