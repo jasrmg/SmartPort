@@ -18,7 +18,7 @@ body {
   background-color: var(--light);
   color: var(--primary);
   margin: 0;
-  padding: 40px;
+  padding: 0 40px 0 40px;
 }
 
 .container {
@@ -113,6 +113,20 @@ th {
   gap: 10px;
   margin-bottom: 20px;
 }
+.submanifest-actions-container {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 5rem;
+
+  position: sticky;
+  bottom: 0;
+  background: var(--light);
+  border-top: 1px solid var(--gray);
+  z-index: 10;
+  padding: 12px 16px;
+}
 
 .btn-icon {
   background-color: var(--primary);
@@ -132,11 +146,31 @@ th {
   background-color: var(--secondary);
 }
 
+.reject,
+.approve {
+  padding: 12px 20px;
+  font-size: 1rem;
+  min-width: 110px;
+  border-radius: 6px;
+}
+.reject {
+  background-color: var(--danger);
+}
+.reject:hover {
+  background-color: #9e2e2e;
+}
+.approve {
+  background-color: var(--accent);
+}
+.approve:hover {
+  background-color: var(--success);
+}
+
 #submanifestDetails {
   width: 210mm;
   min-height: 297mm;
   padding: 20mm;
-  margin: 20mm auto;
+  margin: 20mm auto 0 auto;
   background: white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
