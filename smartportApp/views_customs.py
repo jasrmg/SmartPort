@@ -11,7 +11,7 @@ def dashboard_view(request):
 
 def submanifest_review_view(request):
   pending_submanifests = SubManifest.objects.filter(
-    status="pending_admin"
+    status="pending_customs"
   ).select_related("created_by", "voyage").order_by("-created_at")
 
   context = {
