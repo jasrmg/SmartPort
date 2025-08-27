@@ -52,17 +52,21 @@ h2 {
 }
 
 .field-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 24px;
+  margin-bottom: 16px;
 }
 
 .field {
   flex: 1 1 45%;
-  background-color: var(--gray);
+  background-color: var(--light);
   padding: 10px 14px;
   border-radius: 6px;
   margin-top: 10px;
+}
+.field.full-width {
+  grid-column: span 2;
 }
 
 .field strong {
@@ -90,6 +94,9 @@ th {
   background-color: var(--primary);
   color: white;
 }
+.no-docs {
+  text-align: center;
+}
 
 .status-approved {
   color: var(--success);
@@ -97,7 +104,7 @@ th {
 }
 
 .notes {
-  background-color: var(--gray);
+  background-color: var(--light);
   padding: 10px;
   border-radius: 6px;
   font-size: 14px;

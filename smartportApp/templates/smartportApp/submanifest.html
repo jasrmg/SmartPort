@@ -73,7 +73,7 @@
           <div class="field">
             <strong>Email</strong> {{ submanifest.consignor_email }}
           </div>
-          <div class="field" style="flex: 1 1 100%">
+          <div class="field full-width">
             <strong>Address</strong> {{ submanifest.consignor_address }}
           </div>
         </div>
@@ -89,7 +89,7 @@
           <div class="field">
             <strong>Email</strong> {{ submanifest.consignee_email }}
           </div>
-          <div class="field" style="flex: 1 1 100%">
+          <div class="field full-width">
             <strong>Address</strong> {{ submanifest.consignee_address }}
           </div>
         </div>
@@ -204,7 +204,7 @@
             </tr>
             {% empty %}
             <tr>
-              <td>No uploaded documents found.</td>
+              <td colspan="4" class="no-docs">No uploaded documents found.</td>
             </tr>
             {% endfor %}
           </tbody>
