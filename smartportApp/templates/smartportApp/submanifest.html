@@ -18,6 +18,8 @@
       referrerpolicy="no-referrer"
     />
     <link rel="stylesheet" href="{% static 'admin/css/submanifest.css' %}" />
+
+    <meta name="csrf-token" content="{{ csrf_token }}" />
   </head>
   <body>
     <div class="container" id="submanifestDetails">
@@ -228,17 +230,58 @@
         </button>
       </div>
     </div>
+    {% if submanifest.status != "approved" %}
     <div class="submanifest-actions-container">
-      <button class="btn-icon approve" title="Approve">
+      <button
+        class="btn-icon approve"
+        title="Approve"
+        data-submanifest-id="{{ submanifest.submanifest_id }}"
+      >
         <i class="fas fa-check"></i> Approve
       </button>
-      <button class="btn-icon reject" title="Reject">
+      <button
+        class="btn-icon reject"
+        title="Reject"
+        data-submanifest-id="{{ submanifest.submanifest_id }}"
+      >
         <i class="fas fa-times"></i> Reject
       </button>
     </div>
+    {% endif %}
 
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Reject Submanifest</h3>
+        </div>
+        <div class="modal-body">
+          <form id="rejectForm">
+            <input type="hidden" id="rejectSubmanifestId" />
+            <textarea
+              id="rejectNote"
+              required
+              rows="5"
+              placeholder="Add Rejection Note"
+            ></textarea>
+            <div class="modal-actions">
+              <button type="button" id="cancelRejectBtn" class="btn-cancel">
+                Cancel
+              </button>
+              <button type="submit" class="btn-danger">Reject</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'custom/js/submanifest.js' %}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
+      const csrftoken = document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content");
+
       const printBtn = document.getElementById("printBtn");
       const pdfBtn = document.getElementById("pdfBtn");
 
