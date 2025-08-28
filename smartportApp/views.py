@@ -427,7 +427,8 @@ def submanifest_view(request, submanifest_id):
   ).prefetch_related("cargo_items", "documents"), pk=submanifest_id)
 
   context = {
-    "submanifest": submanifest
+    "submanifest": submanifest,
+    "show_button": ["pending_admin","pending_customs"],
   }
   return render(request, "smartportApp/submanifest.html", context)
 
@@ -1308,8 +1309,7 @@ def admin_reject_submanifest(request, submanifest_id):
     sub.save()
 
 
-    link_url = f"/edit/submitted-shipment/{sub.submanifest_id}/" # sample link only
-    print("SAMPLE LINK URL: ", link_url)
+    link_url = f"/edit/submitted-shipment/{sub.submanifest_id}/"
     # send notification to the shipper
     create_notification(
       user=sub.created_by,

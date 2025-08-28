@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("hello: ", csrftoken);
+
   // approve
   document.querySelectorAll(".btn-icon.approve").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -7,15 +8,53 @@ document.addEventListener("DOMContentLoaded", () => {
       await handleClearanceAction(submanifestId, "approve");
     });
   });
-  // reject
+  // reject -> show modal
+  const rejectModal = document.getElementById("rejectModal");
+  const rejectForm = document.getElementById("rejectForm");
+  const rejectNote = document.getElementById("rejectNote");
+  const rejectSubmanifestId = document.getElementById("rejectSubmanifestId");
+  const cancelRejectBtn = document.getElementById("cancelRejectBtn");
   document.querySelectorAll(".btn-icon.reject").forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", () => {
       const submanifestId = btn.dataset.submanifestId;
-      await handleClearanceAction(submanifestId, "reject");
+      rejectSubmanifestId.value = submanifestId;
+      rejectNote.value = "";
+      rejectModal.style.display = "flex";
     });
   });
 
-  const handleClearanceAction = async (submanifestId, action) => {
+  // cancel reject -> hide modal
+  cancelRejectBtn.addEventListener("click", () => {
+    rejectModal.style.display = "none";
+  });
+  // close modal when clicking outside
+  window.addEventListener("click", (e) => {
+    if (e.target === rejectModal) {
+      rejectModal.style.display = "none";
+    }
+  });
+
+  // submit reject -> update db and send notif to shipper
+  rejectForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const submanifestId = rejectSubmanifestId.value;
+    const note = rejectNote.value.trim();
+
+    if (!note) {
+      showToast("Rejection reason is required.", true);
+      return;
+    }
+
+    await handleClearanceAction(submanifestId, "reject", { note });
+    rejectModal.style.display = "none";
+  });
+
+  const handleClearanceAction = async (
+    submanifestId,
+    action,
+    extraData = {}
+  ) => {
     try {
       const response = await fetch(
         `/customs/clearance/${submanifestId}/${action}/`,
@@ -25,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "Content-Type": "application/json",
             "X-CSRFToken": csrftoken,
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify(extraData),
         }
       );
 

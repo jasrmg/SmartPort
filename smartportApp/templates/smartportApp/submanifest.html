@@ -230,7 +230,7 @@
         </button>
       </div>
     </div>
-    {% if submanifest.status != "approved" %}
+    {% if submanifest.status in show_button %}
     <div class="submanifest-actions-container">
       <button
         class="btn-icon approve"
@@ -247,6 +247,8 @@
         <i class="fas fa-times"></i> Reject
       </button>
     </div>
+    {% else %}
+    <div class="space" style="margin-bottom: 20mm"></div>
     {% endif %}
 
     <!-- Reject Modal -->

@@ -79,7 +79,7 @@ def create_notification_bulk(recipients, title, message, link_url="", triggered_
   - triggered_by: UserProfile who triggered the notification
   """
   if not all(isinstance(user, UserProfile) for user in recipients):
-    raise ValueError("All recipients must be instances of UseProfile")
+    raise ValueError("All recipients must be instances of UserProfile")
   
   notifications = [
     Notification(

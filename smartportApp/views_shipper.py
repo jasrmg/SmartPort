@@ -736,6 +736,9 @@ def edit_submit_shipment(request, submanifest_id):
   POST: Process all updates for the shipment
   GET: Display the form with the existing data
   """
+  auth_check = enforce_shipper_access(request)
+  if auth_check:
+    return auth_check
   if request.method == "GET":
     return handle_get_request(request, submanifest_id)
   elif request.method == "POST":

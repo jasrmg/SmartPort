@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from . models import SubManifest, CustomClearance
+from . models import SubManifest, CustomClearance, UserProfile
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 
@@ -48,13 +48,15 @@ def submanifest_review(request, submanifest_id):
 
   context = {
     'submanifest': submanifest,
+    "show_button": ["pending_customs"],
   }
 
   return render(request, "smartportApp/submanifest.html", context)
   
 
 
-from smartportApp.utils.utils import create_notification
+from smartportApp.utils.utils import create_notification, create_notification_bulk
+import json
 def handle_clerance_action(request, submanifest_id, action):
   if request.method != "POST":
     return JsonResponse({"error": "Invalid request method"}, status=405)
@@ -70,13 +72,48 @@ def handle_clerance_action(request, submanifest_id, action):
           submanifest.status = "pending_customs"
           submanifest.updated_by = user
           submanifest.save(update_fields=["status", "updated_by", "updated_at"])
+          # SEND NOTIF TO SHIPPER 
+          create_notification(
+            user=submanifest.created_by,
+            title="Submanifest Approved",
+            message=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
+            link_url=f"/submanifest/{submanifest.submanifest_id}/",
+            triggered_by=request.user.userprofile
+          )
+          # SEND NOTIF TO CUSTOMS 
+          custom_users = UserProfile.objects.filter(role="custom")
+          if custom_users.exists():
+            if hasattr(request, 'user') and hasattr(request.user, 'userprofile'):
+              create_notification_bulk(
+                recipients=custom_users,
+                title="Submanifest Approved",
+                message=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
+                link_url=f"/submanifest/{submanifest.submanifest_id}/",
+                triggered_by=user
+              )
           return JsonResponse({"message": "Submanifest approved by Admin. Now pending Customs."})
         
         elif action == "reject":
+          data = json.loads(request.body.decode("utf-8"))
+          note = data.get("note", "").strip()
+          
+          if not note:
+            return JsonResponse({"error": "Rejection reason is required."}, status=400)
+          
           submanifest.status = "rejected_by_admin"
+          submanifest.admin_note = note
           submanifest.admin_rejection_count += 1
           submanifest.updated_by = user
-          submanifest.save(updated_fields=["status", "admin_rejection_count", "updated_by", "updated_at"])
+          submanifest.save(update_fields=["status", "admin_note", "admin_rejection_count", "updated_by", "updated_at"])
+          # SEND NOTIF TO SHIPPER Your submanifest (SUBM-20250805-6) was rejected by the admin. Reason: sample reject
+
+          create_notification(
+            user=submanifest.created_by,
+            title="Submanifest Rejected",
+            message=f"Your submanifest ({submanifest.submanifest_number}) was rejected by the admin. Reason: {note}",
+            link_url=f"/edit/submitted-shipment/{submanifest.submanifest_id}/",
+            triggered_by=user
+          )
           return JsonResponse({"message": "Submanifest rejected by Admin"})
       
       # CUSTOMS REVIEW
@@ -118,17 +155,39 @@ def handle_clerance_action(request, submanifest_id, action):
           return JsonResponse({"message": "Submanifest approved by Customs. Clearance generated!"})
         
         elif action == "reject":
+          data = json.loads(request.body.decode("utf-8"))
+          note = data.get("note", "").strip()
+          
+          if not note:
+            return JsonResponse({"error": "Rejection reason is required."}, status=400)
+
           submanifest.status = "rejected_by_customs"
           submanifest.customs_rejection_count += 1
+          submanifest.customs_note = note
           submanifest.updated_by = user
           submanifest.save(update_fields=["status", "customs_rejection_count", "updated_by", "updated_at"])
 
-          clearance.clearance_status = CustomClearance.ClearanceStatus.CLEARED
-          clearance.reviewed_by = user
-          clearance.save()
+          # NOTIFY SHIPPER THAT THE SUBMANIFEST WAS REJECTED BY THE CUSTOM
+          # f"/edit/submitted-shipment/{sub.submanifest_id}/"
+          try:
+            shipper = submanifest.created_by
+            
+            # create notification
+            if shipper:
+              create_notification(
+                user=shipper,
+                title="Submanifest Rejected",
+                message=f"Your submanifest {submanifest.submanifest_number} has been rejected by Customs. Please review the rejection reason provided and make the necessary corrections before resubmitting.",
+                link_url=f"/edit/submitted-shipment/{submanifest.submanifest_id}/", 
+                triggered_by=user
+              )
+          except ValueError as e:
+            print(f"Notification creation failed. {e}")
 
           return JsonResponse({"message": "Submanifest rejected by Customs."})
   except SubManifest.DoesNotExist:
     return JsonResponse({"error": "Submanifest not found"}, status=404)
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
+  
+  
