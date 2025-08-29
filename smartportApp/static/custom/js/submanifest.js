@@ -73,12 +73,44 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.ok) {
         showToast(data.message);
         // disable buttons:
-        document.querySelector(
-          `.btn-icon.approve[data-submanifest-id="${submanifestId}"]`
-        ).disabled = true;
-        document.querySelector(
-          `.btn-icon.reject[data-submanifest-id="${submanifestId}"]`
-        ).disabled = true;
+        // document.querySelector(
+        //   `.btn-icon.approve[data-submanifest-id="${submanifestId}"]`
+        // ).disabled = true;
+        // document.querySelector(
+        //   `.btn-icon.reject[data-submanifest-id="${submanifestId}"]`
+        // ).disabled = true;
+
+        // hide the actions buttons:
+        const actionContainer = document.querySelector(
+          ".submanifest-actions-container"
+        );
+        console.log(actionContainer);
+        console.log(data);
+        if (actionContainer) {
+          actionContainer.style.display = "none";
+        }
+        // Update status display if new status is provided
+        if (data.new_status) {
+          const statusElement = document.querySelector("#status-container");
+          console.log("status elem: ", statusElement);
+          console.log("data.new_status: ", data.new_status);
+          if (statusElement) {
+            // Update status text and class
+            const statusMapping = {
+              pending_customs: "Pending Customs Review",
+              approved: "Approved",
+              rejected_by_admin: "Rejected by Admin",
+              rejected_by_customs: "Rejected by Customs",
+            };
+
+            statusElement.textContent =
+              statusMapping[data.new_status] || data.new_status;
+            statusElement.className = `status-${data.new_status.replace(
+              "_",
+              "-"
+            )}`;
+          }
+        }
       } else {
         showToast(data.error, true);
         console.error(data.error);

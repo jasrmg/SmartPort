@@ -91,7 +91,10 @@ def handle_clerance_action(request, submanifest_id, action):
                 link_url=f"/submanifest/{submanifest.submanifest_id}/",
                 triggered_by=user
               )
-          return JsonResponse({"message": "Submanifest approved by Admin. Now pending Customs."})
+          return JsonResponse({
+            "message": "Submanifest approved by Admin. Now pending Customs.",
+            "new_status": "pending_customs"
+            })
         
         elif action == "reject":
           data = json.loads(request.body.decode("utf-8"))
@@ -114,7 +117,10 @@ def handle_clerance_action(request, submanifest_id, action):
             link_url=f"/edit/submitted-shipment/{submanifest.submanifest_id}/",
             triggered_by=user
           )
-          return JsonResponse({"message": "Submanifest rejected by Admin"})
+          return JsonResponse({
+            "message": "Submanifest rejected by Admin kekw",
+            "new_status": "rejected_by_admin"
+            })
       
       # CUSTOMS REVIEW
       elif submanifest.status == "pending_customs":
@@ -152,7 +158,10 @@ def handle_clerance_action(request, submanifest_id, action):
           except ValueError as e:
             print(f"Notification creation failed. {e}")
 
-          return JsonResponse({"message": "Submanifest approved by Customs. Clearance generated!"})
+          return JsonResponse({
+              "message": "Submanifest approved by Customs. Clearance generated!",
+              "new_status": "approved",
+            })
         
         elif action == "reject":
           data = json.loads(request.body.decode("utf-8"))
@@ -184,9 +193,14 @@ def handle_clerance_action(request, submanifest_id, action):
           except ValueError as e:
             print(f"Notification creation failed. {e}")
 
-          return JsonResponse({"message": "Submanifest rejected by Customs."})
+          return JsonResponse({
+              "message": "Submanifest rejected by Customs.",
+              "new_status": "rejected_by_customs"
+            })
   except SubManifest.DoesNotExist:
-    return JsonResponse({"error": "Submanifest not found"}, status=404)
+    return JsonResponse({
+        "error": "Submanifest not found",
+      }, status=404)
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
   
