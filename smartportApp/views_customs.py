@@ -165,7 +165,7 @@ def handle_clerance_action(request, submanifest_id, action):
           submanifest.customs_rejection_count += 1
           submanifest.customs_note = note
           submanifest.updated_by = user
-          submanifest.save(update_fields=["status", "customs_rejection_count", "updated_by", "updated_at"])
+          submanifest.save(update_fields=["status", "customs_note", "customs_rejection_count", "updated_by", "updated_at"])
 
           # NOTIFY SHIPPER THAT THE SUBMANIFEST WAS REJECTED BY THE CUSTOM
           # f"/edit/submitted-shipment/{sub.submanifest_id}/"
@@ -177,7 +177,7 @@ def handle_clerance_action(request, submanifest_id, action):
               create_notification(
                 user=shipper,
                 title="Submanifest Rejected",
-                message=f"Your submanifest {submanifest.submanifest_number} has been rejected by Customs. Please review the rejection reason provided and make the necessary corrections before resubmitting.",
+                message=f"Your submanifest ({submanifest.submanifest_number}) was rejected by the customs. Reason: {note}",
                 link_url=f"/edit/submitted-shipment/{submanifest.submanifest_id}/", 
                 triggered_by=user
               )
