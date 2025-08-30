@@ -81,6 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const newValue = input.value.trim();
       const originalValue = element.dataset.currentValue || "";
 
+      if (!newValue && originalValue) {
+        input.remove();
+        element.style.display = "inline";
+        showToast("HS Code restored to original value.", false, 1500);
+        return;
+      }
+
       // Check if value actually changed
       if (newValue === originalValue) {
         input.remove();
