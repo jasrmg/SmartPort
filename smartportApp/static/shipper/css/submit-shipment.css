@@ -282,6 +282,48 @@ textarea.form-control {
   margin-bottom: 2rem;
 }
 
+/* disabled states */
+
+.btn-resubmit.btn-disabled,
+.btn-resubmit:disabled {
+  background-color: #6c757d !important;
+  border-color: #6c757d !important;
+  color: #dee2e6 !important;
+  cursor: not-allowed !important;
+  opacity: 0.7;
+  transform: none !important;
+}
+
+.btn-resubmit.btn-disabled:hover,
+.btn-resubmit:disabled:hover {
+  background-color: #6c757d !important;
+  border-color: #6c757d !important;
+  color: #dee2e6 !important;
+  transform: none !important;
+}
+
+.btn-resubmit.btn-disabled .btn-icon,
+.btn-resubmit:disabled .btn-icon {
+  opacity: 0.6;
+}
+
+/* Tooltip styles for disabled button */
+.btn-resubmit[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 12px;
+  z-index: 1000;
+  margin-bottom: 5px;
+}
+
 .btn-submit:hover {
   background-color: #248c4d;
   transform: translateY(-1px);
@@ -376,31 +418,6 @@ textarea.form-control {
 .txt-icon {
   font-size: 20px;
   color: #444444;
-}
-@media (max-width: 768px) {
-  .sidebar {
-    width: 80px;
-  }
-
-  .main-content {
-    margin-left: 80px;
-  }
-
-  .logo-text {
-    display: none;
-  }
-
-  .nav-link span {
-    display: none;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .search-bar {
-    width: 200px;
-  }
 }
 
 /* Document Types Section */
@@ -571,5 +588,31 @@ textarea.form-control {
 @media (max-width: 600px) {
   .document-cards-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+  }
+
+  .main-content {
+    margin-left: 80px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .nav-link span {
+    display: none;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-bar {
+    width: 200px;
   }
 }
