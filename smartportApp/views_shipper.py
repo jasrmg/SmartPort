@@ -389,7 +389,7 @@ def shipper_deliveries_view(request):
 
     except ValueError:
       logger.warning(f"Invalid date: {date}")
-  # TODO: manifest creation date filter(?)
+  # filter only on voyage departure and arrival date, does not include filtering in creation date.
   if parsed_date:
     submanifests = submanifests.filter(
       Q(voyage__departure_date__date=parsed_date) |
@@ -397,7 +397,8 @@ def shipper_deliveries_view(request):
     )
 
   # Order results by newest voyages, edited/updated recently, creation date
-  submanifests = submanifests.order_by("-voyage__departure_date", "-updated_at", "-created_at") 
+  # submanifests = submanifests.order_by("-voyage__departure_date", "-updated_at", "-created_at") 
+  submanifests = submanifests.order_by("-created_at", "-voyage__departure_date", "-updated_at") # created at - departure date - updated at
 
   print("PARSED DATE: ", parsed_date)
   print(f"Submanifests count after filters: {submanifests.count()}")
