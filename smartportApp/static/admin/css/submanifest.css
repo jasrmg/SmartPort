@@ -385,15 +385,78 @@ th {
   font-size: 1.1rem;
 }
 /* CUSTOM SIDE HS CODE EDIT*/
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-left: 6px;
+}
+
+.tooltip-trigger {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  background-color: var(--dark-gray);
+  border-radius: 50%;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Tooltip box */
+.tooltip-box {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--primary);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  width: 260px;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in, visibility 0s linear 0.3s; /* hide delay */
+}
+
+/* Show the tooltip */
+.tooltip-wrapper:hover .tooltip-box,
+.tooltip-box:hover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s; /* override hide delay when showing */
+}
+
+/* Tooltip links */
+.tooltip-box a {
+  color: var(--highlight);
+  text-decoration: underline;
+}
+
+.tooltip-box a:hover {
+  color: var(--accent);
+}
+
 .hs-code-editable {
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 4px 6px;
   border-radius: 3px;
   transition: background-color 0.2s;
+  display: inline-block;
+  min-width: 40px;
+  text-align: center;
 }
 
 .hs-code-editable:hover {
-  background-color: #f0f0f0;
+  background-color: #e3f2fd;
+  border: 1px dashed #2196f3;
 }
 
 .hs-code-input {

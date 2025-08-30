@@ -136,7 +136,19 @@
               <th>Qty</th>
               <th>Weight (kg)</th>
               <th>Value (₱)</th>
-              <th>HS Code</th>
+              <th>
+                HS Code
+                <div class="tooltip-wrapper">
+                  <span class="tooltip-trigger">?</span>
+                  <div class="tooltip-box">
+                    <p>
+                      "Editable field. Click to edit, click outside to
+                      auto-save. Enter HS code in format: e.g. 0102.31.0000
+                      (minimum 6 digits)."
+                    </p>
+                  </div>
+                </div>
+              </th>
               <th>Additional Info</th>
             </tr>
           </thead>
@@ -157,10 +169,10 @@
                   title="Click to edit HS Code"
                 >
                   {{ item.hs_code|default:"—" }}
-                  <i
+                  <!-- <i
                     class="fas fa-edit"
                     style="font-size: 0.8em; margin-left: 4px; opacity: 0.6"
-                  ></i>
+                  ></i> -->
                 </span>
                 {% else %} {{ item.hs_code|default:"—" }} {% endif %}
               </td>

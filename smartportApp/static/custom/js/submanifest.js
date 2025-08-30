@@ -83,10 +83,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Check if value actually changed
       if (newValue === originalValue) {
-        // No change, just cancel edit
         input.remove();
         element.style.display = "inline";
         return;
+      }
+
+      // Validate HS Code format
+      if (newValue) {
+        const digitsOnly = newValue.replace(/\./g, ""); // Remove dots
+        const hsCodePattern = /^[\d.]+$/; // Only digits and dots
+
+        if (!hsCodePattern.test(newValue)) {
+          showToast("HS Code must contain only digits and dots.", true);
+          input.className = "hs-code-input hs-code-error";
+          input.disabled = false;
+          input.focus();
+          return;
+        }
+
+        if (digitsOnly.length < 6) {
+          showToast("HS Code must be at least 6 digits long.", true);
+          input.className = "hs-code-input hs-code-error";
+          input.disabled = false;
+          input.focus();
+          return;
+        }
+
+        if (digitsOnly.length > 20) {
+          showToast("HS Code cannot exceed 20 digits.", true);
+          input.className = "hs-code-input hs-code-error";
+          input.disabled = false;
+          input.focus();
+          return;
+        }
       }
 
       // Show saving state
@@ -122,9 +151,9 @@ document.addEventListener("DOMContentLoaded", () => {
           // Update the original element
           element.textContent = newValue || "—";
           if (newValue) {
-            element.innerHTML = `${newValue} <i class="fas fa-edit" style="font-size: 0.8em; margin-left: 4px; opacity: 0.6;"></i>`;
+            element.innerHTML = `${newValue}`;
           } else {
-            element.innerHTML = `— <i class="fas fa-edit" style="font-size: 0.8em; margin-left: 4px; opacity: 0.6;"></i>`;
+            element.innerHTML = `—`;
           }
           element.dataset.currentValue = newValue;
 
