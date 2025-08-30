@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
           window.open(notification.link_url, "_blank", "noopener,noreferrer");
         } else {
           // Default behavior for shipper notifications
-          window.location.href = "/shipper-dashboard/"; // or whatever page you want
+          window.location.href = "/shipper-dashboard/";
         }
       };
 
@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
-
+      console.log("DATA: ", data);
       notifList.innerHTML = "";
 
       if (data.notifications.length === 0) {

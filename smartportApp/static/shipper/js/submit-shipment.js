@@ -558,7 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // === Container and Seal Number Specific Validation ===
     const containerField = form.querySelector('[name="container_number"]');
-    const sealField = form.querySelector('[name="seal_no"]');
+    const sealField = form.querySelector('[name="seal_number"]');
 
     if (containerField) {
       // convert to uppercase

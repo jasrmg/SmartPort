@@ -11,4 +11,5 @@ urlpatterns = [
   # ====================== END OF TEMPLATES ======================
   # detail view - render the page in showing the submanifest details
   path("submanifest/review/<int:submanifest_id>/", views_customs.submanifest_review, name="submanifest-detail"),
+  path("clearance/<int:submanifest_id>/<str:action>/", views_customs.handle_clerance_action, name="handle-clearance-action"),
 ]
