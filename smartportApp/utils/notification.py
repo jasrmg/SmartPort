@@ -63,6 +63,7 @@ def poll_recent_notifications(request):
     }
   })
 
+from django.utils.timezone import localtime
 # ENDPOINT FOR PREFILLING THE TOPBAR NOTIFICATION
 @login_required
 def get_user_notifications(request):
@@ -82,8 +83,8 @@ def get_user_notifications(request):
       'message': notif.message,
       'link_url': notif.link_url,
       'is_read': notif.is_read,
-      'created_at': notif.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-      'time_ago': notif.created_at.strftime('%b %d, %H:%M'), # convert to 2h in frontend
+      'created_at': localtime(notif.created_at).strftime('%Y-%m-%d %H:%M:%S'),
+      'time_ago': localtime(notif.created_at).strftime('%b %d, %H:%M'), # convert to 2h in frontend
       'triggered_by_avatar': notif.triggered_by.avatar if notif.triggered_by and notif.triggered_by.avatar else None
     })
 
