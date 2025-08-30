@@ -160,7 +160,7 @@
               <td>{{ item.quantity }}</td>
               <td>{{ item.weight }}</td>
               <td>{{ item.value|floatformat:2 }}</td>
-              <td>
+              <td class="hs-code-cell">
                 {% if role == "custom" %}
                 <span
                   class="hs-code-editable"
@@ -169,10 +169,6 @@
                   title="Click to edit HS Code"
                 >
                   {{ item.hs_code|default:"—" }}
-                  <!-- <i
-                    class="fas fa-edit"
-                    style="font-size: 0.8em; margin-left: 4px; opacity: 0.6"
-                  ></i> -->
                 </span>
                 {% else %} {{ item.hs_code|default:"—" }} {% endif %}
               </td>

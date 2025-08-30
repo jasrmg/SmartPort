@@ -443,7 +443,9 @@ th {
 .tooltip-box a:hover {
   color: var(--accent);
 }
-
+.hs-code-cell {
+  cursor: pointer;
+}
 .hs-code-editable {
   cursor: pointer;
   padding: 4px 6px;
@@ -456,7 +458,7 @@ th {
 
 .hs-code-editable:hover {
   background-color: #e3f2fd;
-  border: 1px dashed #2196f3;
+  /* border: 1px dashed #2196f3; */
 }
 
 .hs-code-input {

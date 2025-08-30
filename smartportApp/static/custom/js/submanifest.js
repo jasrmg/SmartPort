@@ -2,10 +2,13 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("hello: ", csrftoken);
 
   // HS Code editing functionality
-  document.querySelectorAll(".hs-code-editable").forEach((element) => {
-    element.addEventListener("click", () => {
-      makeHsCodeEditable(element);
-    });
+  document.querySelectorAll(".hs-code-cell").forEach((cell) => {
+    const editableSpan = cell.querySelector(".hs-code-editable");
+    if (editableSpan) {
+      cell.addEventListener("click", () => {
+        makeHsCodeEditable(editableSpan);
+      });
+    }
   });
 
   // approve
@@ -59,6 +62,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // HS Code editing function
   const makeHsCodeEditable = (element) => {
+    // Check if already being edited
+    if (element.parentNode.querySelector(".hs-code-input")) {
+      return; // quit if already editing
+    }
     const cargoId = element.dataset.cargoId;
     const currentValue = element.dataset.currentValue || "";
 
