@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from . models import SubManifest, CustomClearance, UserProfile
+from . models import SubManifest, CustomClearance, UserProfile, Cargo
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 
@@ -14,12 +14,18 @@ def dashboard_view(request):
   return render(request, "smartportApp/custom/dashboard.html", context)
 
 def submanifest_review_view(request):
+  # user = request.user.userprofile
+  # print("LOGGED USER: ", request.user)
   pending_submanifests = SubManifest.objects.filter(
     status="pending_customs"
   ).select_related("created_by", "voyage").order_by("-created_at")
 
+  # print("CUSTOM: ", user.role)
+
   context = {
     'submanifests': pending_submanifests,
+    # 'profile': user,
+    # 'role': user.role
   }
   return render(request, "smartportApp/custom/submanifest-review.html", context)
 
@@ -33,6 +39,7 @@ def review_history_view(request):
 # ====================== END OF TEMPLATES ======================
 
 def submanifest_review(request, submanifest_id):
+  user = request.user.userprofile
   submanifest = get_object_or_404(
     SubManifest.objects.select_related(
       'created_by__user',
@@ -48,7 +55,9 @@ def submanifest_review(request, submanifest_id):
 
   context = {
     'submanifest': submanifest,
-    "show_button": ["pending_customs"],
+    'show_button': ["pending_customs"],
+    'user': user,
+    'role': user.role
   }
 
   return render(request, "smartportApp/submanifest.html", context)
@@ -204,4 +213,39 @@ def handle_clerance_action(request, submanifest_id, action):
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
   
+def update_cargo_hs_code(request, cargo_id):
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid request method"}, status=405)
   
+  # check if user is custom
+  try:
+    user = request.user.userprofile
+    if user.role != "custom":
+      return JsonResponse({"error": "Unauthorized"}, status=403)
+  except UserProfile.DoesNotExist:
+    return JsonResponse({"error": "User profile not found."}, status=404)
+  
+  try:
+    data = json.loads(request.body.decode("utf-8"))
+    hs_code = data.get("hs_code", "").strip()
+
+    # validate hs code format
+    if hs_code and len(hs_code) > 20:
+      return JsonResponse({"error": "HS Code cannot exceed 20 characters"}, status=400)
+    
+    cargo = Cargo.objects.get(cargo_id=cargo_id)
+
+    # update hs code
+    cargo.hs_code = hs_code if hs_code else None
+    cargo.save(update_fields=["hs_code"])
+
+    return JsonResponse({
+      "message": "HS code updated successfully",
+      "hs_code": cargo.hs_code
+    })
+  except Cargo.DoesNotExist:
+    return JsonResponse({"error": "Cargo item not found"}, status=404)
+  except json.JSONDecodeError:
+    return JsonResponse({"error": "Invalid JSON data"}, status=400)
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)

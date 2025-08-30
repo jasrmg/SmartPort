@@ -384,3 +384,38 @@ th {
   margin-right: 8px;
   font-size: 1.1rem;
 }
+/* CUSTOM SIDE HS CODE EDIT*/
+.hs-code-editable {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.hs-code-editable:hover {
+  background-color: #f0f0f0;
+}
+
+.hs-code-input {
+  border: 1px solid #007bff;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: inherit;
+  width: 120px;
+}
+
+.hs-code-saving {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+}
+
+.hs-code-success {
+  background-color: #d4edda;
+  border-color: #28a745;
+}
+
+.hs-code-error {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+}

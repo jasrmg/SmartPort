@@ -122,10 +122,10 @@ def shipper_shipment_volume_chart_api(request):
   sample_manifest = SubManifest.objects.filter(created_by=user).first()
   if sample_manifest:
     cargo_count = sample_manifest.cargo_items.count()
-    print(f"DEBUG - Sample manifest cargo items count: {cargo_count}")
+    # print(f"DEBUG - Sample manifest cargo items count: {cargo_count}")
     if cargo_count > 0:
       sample_cargo = sample_manifest.cargo_items.first()
-      print(f"DEBUG - Sample cargo quantity: {sample_cargo.quantity}")
+      # print(f"DEBUG - Sample cargo quantity: {sample_cargo.quantity}")
 
   # Get shipment data grouped by month with debugging
   shipment_data = SubManifest.objects.filter(

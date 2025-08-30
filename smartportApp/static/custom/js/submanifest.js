@@ -1,6 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("hello: ", csrftoken);
 
+  // HS Code editing functionality
+  document.querySelectorAll(".hs-code-editable").forEach((element) => {
+    element.addEventListener("click", () => {
+      makeHsCodeEditable(element);
+    });
+  });
+
   // approve
   document.querySelectorAll(".btn-icon.approve").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -49,6 +56,127 @@ document.addEventListener("DOMContentLoaded", () => {
     await handleClearanceAction(submanifestId, "reject", { note });
     rejectModal.style.display = "none";
   });
+
+  // HS Code editing function
+  const makeHsCodeEditable = (element) => {
+    const cargoId = element.dataset.cargoId;
+    const currentValue = element.dataset.currentValue || "";
+
+    // Create input element
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = currentValue;
+    input.className = "hs-code-input";
+    input.maxLength = 20;
+    input.placeholder = "Enter HS Code";
+
+    // Replace the span with input
+    element.style.display = "none";
+    element.parentNode.insertBefore(input, element);
+    input.focus();
+    input.select();
+
+    // Handle save on Enter or blur
+    const saveHsCode = async () => {
+      const newValue = input.value.trim();
+      const originalValue = element.dataset.currentValue || "";
+
+      // Check if value actually changed
+      if (newValue === originalValue) {
+        // No change, just cancel edit
+        input.remove();
+        element.style.display = "inline";
+        return;
+      }
+
+      // Show saving state
+      input.className = "hs-code-input hs-code-saving";
+      input.disabled = true;
+
+      try {
+        const response = await fetch(
+          `/customs/cargo/${cargoId}/update-hs-code/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
+            },
+            body: JSON.stringify({ hs_code: newValue }),
+          }
+        );
+
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          const responseText = await response.text();
+          console.log("Non-JSON response:", responseText.substring(0, 200));
+          throw new Error(
+            "Server returned HTML instead of JSON - check URL pattern"
+          );
+        }
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Update the original element
+          element.textContent = newValue || "—";
+          if (newValue) {
+            element.innerHTML = `${newValue} <i class="fas fa-edit" style="font-size: 0.8em; margin-left: 4px; opacity: 0.6;"></i>`;
+          } else {
+            element.innerHTML = `— <i class="fas fa-edit" style="font-size: 0.8em; margin-left: 4px; opacity: 0.6;"></i>`;
+          }
+          element.dataset.currentValue = newValue;
+
+          // Show success briefly
+          input.className = "hs-code-input hs-code-success";
+          setTimeout(() => {
+            input.remove();
+            element.style.display = "inline";
+          }, 500);
+
+          showToast("HS Code updated successfully!");
+        } else {
+          showToast("Failed to update HS Code", true);
+          throw new Error(data.error || "Failed to update HS Code");
+        }
+      } catch (error) {
+        console.error("Error updating HS Code:", error);
+        input.className = "hs-code-input hs-code-error";
+        input.disabled = false;
+        showToast("Failed to update HS Code. Please try again.", true);
+
+        // Re-enable editing after error
+        setTimeout(() => {
+          input.className = "hs-code-input";
+        }, 1000);
+      }
+    };
+    // Handle cancel
+    const cancelEdit = () => {
+      input.remove();
+      element.style.display = "inline";
+    };
+
+    // Event listeners
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveHsCode();
+      } else if (e.key === "Escape") {
+        cancelEdit();
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      // Small delay to allow click events to process
+      setTimeout(() => {
+        if (document.activeElement !== input) {
+          saveHsCode();
+        }
+      }, 100);
+    });
+  };
 
   const handleClearanceAction = async (
     submanifestId,
