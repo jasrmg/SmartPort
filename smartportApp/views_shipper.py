@@ -740,6 +740,12 @@ def edit_submit_shipment(request, submanifest_id):
   auth_check = enforce_shipper_access(request)
   if auth_check:
     return auth_check
+  # check if the submanifest status is rejected by admin or rejected by customs
+  allowed_statuses = ["rejected_by_admin", "rejected_by_customs"]
+  submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
+  if submanifest.status not in allowed_statuses:
+    return HttpResponseForbidden("This shipment cannot be edited.")
+
   if request.method == "GET":
     return handle_get_request(request, submanifest_id)
   elif request.method == "POST":
