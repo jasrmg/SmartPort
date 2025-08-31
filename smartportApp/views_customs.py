@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from django.utils.timezone import now
 from django.db import transaction
 
+from django.core.paginator import Paginator
+
 # ====================== TEMPLATES ======================
 def dashboard_view(request):
   context = {
@@ -30,8 +32,21 @@ def submanifest_review_view(request):
   return render(request, "smartportApp/custom/submanifest-review.html", context)
 
 def review_history_view(request):
-  context = {
+  """Main view for review history page - only handles initial page load"""
+  # fetch reviewed submanifest(approved or rejected by customs)
+  submanifest = SubManifest.objects.filter(
+    status__in=["approved", "rejected_by_customs"]
+  ).order_by("-updated_at")
 
+  # pagination 10 per page
+  paginator = Paginator(submanifest, 1)
+  page_number = request.GET.get("page")
+  page_obj = paginator.get_page(page_number)
+
+  context = {
+    "page_obj": page_obj,
+    "paginator": paginator,
+    "current_page": page_obj.number,
   }
   
   return render(request, "smartportApp/custom/review-history.html", context)
@@ -214,6 +229,7 @@ def handle_clerance_action(request, submanifest_id, action):
     return JsonResponse({"error": str(e)}, status=500)
   
 def update_cargo_hs_code(request, cargo_id):
+
   if request.method != "POST":
     return JsonResponse({"error": "Invalid request method"}, status=405)
   
@@ -249,3 +265,59 @@ def update_cargo_hs_code(request, cargo_id):
     return JsonResponse({"error": "Invalid JSON data"}, status=400)
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
+  
+# REVIEW HISTORY
+from django.views.decorators.http import require_http_methods
+@require_http_methods(["GET"])
+def review_history_api(request):
+  """API endpoint for AJAX pagination of review history"""
+
+  print(f"API called with page: {request.GET.get('page')}")  
+
+  try:
+    submanifest = SubManifest.objects.filter(
+      status__in=["approved", "rejected_by_customs"]
+    ).order_by("-updated_at")
+
+    print(f"Found {submanifest.count()} submanifests")
+
+    paginator = Paginator(submanifest, 1)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+
+    print(f"Page object created: page {page_obj.number} of {paginator.num_pages}")
+
+    # serialize the data
+    data = []
+    for sm in page_obj:
+      data.append({
+        'submanifest_number': sm.submanifest_number,
+        'consignee_name': sm.consignee_name,
+        'created_at': sm.created_at.strftime('%b %d, %Y'),
+        'status': sm.status,
+        'updated_at': sm.updated_at.strftime('%b %d, %Y'),
+      })
+    
+    return JsonResponse({
+      'success': True,
+      'data': data,
+      'pagination': {
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
+        'previous_page_number': page_obj.previous_page_number() if page_obj.has_previous() else None,
+        'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None,
+        'total_count': paginator.count,
+      }
+    })
+  
+  except Exception as e:
+    print(f"API Error: {str(e)}")  
+    import traceback
+    traceback.print_exc()
+    return JsonResponse({
+      'success': False,
+      'error': 'Failed to load data'
+    }, status=500)
+  
