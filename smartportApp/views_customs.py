@@ -1,21 +1,49 @@
 from django.shortcuts import render
 from . models import SubManifest, CustomClearance, UserProfile, Cargo
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 
 from django.utils.timezone import now
 from django.db import transaction
 
 from django.core.paginator import Paginator
 
+def enforce_custom_access(request):
+  ''' Check if the user is authenticated and has the custom role. '''
+  if not request.user.is_authenticated:
+    return HttpResponseForbidden("401 You are not authorized to view this page.")
+  
+  role = request.user.userprofile.role
+
+  if role != "custom":
+    if role == "admin":
+      return render(request, "smartportApp/unauthorized.html", {"text": "Admins cannot access custom pages.", "link": "admin-dashboard"})
+    elif role == "shipper":
+      return render(request, "smartportApp/unauthorized.html", {"text": "Shippers cannot access custom pages.", "link": "shipper-dashboard"})
+    elif role == "employee":
+      return render(request, "smartportApp/unauthorized.html", {"text": "Employees cannot access custom pages.", "link": "employee-dashboard"})  
+    return render(request, "smartportApp/unauthorized.html", {"text": "Only custom can access this page."})
+  
+  return None
+  
+
 # ====================== TEMPLATES ======================
 def dashboard_view(request):
+  auth_check = enforce_custom_access(request)
+  if auth_check:
+    return auth_check
+  
   context = {
     'show_logo_text': True,
   }
   return render(request, "smartportApp/custom/dashboard.html", context)
 
 def submanifest_review_view(request):
+
+  auth_check = enforce_custom_access(request)
+  if auth_check:
+    return auth_check
+  
   # user = request.user.userprofile
   # print("LOGGED USER: ", request.user)
   pending_submanifests = SubManifest.objects.filter(
@@ -33,13 +61,18 @@ def submanifest_review_view(request):
 
 def review_history_view(request):
   """Main view for review history page - only handles initial page load"""
+
+  auth_check = enforce_custom_access(request)
+  if auth_check:
+    return auth_check
+  
   # fetch reviewed submanifest(approved or rejected by customs)
   submanifest = SubManifest.objects.filter(
     status__in=["approved", "rejected_by_customs"]
   ).order_by("-updated_at")
 
   # pagination 10 per page
-  paginator = Paginator(submanifest, 1)
+  paginator = Paginator(submanifest, 2)
   page_number = request.GET.get("page")
   page_obj = paginator.get_page(page_number)
 
@@ -71,6 +104,7 @@ def submanifest_review(request, submanifest_id):
   context = {
     'submanifest': submanifest,
     'show_button': ["pending_customs"],
+    'can_edit': "custom",
     'user': user,
     'role': user.role
   }
@@ -281,7 +315,7 @@ def review_history_api(request):
 
     print(f"Found {submanifest.count()} submanifests")
 
-    paginator = Paginator(submanifest, 1)
+    paginator = Paginator(submanifest, 2)
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 

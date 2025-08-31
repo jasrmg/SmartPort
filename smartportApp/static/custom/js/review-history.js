@@ -175,8 +175,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     </td>
                 </tr>
             `;
-
-        alert("Error loading page. Please try again.");
       });
   }
 

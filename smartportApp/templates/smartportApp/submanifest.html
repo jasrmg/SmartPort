@@ -137,7 +137,7 @@
               <th>Weight (kg)</th>
               <th>Value (₱)</th>
               <th>
-                HS Code
+                HS Code {% if request.user.userprofile.role == can_edit %}
                 <div class="tooltip-wrapper">
                   <span class="tooltip-trigger">?</span>
                   <div class="tooltip-box">
@@ -148,6 +148,7 @@
                     </p>
                   </div>
                 </div>
+                {% endif %}
               </th>
               <th>Additional Info</th>
             </tr>
@@ -160,7 +161,7 @@
               <td>{{ item.quantity }}</td>
               <td>{{ item.weight }}</td>
               <td>{{ item.value|floatformat:2 }}</td>
-              <td class="hs-code-cell">
+              <td class="hs-code-cell {{ role }}">
                 {% if role == "custom" %}
                 <span
                   class="hs-code-editable"

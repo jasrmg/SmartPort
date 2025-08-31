@@ -443,7 +443,7 @@ th {
 .tooltip-box a:hover {
   color: var(--accent);
 }
-.hs-code-cell {
+.hs-code-cell.custom {
   cursor: pointer;
 }
 .hs-code-editable {
