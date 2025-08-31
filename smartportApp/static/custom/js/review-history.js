@@ -19,9 +19,73 @@ document.addEventListener("DOMContentLoaded", function () {
   let totalPages = parseInt(paginationContainer.dataset.totalPages) || 1;
   let isLoading = false;
 
+  // new
+
+  let currentSortBy = "updated_at";
+  let currentSortOrder = "desc";
+
+  // Add sort button click handlers
+  document.querySelectorAll(".sort-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const column = this.dataset.column;
+      const columnMap = {
+        0: "submanifest_number",
+        1: "consignee_name",
+        2: "created_at",
+        3: "status",
+        4: "updated_at",
+      };
+
+      const sortField = columnMap[column];
+      if (!sortField) return;
+
+      // Toggle sort order if same column, otherwise default to asc
+      if (currentSortBy === sortField) {
+        currentSortOrder = currentSortOrder === "asc" ? "desc" : "asc";
+      } else {
+        currentSortOrder = "asc";
+      }
+
+      currentSortBy = sortField;
+      currentPage = 1; // Reset to first page when sorting
+
+      updateSortIcons();
+      goToPage(1, true); // Pass true to indicate this is a sort operation
+    });
+  });
+
+  function updateSortIcons() {
+    // Reset all icons
+    document.querySelectorAll(".sort-btn i").forEach((icon) => {
+      icon.className = "fas fa-sort";
+    });
+
+    // Update active sort icon
+    const columnMap = {
+      submanifest_number: "0",
+      consignee_name: "1",
+      created_at: "2",
+      status: "3",
+      updated_at: "4",
+    };
+
+    const activeColumnIndex = columnMap[currentSortBy];
+    if (activeColumnIndex) {
+      const activeBtn = document.querySelector(
+        `[data-column="${activeColumnIndex}"]`
+      );
+      if (activeBtn) {
+        const icon = activeBtn.querySelector("i");
+        icon.className =
+          currentSortOrder === "asc" ? "fas fa-sort-up" : "fas fa-sort-down";
+      }
+    }
+  }
+
   // Initialize pagination only if elements exist
   updatePaginationWindow();
   updateNavigationButtons();
+  updateSortIcons();
 
   function updatePaginationWindow() {
     paginationWindow.innerHTML = "";
@@ -117,15 +181,22 @@ document.addEventListener("DOMContentLoaded", function () {
       .join("");
   }
 
-  function goToPage(page) {
-    if (isLoading || page === currentPage || page < 1 || page > totalPages) {
+  function goToPage(page, isSort = false) {
+    if (
+      isLoading ||
+      (!isSort && page === currentPage) ||
+      page < 1 ||
+      page > totalPages
+    ) {
       return;
     }
 
     showLoadingState();
     const startTime = Date.now();
 
-    fetch(`/customs/api/review-history/?page=${page}`, {
+    const url = `/customs/api/review-history/?page=${page}&sort_by=${currentSortBy}&sort_order=${currentSortOrder}`;
+
+    fetch(url, {
       method: "GET",
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -144,37 +215,47 @@ document.addEventListener("DOMContentLoaded", function () {
 
         setTimeout(() => {
           if (data.success) {
-            // Update table content using JavaScript
             tableBody.innerHTML = renderTableRows(data.data);
 
-            // Update pagination state
             currentPage = data.pagination.current_page;
             totalPages = data.pagination.total_pages;
 
-            // Update pagination controls
+            // Update sorting state from server response
+            if (data.sorting) {
+              currentSortBy = data.sorting.sort_by;
+              currentSortOrder = data.sorting.sort_order;
+            }
+
             updatePaginationWindow();
+            updateSortIcons();
             hideLoadingState();
 
-            // Update URL without page reload
-            const url = new URL(window.location);
-            url.searchParams.set("page", currentPage);
-            window.history.pushState({}, "", url);
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set("page", currentPage);
+            newUrl.searchParams.set("sort_by", currentSortBy);
+            newUrl.searchParams.set("sort_order", currentSortOrder);
+            window.history.pushState({}, "", newUrl);
           } else {
             throw new Error(data.error || "Server returned error");
           }
         }, remainingDelay);
       })
       .catch((error) => {
-        console.error("Error loading page:", error);
-        hideLoadingState();
+        const elapsed = Date.now() - startTime;
+        const remainingDelay = Math.max(0, 500 - elapsed);
 
-        tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" style="text-align: center; color: #dc3545; padding: 20px;">
-                        Error loading data. Please try again.
-                    </td>
-                </tr>
-            `;
+        setTimeout(() => {
+          console.error("Error loading page:", error);
+          hideLoadingState();
+
+          tableBody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; color: #dc3545; padding: 20px;">
+              Error loading data. Please try again.
+            </td>
+          </tr>
+        `;
+        }, remainingDelay);
       });
   }
 

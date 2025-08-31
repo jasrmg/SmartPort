@@ -309,9 +309,26 @@ def review_history_api(request):
   print(f"API called with page: {request.GET.get('page')}")  
 
   try:
+    sort_by = request.GET.get('sort_by', 'updated_at')
+    sort_order = request.GET.get('sort_order', 'desc')
+
+    sort_fields = {
+      'submanifest_number': 'submanifest_number',
+      'consignee_name': 'consignee_name', 
+      'created_at': 'created_at',
+      'status': 'status',
+      'updated_at': 'updated_at'
+    }
+
+    # validate sort field
+    order_field = sort_fields[sort_by]
+    if sort_order == 'desc':
+      order_field = f'-{order_field}'
+
+
     submanifest = SubManifest.objects.filter(
       status__in=["approved", "rejected_by_customs"]
-    ).order_by("-updated_at")
+    ).order_by(order_field)
 
     print(f"Found {submanifest.count()} submanifests")
 
@@ -343,6 +360,10 @@ def review_history_api(request):
         'previous_page_number': page_obj.previous_page_number() if page_obj.has_previous() else None,
         'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None,
         'total_count': paginator.count,
+      },
+      'sorting': {
+        'sort_by': sort_by,
+        'sort_order': sort_order,
       }
     })
   
