@@ -428,7 +428,8 @@ def submanifest_view(request, submanifest_id):
 
   context = {
     "submanifest": submanifest,
-    "show_button": ["pending_admin","pending_customs"],
+    "show_button": ["pending_admin"],
+    "can_edit": "custom",
   }
   return render(request, "smartportApp/submanifest.html", context)
 

@@ -171,36 +171,36 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // CSS for better visual feedback
-const style = document.createElement("style");
-style.textContent = `
-    .sort-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
-        width: 100%;
-        text-align: left;
-        padding: 8px;
-        transition: background-color 0.2s;
-    }
-    
-    .sort-btn:hover {
-        background-color: rgba(0, 0, 0, 0.1);
-    }
-    
-    .sort-btn i {
-        margin-left: 5px;
-        color: #666;
-    }
-    
-    .sort-btn[data-order="asc"] i,
-    .sort-btn[data-order="desc"] i {
-        color: #007bff;
-    }
-    
-    .custom-table th {
-        padding: 0;
-        position: relative;
-    }
-`;
-document.head.appendChild(style);
+// const style = document.createElement("style");
+// style.textContent = `
+//     .sort-btn {
+//         background: none;
+//         border: none;
+//         cursor: pointer;
+//         font-weight: bold;
+//         width: 100%;
+//         text-align: left;
+//         padding: 8px;
+//         transition: background-color 0.2s;
+//     }
+
+//     .sort-btn:hover {
+//         background-color: rgba(0, 0, 0, 0.1);
+//     }
+
+//     .sort-btn i {
+//         margin-left: 5px;
+//         color: #666;
+//     }
+
+//     .sort-btn[data-order="asc"] i,
+//     .sort-btn[data-order="desc"] i {
+//         color: #007bff;
+//     }
+
+//     .custom-table th {
+//         padding: 10px;
+//         position: relative;
+//     }
+// `;
+// document.head.appendChild(style);

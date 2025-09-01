@@ -1,1 +1,159 @@
-<h1>REVIEW HISTORY</h1>
+{% extends "smartportApp/custom/custom-base.html" %}
+<!---->
+{% load static %}
+<!---->
+{% block title %} Review History {% endblock %}
+<!---->
+{% block head %}
+<link rel="stylesheet" href="{% static 'custom/css/review-history.css' %}" />
+{% endblock %}
+<!---->
+{% block sidebar %}
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-anchor logo-icon"></i>
+      <span class="logo-text">SmartPort</span>
+      <button class="collapse-btn">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+  <ul class="nav-menu">
+    <li class="nav-item">
+      <a href="{% url 'customs-dashboard' %}" class="nav-link">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'submanifest-list' %}" class="nav-link">
+        <i class="fas fa-file-alt"></i>
+        <span>Submanifest Review</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'review-history' %}" class="nav-link active">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>Review History</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
+<!-- Main Content -->
+{% block content %}
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">Review History</h2>
+  </div>
+
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>
+            <button class="sort-btn" data-column="0" data-order="none">
+              Submanifest No. <i class="fas fa-sort"></i>
+            </button>
+          </th>
+          <th>
+            <button class="sort-btn" data-column="1" data-order="none">
+              Consignee <i class="fas fa-sort"></i>
+            </button>
+          </th>
+          <th>
+            <button class="sort-btn" data-column="2" data-order="none">
+              Submitted Date <i class="fas fa-sort"></i>
+            </button>
+          </th>
+          <th>
+            <button class="sort-btn" data-column="3" data-order="none">
+              Status <i class="fas fa-sort"></i>
+            </button>
+          </th>
+
+          <th>
+            <button
+              class="sort-btn"
+              data-column="4"
+              data-order="none"
+              aria-label="Sort by Date Reviewed"
+            >
+              Date Reviewed <i class="fas fa-sort"></i>
+            </button>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        {% for sm in page_obj %}
+        <tr>
+          <td>{{ sm.submanifest_number }}</td>
+          <td>{{ sm.consignee_name }}</td>
+          <td>{{ sm.created_at|date:"M d, Y" }}</td>
+          <td>
+            {% if sm.status == "approved" %}
+            <span class="status-badge approved">Approved</span>
+            {% elif sm.status == "rejected_by_customs" %}
+            <span class="status-badge rejected">Rejected</span>
+            {% endif %}
+          </td>
+          <td>{{ sm.updated_at|date:"M d, Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center">
+            No review history found.
+          </td>
+        </tr>
+        <!---->
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination controls -->
+  <div
+    class="pagination-container {% if paginator.num_pages <= 1 %}hidden{% endif %}"
+    id="pagination-container"
+    data-total-pages="{{ paginator.num_pages }}"
+    data-current-page="{{ current_page }}"
+  >
+    <button class="pagination-btn" id="prev-page-btn">«</button>
+    <div id="pagination-window"></div>
+    <button class="pagination-btn" id="next-page-btn">»</button>
+  </div>
+</div>
+{% endblock %}
+<!---->
+{% block script %}
+<script src="{% static 'custom/js/review-history.js' %}"></script>
+{% endblock %}

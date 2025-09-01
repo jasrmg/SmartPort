@@ -1,31 +1,102 @@
 from django.shortcuts import render
-from . models import SubManifest, CustomClearance, UserProfile
+from . models import SubManifest, CustomClearance, UserProfile, Cargo
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 
 from django.utils.timezone import now
 from django.db import transaction
 
+from django.core.paginator import Paginator
+from django.db.models import Count, Q
+
+def enforce_custom_access(request):
+  ''' Check if the user is authenticated and has the custom role. '''
+  if not request.user.is_authenticated:
+    return HttpResponseForbidden("401 You are not authorized to view this page.")
+  
+  role = request.user.userprofile.role
+
+  if role != "custom":
+    if role == "admin":
+      return render(request, "smartportApp/unauthorized.html", {"text": "Admins cannot access custom pages.", "link": "admin-dashboard"})
+    elif role == "shipper":
+      return render(request, "smartportApp/unauthorized.html", {"text": "Shippers cannot access custom pages.", "link": "shipper-dashboard"})
+    elif role == "employee":
+      return render(request, "smartportApp/unauthorized.html", {"text": "Employees cannot access custom pages.", "link": "employee-dashboard"})  
+    return render(request, "smartportApp/unauthorized.html", {"text": "Only custom can access this page."})
+  
+  return None
+  
+
 # ====================== TEMPLATES ======================
 def dashboard_view(request):
+  auth_check = enforce_custom_access(request)
+  if auth_check:
+    return auth_check
+  
+  submanifest_stats = SubManifest.objects.aggregate(
+    pending_count=Count('submanifest_id', filter=Q(status='pending_customs')),
+    rejected_count=Count('submanifest_id', filter=Q(status='rejected_by_customs')),
+    cleared_count=Count('submanifest_id', filter=Q(status='approved')),
+  )
+
+  recent_pending_request = SubManifest.objects.filter(
+    status='pending_customs',
+  ).order_by('-created_at')[:5]
+
+  print("PENDINGGGG: ", recent_pending_request)
+
   context = {
+    'pending_count': submanifest_stats['pending_count'],
+    'rejected_count': submanifest_stats['rejected_count'],
+    'cleared_count': submanifest_stats['cleared_count'],
+    'recent_pending_request': recent_pending_request,
     'show_logo_text': True,
   }
   return render(request, "smartportApp/custom/dashboard.html", context)
 
 def submanifest_review_view(request):
+
+  auth_check = enforce_custom_access(request)
+  if auth_check:
+    return auth_check
+  
+  # user = request.user.userprofile
+  # print("LOGGED USER: ", request.user)
   pending_submanifests = SubManifest.objects.filter(
     status="pending_customs"
   ).select_related("created_by", "voyage").order_by("-created_at")
 
+  # print("CUSTOM: ", user.role)
+
   context = {
     'submanifests': pending_submanifests,
+    # 'profile': user,
+    # 'role': user.role
   }
   return render(request, "smartportApp/custom/submanifest-review.html", context)
 
 def review_history_view(request):
-  context = {
+  """Main view for review history page - only handles initial page load"""
 
+  auth_check = enforce_custom_access(request)
+  if auth_check:
+    return auth_check
+  
+  # fetch reviewed submanifest(approved or rejected by customs)
+  submanifest = SubManifest.objects.filter(
+    status__in=["approved", "rejected_by_customs"]
+  ).order_by("-updated_at")
+
+  # pagination 10 per page
+  paginator = Paginator(submanifest, 2)
+  page_number = request.GET.get("page")
+  page_obj = paginator.get_page(page_number)
+
+  context = {
+    "page_obj": page_obj,
+    "paginator": paginator,
+    "current_page": page_obj.number,
   }
   
   return render(request, "smartportApp/custom/review-history.html", context)
@@ -33,6 +104,7 @@ def review_history_view(request):
 # ====================== END OF TEMPLATES ======================
 
 def submanifest_review(request, submanifest_id):
+  user = request.user.userprofile
   submanifest = get_object_or_404(
     SubManifest.objects.select_related(
       'created_by__user',
@@ -48,7 +120,10 @@ def submanifest_review(request, submanifest_id):
 
   context = {
     'submanifest': submanifest,
-    "show_button": ["pending_customs"],
+    'show_button': ["pending_customs"],
+    'can_edit': "custom",
+    'user': user,
+    'role': user.role
   }
 
   return render(request, "smartportApp/submanifest.html", context)
@@ -204,4 +279,117 @@ def handle_clerance_action(request, submanifest_id, action):
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
   
+def update_cargo_hs_code(request, cargo_id):
+
+  if request.method != "POST":
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+  
+  # check if user is custom
+  try:
+    user = request.user.userprofile
+    if user.role != "custom":
+      return JsonResponse({"error": "Unauthorized"}, status=403)
+  except UserProfile.DoesNotExist:
+    return JsonResponse({"error": "User profile not found."}, status=404)
+  
+  try:
+    data = json.loads(request.body.decode("utf-8"))
+    hs_code = data.get("hs_code", "").strip()
+
+    # validate hs code format
+    if hs_code and len(hs_code) > 20:
+      return JsonResponse({"error": "HS Code cannot exceed 20 characters"}, status=400)
+    
+    cargo = Cargo.objects.get(cargo_id=cargo_id)
+
+    # update hs code
+    cargo.hs_code = hs_code if hs_code else None
+    cargo.save(update_fields=["hs_code"])
+
+    return JsonResponse({
+      "message": "HS code updated successfully",
+      "hs_code": cargo.hs_code
+    })
+  except Cargo.DoesNotExist:
+    return JsonResponse({"error": "Cargo item not found"}, status=404)
+  except json.JSONDecodeError:
+    return JsonResponse({"error": "Invalid JSON data"}, status=400)
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
+  
+# REVIEW HISTORY
+from django.views.decorators.http import require_http_methods
+@require_http_methods(["GET"])
+def review_history_api(request):
+  """API endpoint for AJAX pagination of review history"""
+
+  print(f"API called with page: {request.GET.get('page')}")  
+
+  try:
+    sort_by = request.GET.get('sort_by', 'updated_at')
+    sort_order = request.GET.get('sort_order', 'desc')
+
+    sort_fields = {
+      'submanifest_number': 'submanifest_number',
+      'consignee_name': 'consignee_name', 
+      'created_at': 'created_at',
+      'status': 'status',
+      'updated_at': 'updated_at'
+    }
+
+    # validate sort field
+    order_field = sort_fields[sort_by]
+    if sort_order == 'desc':
+      order_field = f'-{order_field}'
+
+
+    submanifest = SubManifest.objects.filter(
+      status__in=["approved", "rejected_by_customs"]
+    ).order_by(order_field)
+
+    print(f"Found {submanifest.count()} submanifests")
+
+    paginator = Paginator(submanifest, 2)
+    page_number = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page_number)
+
+    print(f"Page object created: page {page_obj.number} of {paginator.num_pages}")
+
+    # serialize the data
+    data = []
+    for sm in page_obj:
+      data.append({
+        'submanifest_number': sm.submanifest_number,
+        'consignee_name': sm.consignee_name,
+        'created_at': sm.created_at.strftime('%b %d, %Y'),
+        'status': sm.status,
+        'updated_at': sm.updated_at.strftime('%b %d, %Y'),
+      })
+    
+    return JsonResponse({
+      'success': True,
+      'data': data,
+      'pagination': {
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'has_previous': page_obj.has_previous(),
+        'has_next': page_obj.has_next(),
+        'previous_page_number': page_obj.previous_page_number() if page_obj.has_previous() else None,
+        'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None,
+        'total_count': paginator.count,
+      },
+      'sorting': {
+        'sort_by': sort_by,
+        'sort_order': sort_order,
+      }
+    })
+  
+  except Exception as e:
+    print(f"API Error: {str(e)}")  
+    import traceback
+    traceback.print_exc()
+    return JsonResponse({
+      'success': False,
+      'error': 'Failed to load data'
+    }, status=500)
   

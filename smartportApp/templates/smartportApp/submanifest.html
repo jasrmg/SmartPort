@@ -136,7 +136,20 @@
               <th>Qty</th>
               <th>Weight (kg)</th>
               <th>Value (₱)</th>
-              <th>HS Code</th>
+              <th>
+                HS Code {% if request.user.userprofile.role == can_edit %}
+                <div class="tooltip-wrapper">
+                  <span class="tooltip-trigger">?</span>
+                  <div class="tooltip-box">
+                    <p>
+                      "Editable field. Click to edit, click outside to
+                      auto-save. Enter HS code in format: e.g. 0102.31.0000
+                      (minimum 6 digits)."
+                    </p>
+                  </div>
+                </div>
+                {% endif %}
+              </th>
               <th>Additional Info</th>
             </tr>
           </thead>
@@ -148,7 +161,18 @@
               <td>{{ item.quantity }}</td>
               <td>{{ item.weight }}</td>
               <td>{{ item.value|floatformat:2 }}</td>
-              <td>{{ item.hs_code|default:"—" }}</td>
+              <td class="hs-code-cell {{ role }}">
+                {% if role == "custom" %}
+                <span
+                  class="hs-code-editable"
+                  data-cargo-id="{{ item.cargo_id }}"
+                  data-current-value="{{ item.hs_code|default:'' }}"
+                  title="Click to edit HS Code"
+                >
+                  {{ item.hs_code|default:"—" }}
+                </span>
+                {% else %} {{ item.hs_code|default:"—" }} {% endif %}
+              </td>
               <td>{{ item.additional_info|default:"—" }}</td>
             </tr>
             {% empty %}

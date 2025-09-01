@@ -122,10 +122,10 @@ def shipper_shipment_volume_chart_api(request):
   sample_manifest = SubManifest.objects.filter(created_by=user).first()
   if sample_manifest:
     cargo_count = sample_manifest.cargo_items.count()
-    print(f"DEBUG - Sample manifest cargo items count: {cargo_count}")
+    # print(f"DEBUG - Sample manifest cargo items count: {cargo_count}")
     if cargo_count > 0:
       sample_cargo = sample_manifest.cargo_items.first()
-      print(f"DEBUG - Sample cargo quantity: {sample_cargo.quantity}")
+      # print(f"DEBUG - Sample cargo quantity: {sample_cargo.quantity}")
 
   # Get shipment data grouped by month with debugging
   shipment_data = SubManifest.objects.filter(
@@ -740,6 +740,12 @@ def edit_submit_shipment(request, submanifest_id):
   auth_check = enforce_shipper_access(request)
   if auth_check:
     return auth_check
+  # check if the submanifest status is rejected by admin or rejected by customs
+  allowed_statuses = ["rejected_by_admin", "rejected_by_customs"]
+  submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
+  if submanifest.status not in allowed_statuses:
+    return HttpResponseForbidden("This shipment cannot be edited.")
+
   if request.method == "GET":
     return handle_get_request(request, submanifest_id)
   elif request.method == "POST":
