@@ -7,6 +7,7 @@ from django.utils.timezone import now
 from django.db import transaction
 
 from django.core.paginator import Paginator
+from django.db.models import Count, Q
 
 def enforce_custom_access(request):
   ''' Check if the user is authenticated and has the custom role. '''
@@ -33,7 +34,23 @@ def dashboard_view(request):
   if auth_check:
     return auth_check
   
+  submanifest_stats = SubManifest.objects.aggregate(
+    pending_count=Count('submanifest_id', filter=Q(status='pending_customs')),
+    rejected_count=Count('submanifest_id', filter=Q(status='rejected_by_customs')),
+    cleared_count=Count('submanifest_id', filter=Q(status='approved')),
+  )
+
+  recent_pending_request = SubManifest.objects.filter(
+    status='pending_customs',
+  ).order_by('-created_at')[:5]
+
+  print("PENDINGGGG: ", recent_pending_request)
+
   context = {
+    'pending_count': submanifest_stats['pending_count'],
+    'rejected_count': submanifest_stats['rejected_count'],
+    'cleared_count': submanifest_stats['cleared_count'],
+    'recent_pending_request': recent_pending_request,
     'show_logo_text': True,
   }
   return render(request, "smartportApp/custom/dashboard.html", context)
