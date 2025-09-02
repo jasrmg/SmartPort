@@ -44,7 +44,7 @@ def dashboard_view(request):
     status='pending_customs',
   ).order_by('-created_at')[:5]
 
-  print("PENDINGGGG: ", recent_pending_request)
+  # print("PENDINGGGG: ", recent_pending_request)
 
   context = {
     'pending_count': submanifest_stats['pending_count'],
@@ -104,6 +104,9 @@ def review_history_view(request):
 # ====================== END OF TEMPLATES ======================
 
 def submanifest_review(request, submanifest_id):
+  """
+  render the detail page for the submanifest review 
+  """
   user = request.user.userprofile
   submanifest = get_object_or_404(
     SubManifest.objects.select_related(
@@ -133,6 +136,9 @@ def submanifest_review(request, submanifest_id):
 from smartportApp.utils.utils import create_notification, create_notification_bulk
 import json
 def handle_clerance_action(request, submanifest_id, action):
+  """
+  approve or reject the clearance of the submanifest
+  """
   if request.method != "POST":
     return JsonResponse({"error": "Invalid request method"}, status=405)
   

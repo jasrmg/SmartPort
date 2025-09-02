@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>403 Forbidden - SmartPort</title>
+    <style>
+      :root {
+        --primary: #0a1f44;
+        --secondary: #1e3a8a;
+        --accent: #2d9c5a;
+        --danger: #d14343;
+        --highlight: #d4af37;
+        --light-blue: #4682b4;
+        --lighter-blue: #8ca6db;
+        --light: #f5f5f5;
+        --gray: #e5e7eb;
+        --dark-gray: #6b7280;
+        --white: #fff;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Roboto, sans-serif;
+      }
+
+      body {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--white);
+        color: var(--primary);
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* Floating particles background */
+      .particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
+      }
+
+      .particle {
+        position: absolute;
+        background: rgba(10, 31, 68, 0.1);
+        border-radius: 50%;
+        animation: float 20s infinite linear;
+      }
+
+      .particle:nth-child(1) {
+        width: 3px;
+        height: 3px;
+        left: 10%;
+        animation-delay: 0s;
+      }
+      .particle:nth-child(2) {
+        width: 6px;
+        height: 6px;
+        left: 20%;
+        animation-delay: 2s;
+      }
+      .particle:nth-child(3) {
+        width: 4px;
+        height: 4px;
+        left: 30%;
+        animation-delay: 4s;
+      }
+      .particle:nth-child(4) {
+        width: 8px;
+        height: 8px;
+        left: 40%;
+        animation-delay: 6s;
+      }
+      .particle:nth-child(5) {
+        width: 5px;
+        height: 5px;
+        left: 50%;
+        animation-delay: 8s;
+      }
+      .particle:nth-child(6) {
+        width: 7px;
+        height: 7px;
+        left: 60%;
+        animation-delay: 10s;
+      }
+      .particle:nth-child(7) {
+        width: 3px;
+        height: 3px;
+        left: 70%;
+        animation-delay: 12s;
+      }
+      .particle:nth-child(8) {
+        width: 6px;
+        height: 6px;
+        left: 80%;
+        animation-delay: 14s;
+      }
+      .particle:nth-child(9) {
+        width: 4px;
+        height: 4px;
+        left: 90%;
+        animation-delay: 16s;
+      }
+
+      .error-container {
+        text-align: center;
+        background: var(--white);
+        padding: 3rem 3.5rem;
+        border-radius: 2rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--gray);
+        max-width: 500px;
+        width: 90%;
+        height: 644px;
+        animation: fadeInUp 0.8s ease forwards;
+        position: relative;
+        z-index: 2;
+        border: 1px solid var(--gray);
+      }
+
+      .error-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(10, 31, 68, 0.02),
+          rgba(30, 58, 138, 0.02)
+        );
+        border-radius: 2rem;
+        pointer-events: none;
+      }
+
+      .brand {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        letter-spacing: 1px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .brand::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--primary),
+          transparent
+        );
+      }
+
+      .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(212, 175, 55, 0.1);
+        color: var(--highlight);
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(212, 175, 55, 0.3);
+      }
+
+      .error-icon-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .error-icon {
+        font-size: 4.5rem;
+        color: var(--danger);
+        animation: pulse 2s infinite;
+        filter: drop-shadow(0 4px 8px rgba(209, 67, 67, 0.3));
+      }
+
+      .icon-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(
+          circle,
+          rgba(209, 67, 67, 0.2),
+          transparent 70%
+        );
+        border-radius: 50%;
+        animation: glow 3s ease-in-out infinite;
+      }
+
+      .error-code {
+        font-size: 5.5rem;
+        font-weight: 900;
+        color: var(--danger);
+        letter-spacing: 4px;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 4px 8px rgba(209, 67, 67, 0.4);
+        animation: codeShimmer 3s ease-in-out infinite;
+        position: relative;
+        z-index: 1;
+      }
+
+      .error-message {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--primary);
+        position: relative;
+        z-index: 1;
+      }
+
+      .error-details {
+        font-size: 1.1rem;
+        color: var(--dark-gray);
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .error-details strong {
+        color: var(--secondary);
+        font-weight: 600;
+      }
+
+      .btn-container {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+      }
+
+      .btn {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), #239950);
+        color: var(--white);
+        box-shadow: 0 4px 15px rgba(45, 156, 90, 0.3);
+      }
+
+      .btn-secondary {
+        background: var(--light);
+        color: var(--primary);
+        border: 1px solid var(--gray);
+      }
+
+      .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      .btn-primary:hover {
+        box-shadow: 0 8px 25px rgba(45, 156, 90, 0.5);
+      }
+
+      .btn-secondary:hover {
+        background: var(--gray);
+        border-color: var(--dark-gray);
+      }
+
+      .btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .btn:hover::before {
+        left: 100%;
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(50px) scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      @keyframes glow {
+        0%,
+        100% {
+          opacity: 0.5;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          opacity: 0.8;
+          transform: translate(-50%, -50%) scale(1.1);
+        }
+      }
+
+      @keyframes codeShimmer {
+        0%,
+        100% {
+          text-shadow: 0 4px 8px rgba(209, 67, 67, 0.4);
+        }
+        50% {
+          text-shadow: 0 4px 20px rgba(209, 67, 67, 0.6);
+        }
+      }
+
+      @keyframes gradientShift {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(100vh) rotate(0deg);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-100px) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      /* Responsive design */
+      @media (max-width: 640px) {
+        .error-container {
+          padding: 2rem;
+        }
+
+        .error-code {
+          font-size: 4rem;
+        }
+
+        .error-icon {
+          font-size: 3.5rem;
+        }
+
+        .error-message {
+          font-size: 1.5rem;
+        }
+
+        .btn-container {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .btn {
+          width: 100%;
+          max-width: 200px;
+        }
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Floating particles -->
+    <div class="particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+
+    <div class="error-container">
+      <div class="brand">SMARTPORT</div>
+
+      <div class="status-indicator">
+        <i class="fas fa-exclamation-triangle"></i>
+        Access Restricted
+      </div>
+
+      <div class="error-icon-container">
+        <div class="icon-glow"></div>
+        <div class="error-icon">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+      </div>
+
+      <div class="error-code">403</div>
+      <div class="error-message">Access Forbidden</div>
+      <div class="error-details">{% if text %} {{ text|safe }} {% endif %}</div>
+
+      <div class="btn-container">
+        <a class="btn btn-secondary" href="{% url link %}">
+          <i class="fas fa-home"></i>
+          Return to Dashboard
+        </a>
+      </div>
+    </div>
+
+    <script>
+      // Add some interactive effects
+      document.addEventListener("mousemove", (e) => {
+        const container = document.querySelector(".error-container");
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = (y - centerY) / 20;
+          const rotateY = (centerX - x) / 20;
+
+          container.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        } else {
+          container.style.transform =
+            "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+        }
+      });
+
+      // Reset transform when mouse leaves
+      document.addEventListener("mouseleave", () => {
+        const container = document.querySelector(".error-container");
+        container.style.transform =
+          "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+      });
+    </script>
+  </body>
+</html>

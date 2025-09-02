@@ -28,15 +28,15 @@ def enforce_shipper_access(request):
     return HttpResponseForbidden("401 You are not authorized to view this page.")
   
   role = request.user.userprofile.role
-
+  text = "This page is restricted to shipper accounts."
   if role != "shipper":
     if role == "admin":
-      return render(request, "smartportApp/unauthorized.html", {"text": "Admins cannot access shipper pages.", "link": "admin-dashboard"})
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "admin-dashboard"})
     elif role == "custom":
-      return render(request, "smartportApp/unauthorized.html", {"text": "Customs officers cannot access shipper pages.", "link": "customs-dashboard"})
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "customs-dashboard"})
     elif role == "employee":
-      return render(request, "smartportApp/unauthorized.html", {"text": "Employees cannot access shipper pages.", "link": "employee-dashboard"})  
-    return render(request, "smartportApp/unauthorized.html", {"text": "Only shippers can access this page."})
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "employee-dashboard"})  
+    return render(request, "smartportApp/403-forbidden-page.html", {"text": "Only shippers can access this page."})
   
   return None
 
@@ -744,7 +744,11 @@ def edit_submit_shipment(request, submanifest_id):
   allowed_statuses = ["rejected_by_admin", "rejected_by_customs"]
   submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
   if submanifest.status not in allowed_statuses:
-    return HttpResponseForbidden("This shipment cannot be edited.")
+    context = {
+      'link': 'shipper-dashboard',
+      'text': 'This <strong>shipment</strong> cannot be edited due to its current statusss.'
+    }
+    return render(request, "smartportApp/403-forbidden-page.html", context)
 
   if request.method == "GET":
     return handle_get_request(request, submanifest_id)

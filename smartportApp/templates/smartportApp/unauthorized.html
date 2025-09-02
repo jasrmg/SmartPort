@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Unauthorized Access</title>
+    <title>401 Unauthorized - SmartPort</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
       :root {
         --primary: #0a1f44;
@@ -76,15 +80,7 @@
         animation: fadeInUp 0.8s ease-out 0.2s forwards;
       }
 
-      .hold-up-title {
-        font-size: 3rem;
-        font-weight: 700;
-        color: var(--light-blue);
-        margin-bottom: 0.5rem;
-        opacity: 0;
-        animation: fadeInUp 0.8s ease-out 0.4s forwards;
-      }
-
+      /*diri ibutang ang css*/
       .error-subtitle {
         font-size: 1.25rem;
         color: var(--lighter-blue);
@@ -111,39 +107,75 @@
         animation: fadeInUp 0.8s ease-out 1s forwards;
       }
 
-      .btn-primary {
-        background: linear-gradient(
-          135deg,
-          var(--secondary) 0%,
-          var(--light-blue) 100%
-        );
-        color: white;
+      .btn-container {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+      }
+
+      .btn {
+        padding: 1rem 2rem;
         border: none;
-        padding: 0.875rem 2rem;
+        border-radius: 50px;
         font-size: 1rem;
-        font-weight: 500;
-        border-radius: 8px;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
-        display: inline-block;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        opacity: 0;
-        animation: fadeInUp 0.8s ease-out 1.2s forwards;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), #239950);
+        color: var(--white);
+        box-shadow: 0 4px 15px rgba(45, 156, 90, 0.3);
+      }
+
+      .btn-secondary {
+        background: var(--light);
+        color: var(--primary);
+        border: 1px solid var(--gray);
+      }
+
+      .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
       }
 
       .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px -8px rgba(30, 58, 138, 0.3);
-        background: linear-gradient(
-          135deg,
-          var(--primary) 0%,
-          var(--secondary) 100%
-        );
+        box-shadow: 0 8px 25px rgba(45, 156, 90, 0.5);
       }
 
-      .btn-primary:active {
-        transform: translateY(0);
+      .btn-secondary:hover {
+        background: var(--gray);
+        border-color: var(--dark-gray);
+      }
+
+      .btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .btn:hover::before {
+        left: 100%;
       }
 
       .additional-info {
@@ -171,10 +203,6 @@
         .container {
           padding: 2rem 1.5rem;
           margin: 1rem;
-        }
-
-        .hold-up-title {
-          font-size: 2.5rem;
         }
 
         .security-illustration {
@@ -570,11 +598,17 @@
         </g>
       </svg>
 
-      <h1 class="hold-up-title">401 UNAUTHORIZED</h1>
+      <div class="error-code">401</div>
+      <div class="error-message">Unauthorized</div>
       <p class="error-subtitle">ACCESS DENIED</p>
 
       <h2 class="main-message">{{ text }}</h2>
-      <a href="{% url link %}" class="btn-primary">Return to Dashboard</a>
+      <div class="btn-container">
+        <a class="btn btn-secondary" href="{% url link %}">
+          <i class="fas fa-home"></i>
+          Return to Dashboard
+        </a>
+      </div>
     </div>
 
     <script></script>
