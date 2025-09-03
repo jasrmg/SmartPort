@@ -1,0 +1,351 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <!-- CSRF TOKEN FOR ADMIN -->
+    <meta name="csrf-token" content="{{ csrf_token }}" />
+    <title>
+      {% block title %} Employee Incident Feed {% endblock %} | SmartPort
+    </title>
+
+    <!--FONT STYLE-->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <!--FONT AWESOME(ICONS)-->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <!--CUSTOM CSS-->
+    <link rel="stylesheet" href="{% static 'shipper/css/shipper-base.css' %}" />
+    <link rel="stylesheet" href="{% static 'global/notifications.css' %}" />
+    {% block head %} {% endblock %}
+  </head>
+  <body class="loading">
+    <!--LOADER-->
+    <div class="loader-container" id="loader">
+      <div class="helm-container">
+        <div class="helm">
+          <div class="helm-ring">
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-spoke"></div>
+            <div class="helm-handle"></div>
+            <div class="helm-handle"></div>
+            <div class="helm-handle"></div>
+            <div class="helm-handle"></div>
+          </div>
+          <div class="helm-center"></div>
+        </div>
+      </div>
+
+      <div class="loading-text">Loading, please wait</div>
+    </div>
+    <!--END OF LOADER-->
+    <div class="container">
+      {% block sidebar %} {% endblock %}
+      <div class="main-content">
+        <!--TOPBAR BLOCK-->
+        <div class="topbar">
+          {% if show_logo_text %}
+          <span class="logo-text">SmartPort</span>
+          {% else %}
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search..." />
+          </div>
+          {% endif %}
+          <div class="user-menu">
+            <!--NOTIFICATION-->
+            <div class="notification-container">
+              <button class="notification-btn" id="notificationToggle">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">3</span>
+              </button>
+              <!-- NOTIFICATION DROPDOWN -->
+              <div
+                id="notificationDropdown"
+                class="notification-dropdown hidden"
+              >
+                <div class="dropdown-header">Notifications</div>
+                <ul class="notification-list">
+                  <li class="notification-item unread">
+                    <!--IF LETTER-->
+                    <!-- <div class="notif-icon">N</div> -->
+                    <!--IF IMAGE-->
+                    <div class="notif-image">
+                      <img src="" alt="Notification Icon" class="notif-icon" />
+                    </div>
+
+                    <div class="notif-content">
+                      <p class="notif-text">
+                        New shipment has been added to your dashboard.
+                      </p>
+                      <span class="notif-time">20h ago</span>
+                    </div>
+                  </li>
+                  <li class="notification-item">
+                    <div class="notif-icon">S</div>
+                    <div class="notif-content">
+                      <p class="notif-text">
+                        System approved your recent manifest update.
+                      </p>
+                      <span class="notif-time">5h ago</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <!--USER PROFILE-->
+            <div class="user-profile">
+              <div class="user-avatar">
+                <img
+                  id="userAvatarImg"
+                  src="{{ user_profile.avatar | default:'/media/avatars/default_image.jpg' }}"
+                />
+              </div>
+              <span class="user-name" id="displayName"></span>
+              <i class="fas fa-chevron-down"></i>
+
+              <!--DROPDOWN MENU-->
+              <div id="profileDropdown" class="dropdown-menu hidden">
+                <ul>
+                  <li id="editProfileBtn">Edit Profile</li>
+                  <li id="changePasswordBtn">Change Password</li>
+                  <li id="TBlogout-btn">Logout</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--END OF TOPBAR BLOCK-->
+        <!--MAIN CONTENT BLOCK-->
+        {% block content %} {% endblock %}
+      </div>
+    </div>
+    <!--GLOBAL MODAL-->
+    <!--EDIT PROFILE MODAL-->
+    <div id="editProfileModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">Edit Profile</span>
+          <button class="modal-close" id="editProfileCloseBtn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div
+            id="edit-profile-status"
+            class="form-status"
+            style="display: none"
+          >
+            <i id="edit-profile-status-icon" class="fas"></i>
+            <span id="edit-profile-status-msg"></span>
+          </div>
+          <form id="editProfileForm" enctype="multipart/form-data">
+            <!-- Avatar Upload -->
+            <div
+              class="avatar-section"
+              style="text-align: center; margin-bottom: 1.2rem"
+            >
+              <label for="avatarUpload">
+                <img src="" alt="Avatar" id="avatarPreview" class="avatar" />
+              </label>
+              <input
+                type="file"
+                id="avatarUpload"
+                name="avatar"
+                accept="image/*"
+                hidden
+              />
+            </div>
+
+            <!-- Name Fields -->
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input type="text" id="firstName" name="first_name" readonly />
+            </div>
+
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input type="text" id="lastName" name="last_name" readonly />
+            </div>
+
+            <!-- Action Buttons -->
+            <div
+              class="modal-actions"
+              style="margin-top: 1.5rem; text-align: right"
+            >
+              <button
+                type="button"
+                id="editProfileCancelBtn"
+                class="btn-cancel"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn-update">
+                <span class="btn-text">Update</span>
+                <span class="spinner" style="display: none"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--CHANGE PASSWORD MODAL-->
+    <div id="changePasswordModal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">Change Password</span>
+          <button class="modal-close" id="changePasswordCloseBtn">
+            &times;
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form id="changePasswordForm">
+            <!-- Error Message -->
+            <div
+              id="changepassword-status"
+              class="form-status"
+              style="display: none"
+            >
+              <i id="changepassword-status-icon" class="fas"></i>
+              <span id="changepassword-status-msg"></span>
+            </div>
+
+            <!-- Old Password -->
+            <div class="form-group password-group">
+              <label for="oldPassword">Old Password</label>
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="oldPassword"
+                  name="old_password"
+                  placeholder="Enter Old Password"
+                />
+                <i
+                  class="fas fa-eye-slash toggle-password"
+                  data-target="oldPassword"
+                ></i>
+              </div>
+            </div>
+
+            <!-- New Password -->
+            <div class="form-group password-group">
+              <label for="newPassword">New Password</label>
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="newPassword"
+                  name="new_password"
+                  placeholder="Enter New Password"
+                />
+                <i
+                  class="fas fa-eye-slash toggle-password"
+                  data-target="newPassword"
+                ></i>
+              </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group password-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirm_password"
+                  placeholder="Enter Confirm Password"
+                />
+                <i
+                  class="fas fa-eye-slash toggle-password"
+                  data-target="confirmPassword"
+                ></i>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div
+              class="modal-actions"
+              style="margin-top: 1.5rem; text-align: right"
+            >
+              <button
+                type="button"
+                id="changePasswordCancelBtn"
+                class="btn-cancel"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn-update" id="changepassword-btn">
+                <span class="btn-text">Update</span>
+                <span class="spinner" style="display: none"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--LOGOUT CONFIRMATION MODAL-->
+    <div id="logout-modal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Confirm Logout</h2>
+          <button class="modal-close" id="confirm-logout-modal-close">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to log out of your account?</p>
+          <div class="modal-actions">
+            <button id="cancel-logout" class="btn-cancel">Cancel</button>
+            <button id="confirm-logout" class="btn-danger">
+              <span class="btn-text">Logout</span>
+              <span class="spinner" style="display: none"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--MODAL BLOCK-->
+    {% block modal %} {% endblock %}
+
+    <!--FIREBASE-->
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+    <!-- Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+    <!-- Firebase Firestore (compat version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="{% static 'global/firebase_config.js' %}"></script>
+
+    <!--CUSTOM JS-->
+    <script src="{% static 'global/notifications.js' %}"></script>
+    <script type="module" src="{% static 'admin/js/admin-base.js' %}"></script>
+    <script src="{% static 'admin/js/admin-change-password.js' %}"></script>
+    <!-- <script src="{% static 'global/update-profile.js' %}"></script> -->
+    <!--SCRIPT BLOCK-->
+    {% block script %} {% endblock %}
+    <!--LOADER JS -->
+    <script>
+      const csrftoken = document.querySelector(
+        'meta[name="csrf-token"]'
+      ).content;
+      console.log("CSRF TOKEN: ", csrftoken);
+    </script>
+  </body>
+</html>

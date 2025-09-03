@@ -1,0 +1,63 @@
+{% extends "smartportApp/employee/employee-base.html" %}
+<!---->
+{% load static %}
+<!---->
+{% block title %} Employee Incident Feed {% endblock %}
+<!---->
+{% block head %}
+<link
+  rel="stylesheet"
+  href="{% static 'admin/css/incident-report-feed.css' %}"
+/>
+{% endblock %}
+<!--BODY-->
+
+<!--START OF SIDEBAR-->
+{% block sidebar %}
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-anchor logo-icon"></i>
+      <span class="logo-text">SmartPort</span>
+      <button class="collapse-btn">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+  <ul class="nav-menu">
+    <li class="nav-item">
+      <a href="#" class="nav-link active">
+        <i class="fas fa-chart-bar"></i>
+        <span>Incident Feed</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+      <ul class="nav-sub-menu">
+        <li>
+          <a href="#" id="sidebarChangePassword" class="nav-sub-link">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" id="sidebarEditProfileBtn" class="nav-sub-link">
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+    <li class="nav-item">
+      <a id="SBlogout-btn" class="nav-link">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
+{% endblock %}

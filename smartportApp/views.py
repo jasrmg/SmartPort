@@ -1703,6 +1703,6 @@ def parse_manifest_page(page_obj):
 
 # --------------------------------- EMPLOYEE ---------------------------------
 # TODO: MIGRATE TO A DIFFERENT FILE
-@login_required
-def employee_dashboard(request):
-  return render(request, "smartportApp/employee/dashboard.html")
+# @login_required
+# def employee_dashboard(request):
+#   return render(request, "smartportApp/employee/dashboard.html")

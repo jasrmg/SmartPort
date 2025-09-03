@@ -10,6 +10,7 @@ urlpatterns = [
     path('', include('smartportApp.urls')),
     path('reset-password/', TemplateView.as_view(template_name="accounts/reset_password.html"), name="reset-password"),
     path("customs/", include("smartportApp.urls_customs")),
+    path("employee/", include("smartportApp.urls_employee")),
 ]
 
 if settings.DEBUG:

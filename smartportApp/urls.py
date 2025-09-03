@@ -126,5 +126,5 @@ urlpatterns = [
 
   # -------------------------------- EMPLOYEE USING DIFFERENT VIEW --------------------------------
   # TODO: MIGRATE IT TO A DIFFERENT FILE
-  path("employee-dashboard/", views.employee_dashboard, name="employee-dashboard"),
+  # path("employee-dashboard/", views.employee_dashboard, name="employee-dashboard"),
 ]
