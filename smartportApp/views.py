@@ -84,12 +84,29 @@ def format_duration_string(duration_str):
   except Exception:
     return "—"
 
-
+def enforce_admin_access(request):
+  ''' Check if the user is authenticated and has the employee role. '''
+  if not request.user.is_authenticated:
+    return HttpResponseForbidden("401 You are not authorized to view this page.")
+  
+  role = request.user.userprofile.role
+  text = "This page is restricted to employee accounts."
+  if role != "admin":
+    if role == "employee":
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "incident-feed-view"})
+    elif role == "custom":
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "customs-dashboard"})
+    elif role == "shipper":
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "shipper-dashboard"})  
+    return render(request, "smartportApp/403-forbidden-page.html", {"text": "Only shippers can access this page."})
+  
+  return None
 # --------------------------------- ADMIN ---------------------------------
 # -------------------- TEMPLATES --------------------
 def admin_dashboard(request):
-  if not request.user.is_authenticated:
-    return redirect("/")
+  auth_check = enforce_admin_access(request)
+  if auth_check:
+    return auth_check
 
   # 1. count active vessels
   active_vessel_count = Vessel.objects.exclude(status=Vessel.VesselStatus.UNDER_MAINTENANCE).count()
