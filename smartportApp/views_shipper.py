@@ -770,7 +770,6 @@ def shipper_incident_feed_view(request):
   incidents = IncidentReport.objects.filter(is_approved=True)
 
 
-  # prioritize not approve first by the admin
   if sort == "newest":
     incidents = with_approval_priority(incidents).order_by('approval_priority', '-incident_datetime')
   elif sort == "oldest":

@@ -35,7 +35,7 @@ def role_redirect_view(request):
   elif role == "shipper":
     return redirect("shipper_dashboard")
   elif role == "employee":
-    return redirect("employee_dashboard")
+    return redirect("incident-feed-view")
   else:
     return HttpResponse("Unauuthorized role", status=403)
 

@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
           } else if (userRole === "shipper") {
             window.location.href = "/shipper-dashboard/";
           } else {
-            window.location.href = "/employee-dashboard/";
+            window.location.href = "/employee/incident-feed/";
           }
         } catch (backendError) {
           console.error("Backend login error: ", backendError);

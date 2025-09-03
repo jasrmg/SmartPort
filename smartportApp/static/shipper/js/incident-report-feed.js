@@ -2,7 +2,7 @@ let currentSort = "newest";
 let page = 2;
 let isLoading = false;
 let hasMore = true;
-
+console.log("HELLO WORLD");
 document.addEventListener("DOMContentLoaded", () => {
   // ----------------------- SUBMIT REPORT -----------------------
   const reportPrompt = document.getElementById("reportPrompt");
@@ -496,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <select class="status-dropdown">
               <option value="pending" ${
                 status === "pending" ? "selected" : ""
-              }>Under Review</option>
+              }>Under Reviewsss</option>
               <option value="resolved" ${
                 status === "resolved" ? "selected" : ""
               }>Resolved</option>
