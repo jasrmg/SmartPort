@@ -28,6 +28,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // ----------------------- RESOLUTION DETAILS MODAL -----------------------
+  const resolutionModal = document.getElementById("resolutionDetailsModal");
+  const closeResolutionModal = document.getElementById(
+    "closeResolutionDetailsModal"
+  );
+  const okResolutionBtn = document.getElementById("okResolutionBtn");
+
+  closeResolutionModal.addEventListener("click", () => {
+    resolutionModal.style.display = "none";
+  });
+
+  okResolutionBtn.addEventListener("click", () => {
+    resolutionModal.style.display = "none";
+  });
+
+  window.addEventListener("click", (e) => {
+    if (e.target === resolutionModal) {
+      resolutionModal.style.display = "none";
+    }
+  });
+
   // ----------------------- SUBMIT REPORT FORM -----------------------
   const submitIncidentBtn = document.getElementById("submitIncidentBtn");
 
@@ -298,33 +319,89 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ----------------------- CAROUSEL CONTROLS -----------------------
-  document.addEventListener("click", (e) => {
+  // ----------------------- CAROUSEL CONTROLS & RESOLUTION MODAL -----------------------
+  // diri ra na part giusab
+  document.addEventListener("click", async (e) => {
+    // Handle carousel buttons
     const btn = e.target.closest(".carousel-btn");
-    if (!btn) return;
+    if (btn) {
+      const card = btn.closest(".incident-card");
+      const images = card.querySelectorAll(".incident-image");
+      let activeIndex = [...images].findIndex((img) =>
+        img.classList.contains("active")
+      );
 
-    const card = btn.closest(".incident-card");
-    const images = card.querySelectorAll(".incident-image");
-    let activeIndex = [...images].findIndex((img) =>
-      img.classList.contains("active")
-    );
+      if (btn.classList.contains("left-btn") && activeIndex > 0) {
+        images[activeIndex].classList.remove("active");
+        images[--activeIndex].classList.add("active");
+      }
 
-    if (btn.classList.contains("left-btn") && activeIndex > 0) {
-      images[activeIndex].classList.remove("active");
-      images[--activeIndex].classList.add("active");
+      if (
+        btn.classList.contains("right-btn") &&
+        activeIndex < images.length - 1
+      ) {
+        images[activeIndex].classList.remove("active");
+        images[++activeIndex].classList.add("active");
+      }
+
+      updateCarouselControls(card);
+      return; // Exit early for carousel buttons
     }
 
-    if (
-      btn.classList.contains("right-btn") &&
-      activeIndex < images.length - 1
-    ) {
-      images[activeIndex].classList.remove("active");
-      images[++activeIndex].classList.add("active");
-    }
+    // Handle resolution status label clicks
+    const statusLabel = e.target.closest(".status-label.resolved");
+    if (statusLabel) {
+      const card = statusLabel.closest(".incident-card");
+      const incidentId = card.dataset.cardId;
 
-    updateCarouselControls(card);
+      console.log("Clicked resolved status for incident ID:", incidentId);
+
+      try {
+        const response = await fetch(`/get-resolution-details/${incidentId}/`, {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        });
+        console.log("Response status:", response.status);
+        const data = await response.json();
+        console.log("Full backend response:", data);
+
+        // Check each condition separately
+        console.log("data.success:", data.success);
+        console.log("data.resolution:", data.resolution);
+        console.log("Condition check:", data.success && data.resolution);
+
+        if (data.success && data.resolution) {
+          const resolutionText = document.getElementById(
+            "resolutionDetailsText"
+          );
+          const resolution = data.resolution;
+
+          resolutionText.innerHTML = `
+            <div class="resolution-detail">
+              <p><strong>Resolution Report:</strong></p>
+              <p class="resolution-report">${resolution.resolution_report}</p>
+            </div>
+            <div class="resolution-meta">
+              <p><strong>Resolved Date:</strong> ${formatDate(
+                resolution.resolution_date
+              )}</p>
+              <p><strong>Resolved By:</strong> ${
+                resolution.resolved_by_name
+              }</p>
+            </div>
+          `;
+
+          resolutionModal.style.display = "flex";
+        } else {
+          console.log("Condition failed, showing toast");
+          console.log("Error from backend:", data.error);
+          showToast("Could not load resolution details", true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch resolution details:", err);
+        showToast("Error loading resolution details", true);
+      }
+    }
   });
-
   const updateCarouselControls = (card) => {
     const images = card.querySelectorAll(".incident-image");
     const leftBtn = card.querySelector(".left-btn");
@@ -398,8 +475,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (incident.status === "resolved") {
         actionsHTML = `
         <div class="incident-actions">
-          <span class="status-label resolved">
-            <i class="fas fa-check-circle"></i> Resolved
+          <span class="status-label resolved clickable-status" style="cursor: pointer;">
+            <i class="fas fa-check-circle"></i> Resolved - View Details
           </span>
         </div>
       `;

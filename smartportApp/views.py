@@ -1723,3 +1723,28 @@ def parse_manifest_page(page_obj):
 # @login_required
 # def employee_dashboard(request):
 #   return render(request, "smartportApp/employee/dashboard.html")
+
+# view to view the incident resolution
+def get_resolution_details(request, incident_id):
+  if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+  try:
+    incident = IncidentReport.objects.get(incident_id=incident_id)
+
+    if not incident.resolution:
+      return JsonResponse({'success': False, 'error': 'No resolution found'})
+    
+    resolution_data = {
+      'resolution_report': incident.resolution.resolution_report,
+      'resolution_date': incident.resolution.resolution_date.isoformat(),
+      'resolved_by_name': incident.resolution.resolved_by.user.get_full_name() if incident.resolution.resolved_by  else 'Unknown'
+    }
+    return JsonResponse({
+      'success': True,
+      'resolution': resolution_data
+    })
+  except IncidentReport.DoesNotExist:
+    return JsonResponse({'success': False, 'error': 'Incident not found'})
+  except Exception as e:
+    return JsonResponse({'success': False, 'error': str(e)})

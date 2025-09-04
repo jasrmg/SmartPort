@@ -833,6 +833,34 @@ input[type="file"].form-input {
   border-radius: 6px;
   font-size: 0.9rem;
 }
+/* INCIDENT RESOLUTION MODAL DESIGN */
+.clickable-status:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+  transition: all 0.2s ease;
+}
+
+.resolution-detail {
+  margin-bottom: 20px;
+}
+
+.resolution-report {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  border-left: 4px solid #28a745;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+.resolution-meta {
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.resolution-meta p {
+  margin: 8px 0;
+}
 
 /* Responsive Design */
 @media (max-width: 600px) {

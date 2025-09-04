@@ -9,6 +9,7 @@
   rel="stylesheet"
   href="{% static 'admin/css/incident-report-feed.css' %}"
 />
+
 {% endblock %}
 <!--BODY-->
 
@@ -173,8 +174,11 @@
           {% if incident.is_approved %}
           <!---->
           {% if incident.status == 'resolved' %}
-          <span class="status-label resolved">
-            <i class="fas fa-check-circle"></i> Resolved
+          <span
+            class="status-label resolved clickable-status"
+            style="cursor: pointer"
+          >
+            <i class="fas fa-check-circle"></i> Resolved - View Details
           </span>
           {% else %}
           <span class="status-label unresolved">
@@ -293,7 +297,7 @@
   </div>
 </div>
 
-<!-- RESOLUTION MODAL -->
+<!-- RESOLUTION DETAIL MODAL -->
 <div class="modal-overlay" id="resolutionDetailsModal">
   <div class="modal">
     <div class="modal-header">
@@ -304,9 +308,9 @@
     </div>
     <div class="modal-body">
       <p id="resolutionDetailsText" class="resolution-text"></p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" id="okResolutionBtn">OK</button>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="okResolutionBtn">OK</button>
+      </div>
     </div>
   </div>
 </div>
@@ -314,5 +318,6 @@
 {% endblock %}
 <!---->
 {% block script %}
+
 <script src="{% static 'shipper/js/incident-report-feed.js' %}"></script>
 {% endblock %}

@@ -92,3 +92,5 @@ def create_notification_bulk(recipients, title, message, link_url="", triggered_
     for user in recipients
   ]
   Notification.objects.bulk_create(notifications)
+
+
