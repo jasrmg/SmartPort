@@ -294,48 +294,19 @@
 </div>
 
 <!-- RESOLUTION MODAL -->
-<div class="modal-overlay" id="resolutionModal">
+<div class="modal-overlay" id="resolutionDetailsModal">
   <div class="modal">
     <div class="modal-header">
       <h2 class="modal-title">Resolution Details</h2>
-      <button class="modal-close" id="closeResolutionModal">&times;</button>
+      <button class="modal-close" id="closeResolutionDetailsModal">
+        &times;
+      </button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label for="resolutionDescription"
-          >Describe how the issue was resolved</label
-        >
-        <textarea
-          id="resolutionDescription"
-          class="form-input"
-          rows="5"
-          placeholder="Provide a clear and detailed explanation..."
-          required
-        ></textarea>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-cancel" id="cancelResolutionBtn">Cancel</button>
-        <button class="btn btn-create" id="saveResolutionBtn">Save</button>
-      </div>
+      <p id="resolutionDetailsText" class="resolution-text"></p>
     </div>
-  </div>
-</div>
-
-<div id="declineConfirmModal" class="modal-overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 class="modal-title">Decline Incident Report</h2>
-    </div>
-    <div class="modal-body">
-      <p>
-        Are you sure you want to decline this report? This action cannot be
-        undone.
-      </p>
-      <div class="modal-actions">
-        <button id="declineConfirmBtn" class="btn-danger">Yes, Decline</button>
-        <button id="declineCancelBtn" class="btn-cancel">Cancel</button>
-      </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="okResolutionBtn">OK</button>
     </div>
   </div>
 </div>
