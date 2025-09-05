@@ -1748,3 +1748,110 @@ def get_resolution_details(request, incident_id):
     return JsonResponse({'success': False, 'error': 'Incident not found'})
   except Exception as e:
     return JsonResponse({'success': False, 'error': str(e)})
+
+
+# search functionality
+from django.views.decorators.http import require_http_methods
+
+@login_required
+@require_http_methods(["GET"])
+def search_incidents(request):
+  query = request.GET.get('q', '').strip()
+  sort = request.GET.get('sort', 'newest')
+  page = int(request.GET.get('page', 10))
+
+  # Determine user type and filter incidents accordingly
+  is_admin = request.user.userprofile.role == "admin"
+  print(is_admin)
+
+  if is_admin:
+    incidents = IncidentReport.objects.all()
+  else:
+    incidents = IncidentReport.objects.filter(is_approved=True)
+
+  # apply search filter if query exists
+  if query:
+    search_filter = (
+      Q(incident_type__icontains=query) |
+      Q(other_incident_type__icontains=query) |
+      Q(vessel__name__icontains=query) |
+      Q(reporter__first_name__icontains=query) |
+      Q(reporter__last_name__icontains=query) |
+      Q(location__icontains=query) |
+      Q(description__icontains=query)
+    )
+    incidents = incidents.filter(search_filter)
+
+  # Apply sorting
+  if is_admin:
+    # For admin, prioritize unapproved incidents first, then apply requested sorting
+    if sort == 'newest':
+      incidents = incidents.order_by('is_approved', '-created_at')
+    elif sort == 'oldest':
+      incidents = incidents.order_by('is_approved', 'created_at')
+    elif sort == 'vessel':
+      incidents = incidents.order_by('is_approved', 'vessel__name')
+    elif sort == 'impact':
+      incidents = incidents.extra(
+        select={
+          'impact_order': 'CASE WHEN impact_level="high" THEN 3 WHEN impact_level="medium" THEN 2 ELSE 1 END'
+        }
+      ).order_by('is_approved', '-impact_order')
+    elif sort == 'status_resolved':
+      incidents = incidents.order_by('is_approved', '-status', '-created_at')
+    elif sort == 'status_pending':
+      incidents = incidents.order_by('is_approved', 'status', '-created_at')
+  else:
+    if sort == 'newest':
+      incidents = incidents.order_by('-created_at')
+    elif sort == 'oldest':
+      incidents = incidents.order_by('created_at')
+    elif sort == 'vessel':
+      incidents = incidents.order_by('vessel__name')
+    elif sort == 'impact':
+      incidents = incidents.extra(
+        select={'impact_order': 'CASE WHEN impact_level="high" THEN 3 WHEN impact_level="medium" THEN 2 ELSE 1 END'},
+        order_by=['-impact_order']
+      )
+    elif sort == 'status_resolved':
+      incidents = incidents.order_by('-status', '-created_at')
+    elif sort == 'status_pending':
+      incidents = incidents.order_by('status', '-created_at')
+
+  # paginate
+  paginator = Paginator(incidents, 1) 
+  page_obj = paginator.get_page(page)
+
+  # serialize incidents for JSON response
+  incidents_data = []
+  for incident in page_obj:
+    # get reporter name
+    reporter_name = f"{incident.reporter.first_name} {incident.reporter.last_name}"
+    # get images
+    images = []
+    for img in incident.images.all():
+      images.append({'url': img.image.url})
+
+    incidents_data.append({
+      'incident_id': incident.incident_id,
+      'incident_type_display': incident.get_incident_type_display(),
+      'impact_level': incident.impact_level,
+      'impact_level_display': incident.get_impact_level_display(),
+      'created_at': incident.created_at.isoformat(),
+      'reporter_name': reporter_name,
+      'vessel_name': incident.vessel.name if incident.vessel else None,
+      'location': incident.location,
+      'description': incident.description,
+      'status': incident.status,
+      'is_approved': incident.is_approved,
+      'images': images
+    })
+
+  return JsonResponse({
+    'incidents': incidents_data,
+    'has_more': page_obj.has_next(),
+    'current_page': page,
+    'total_pages': paginator.num_pages,
+    'total_count': paginator.count
+  })
+  

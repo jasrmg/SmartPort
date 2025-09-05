@@ -1,8 +1,210 @@
-let currentSort = "newest";
-let page = 2;
-let isLoading = false;
-let hasMore = true;
+// ----------------------- GLOBAL -----------------------
+window.currentSort = "newest";
+window.page = 2;
+window.isLoading = false;
+window.hasMore = true;
+let feed;
 console.log("HELLO WORLD");
+// ----------------------- CARD BUILDER -----------------------
+window.buildIncidentCard = (incident) => {
+  const images = Array.isArray(incident?.images) ? incident.images : [];
+  const imagesHTML = images
+    .map(
+      (img, i) => `
+      <img src="${img.url}" class="incident-image ${
+        i === 0 ? "active" : ""
+      }" alt="Incident Image" loading="lazy">`
+    )
+    .join("");
+
+  let carouselHTML = "",
+    dotsHTML = "";
+
+  if (images.length === 0) {
+    carouselHTML = `
+        <div class="incident-image-carousel no-image">
+          <div class="incident-image-container">
+            <div class="no-image-placeholder">
+              <i class="fas fa-image"></i>
+              <span>No image available</span>
+            </div>
+          </div>
+        </div>`;
+  } else {
+    carouselHTML = `
+        <div class="incident-image-carousel">
+          ${
+            images.length > 1
+              ? '<button class="carousel-btn left-btn"><i class="fas fa-chevron-left"></i></button>'
+              : ""
+          }
+          <div class="incident-image-container">${imagesHTML}</div>
+          ${
+            images.length > 1
+              ? '<button class="carousel-btn right-btn"><i class="fas fa-chevron-right"></i></button>'
+              : ""
+          }
+        </div>`;
+    dotsHTML = `
+        <div class="carousel-dots">
+          ${images
+            .map(
+              (_, i) => `<span class="dot ${i === 0 ? "active" : ""}"></span>`
+            )
+            .join("")}
+        </div>`;
+  }
+
+  let actionsHTML = "";
+
+  if (incident.is_approved) {
+    if (incident.status === "resolved") {
+      actionsHTML = `
+        <div class="incident-actions">
+          <span class="status-label resolved clickable-status" style="cursor: pointer;">
+            <i class="fas fa-check-circle"></i> Resolved - View Details
+          </span>
+        </div>
+      `;
+    } else {
+      actionsHTML = `
+        <div class="incident-actions">
+          <span class="status-label unresolved">
+            <i class="fas fa-exclamation-triangle"></i>
+            Unresolved
+          </span>
+        </div>
+        `;
+    }
+  } else {
+    actionsHTML = `
+      <div class="incident-actions">
+        <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
+        <a class="btn btn-decline"><i class="fas fa-xmark"></i> Decline</a>
+      </div>
+      `;
+  }
+
+  return `
+      <div class="incident-card" data-card-id="${incident.incident_id}">
+        <div class="incident-header">
+          <div><strong>Incident Type:</strong> ${
+            incident.incident_type_display
+          }</div>
+          <div><strong>Impact Level:</strong>
+            <span class="impact-badge impact-${(
+              incident.impact_level || ""
+            ).toLowerCase()}">
+              ${incident.impact_level_display || "—"}
+            </span>
+          </div>
+        </div>
+        ${carouselHTML}
+        ${dotsHTML}
+        <div class="incident-meta">
+          <p><strong>Date:</strong> ${formatDate(incident.created_at)}</p>
+          <p><strong>Reporter:</strong> ${incident.reporter_name}</p>
+          <p><strong>Vessel:</strong> ${incident.vessel_name || "—"}</p>
+          <p><strong>Location:</strong> ${incident.location}</p>
+        </div>
+        <div class="incident-description">
+          <p><strong>Description:</strong> ${incident.description}</p>
+        </div>
+        ${actionsHTML}
+      </div>`;
+};
+
+window.updateCarouselControls = (card) => {
+  const images = card.querySelectorAll(".incident-image");
+  const leftBtn = card.querySelector(".left-btn");
+  const rightBtn = card.querySelector(".right-btn");
+  const dots = card.querySelectorAll(".dot");
+
+  const activeIndex = [...images].findIndex((img) =>
+    img.classList.contains("active")
+  );
+
+  if (leftBtn) leftBtn.style.display = activeIndex > 0 ? "block" : "none";
+  if (rightBtn)
+    rightBtn.style.display = activeIndex < images.length - 1 ? "block" : "none";
+  dots.forEach((dot, i) => dot.classList.toggle("active", i === activeIndex));
+};
+
+window.attachImagePreviewListeners = () => {
+  document.querySelectorAll(".incident-image").forEach((img) => {
+    img.addEventListener("click", () => {
+      fullscreenImg.src = img.src;
+      fullscreenWrapper.style.display = "flex";
+    });
+  });
+};
+
+window.showEndNotice = () => {
+  const feedElement = feed || document.getElementById("incidentFeed");
+  if (!feedElement) return;
+
+  if (!document.getElementById("feedEndNotice")) {
+    const endDiv = document.createElement("div");
+    endDiv.id = "feedEndNotice";
+    endDiv.className = "feed-end-notice";
+    endDiv.innerHTML = `
+        <i class="fas fa-info-circle"></i>
+        <span>Nothing more to show.</span>`;
+    feedElement.appendChild(endDiv);
+  }
+};
+
+window.loadNextPage = async () => {
+  if (isLoading || !hasMore) return;
+  isLoading = true;
+
+  // Get feed element safely
+  const feedElement = feed || document.getElementById("incidentFeed");
+  if (!feedElement) {
+    console.error("Feed element not found");
+    isLoading = false;
+    return;
+  }
+
+  try {
+    const response = await fetch(`?sort=${currentSort}&page=${page}`, {
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+    });
+
+    const data = await response.json();
+
+    data.incidents.forEach((incident) => {
+      const cardHTML = window.buildIncidentCard(incident);
+      feedElement.insertAdjacentHTML("beforeend", cardHTML);
+      const cardEl = feedElement.lastElementChild;
+      window.updateCarouselControls(cardEl);
+    });
+
+    window.attachImagePreviewListeners();
+    page++;
+    if (!data.has_more) {
+      hasMore = false;
+      window.showEndNotice();
+    }
+  } catch (err) {
+    console.error("Error loading more incidents:", err);
+  } finally {
+    isLoading = false;
+  }
+};
+// helper function for the time display:
+window.formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+  };
+  return date.toLocaleDateString("en-US", options);
+};
+
+// ----------------------- END OF GLOBAL -----------------------
+
 document.addEventListener("DOMContentLoaded", () => {
   // ----------------------- SUBMIT REPORT -----------------------
   const reportPrompt = document.getElementById("reportPrompt");
@@ -194,7 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  const feed = document.getElementById("incidentFeed");
+  feed = document.getElementById("incidentFeed");
   const filterSelect = document.querySelector(".filter-select");
   const fullscreenWrapper = document.getElementById("fullscreenImageWrapper");
   const fullscreenImg = document.getElementById("fullscreenImage");
@@ -206,6 +408,14 @@ document.addEventListener("DOMContentLoaded", () => {
     page = 1;
     hasMore = true;
     isLoading = false;
+    // Clear search if active
+    if (
+      window.clearSearch &&
+      document.querySelector(".search-bar input")?.value.trim()
+    ) {
+      window.clearSearch();
+    }
+
     feed.innerHTML = `<div class="loader"></div>`;
 
     try {
@@ -240,72 +450,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // ----------------------- INFINITE SCROLL USING DEBOUNCING -----------------------
   let scrollTimeout = null;
 
-  window.addEventListener("scroll", () => {
+  const handleScroll = () => {
     if (scrollTimeout) clearTimeout(scrollTimeout);
     scrollTimeout = setTimeout(() => {
-      const cards = feed.querySelectorAll(".incident-card");
+      const cards = document.querySelectorAll(".incident-card");
+      if (cards.length < 2) return;
+
       const secondLast = cards[cards.length - 2];
       if (!secondLast) return;
 
       const rect = secondLast.getBoundingClientRect();
       if (rect.top < window.innerHeight + 100) {
-        loadNextPage();
+        // Only call loadNextPage if search is not active
+        if (!window.isSearchActive) {
+          console.log("Calling loadMoreSearchResults, page:", window.page);
+          window.loadNextPage();
+        } else if (window.loadNextPage) {
+          console.log("Calling regular loadNextPage, page:", window.page);
+          window.loadNextPage();
+        }
       }
     }, 150);
-  });
-
-  const loadNextPage = async () => {
-    if (isLoading || !hasMore) return;
-    isLoading = true;
-
-    try {
-      const response = await fetch(`?sort=${currentSort}&page=${page}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
-
-      const data = await response.json();
-
-      data.incidents.forEach((incident) => {
-        const cardHTML = buildIncidentCard(incident);
-        feed.insertAdjacentHTML("beforeend", cardHTML);
-        const cardEl = feed.lastElementChild;
-        updateCarouselControls(cardEl);
-      });
-
-      attachImagePreviewListeners();
-      page++;
-      if (!data.has_more) {
-        hasMore = false;
-        showEndNotice();
-      }
-    } catch (err) {
-      console.error("Error loading more incidents:", err);
-    } finally {
-      isLoading = false;
-    }
-  };
-
-  const showEndNotice = () => {
-    if (!document.getElementById("feedEndNotice")) {
-      const endDiv = document.createElement("div");
-      endDiv.id = "feedEndNotice";
-      endDiv.className = "feed-end-notice";
-      endDiv.innerHTML = `
-        <i class="fas fa-info-circle"></i>
-        <span>Nothing more to show.</span>`;
-      feed.appendChild(endDiv);
-    }
   };
 
   // ----------------------- FULLSCREEN IMAGE -----------------------
-  const attachImagePreviewListeners = () => {
-    document.querySelectorAll(".incident-image").forEach((img) => {
-      img.addEventListener("click", () => {
-        fullscreenImg.src = img.src;
-        fullscreenWrapper.style.display = "flex";
-      });
-    });
-  };
 
   closeFullscreenBtn.addEventListener("click", () => {
     fullscreenWrapper.style.display = "none";
@@ -402,142 +570,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
-  const updateCarouselControls = (card) => {
-    const images = card.querySelectorAll(".incident-image");
-    const leftBtn = card.querySelector(".left-btn");
-    const rightBtn = card.querySelector(".right-btn");
-    const dots = card.querySelectorAll(".dot");
 
-    const activeIndex = [...images].findIndex((img) =>
-      img.classList.contains("active")
-    );
-
-    if (leftBtn) leftBtn.style.display = activeIndex > 0 ? "block" : "none";
-    if (rightBtn)
-      rightBtn.style.display =
-        activeIndex < images.length - 1 ? "block" : "none";
-    dots.forEach((dot, i) => dot.classList.toggle("active", i === activeIndex));
-  };
-
-  // ----------------------- CARD BUILDER -----------------------
-  const buildIncidentCard = (incident) => {
-    const images = Array.isArray(incident?.images) ? incident.images : [];
-    const imagesHTML = images
-      .map(
-        (img, i) => `
-      <img src="${img.url}" class="incident-image ${
-          i === 0 ? "active" : ""
-        }" alt="Incident Image" loading="lazy">`
-      )
-      .join("");
-
-    let carouselHTML = "",
-      dotsHTML = "";
-
-    if (images.length === 0) {
-      carouselHTML = `
-        <div class="incident-image-carousel no-image">
-          <div class="incident-image-container">
-            <div class="no-image-placeholder">
-              <i class="fas fa-image"></i>
-              <span>No image available</span>
-            </div>
-          </div>
-        </div>`;
-    } else {
-      carouselHTML = `
-        <div class="incident-image-carousel">
-          ${
-            images.length > 1
-              ? '<button class="carousel-btn left-btn"><i class="fas fa-chevron-left"></i></button>'
-              : ""
-          }
-          <div class="incident-image-container">${imagesHTML}</div>
-          ${
-            images.length > 1
-              ? '<button class="carousel-btn right-btn"><i class="fas fa-chevron-right"></i></button>'
-              : ""
-          }
-        </div>`;
-      dotsHTML = `
-        <div class="carousel-dots">
-          ${images
-            .map(
-              (_, i) => `<span class="dot ${i === 0 ? "active" : ""}"></span>`
-            )
-            .join("")}
-        </div>`;
-    }
-
-    let actionsHTML = "";
-
-    if (incident.is_approved) {
-      if (incident.status === "resolved") {
-        actionsHTML = `
-        <div class="incident-actions">
-          <span class="status-label resolved clickable-status" style="cursor: pointer;">
-            <i class="fas fa-check-circle"></i> Resolved - View Details
-          </span>
-        </div>
-      `;
-      } else {
-        actionsHTML = `
-        <div class="incident-actions">
-          <span class="status-label unresolved">
-            <i class="fas fa-exclamation-triangle"></i>
-            Unresolved
-          </span>
-        </div>
-        `;
-      }
-    } else {
-      actionsHTML = `
-      <div class="incident-actions">
-        <a class="btn btn-approve"><i class="fas fa-check"></i> Approve</a>
-        <a class="btn btn-decline"><i class="fas fa-xmark"></i> Decline</a>
-      </div>
-      `;
-    }
-
-    return `
-      <div class="incident-card" data-card-id="${incident.incident_id}">
-        <div class="incident-header">
-          <div><strong>Incident Type:</strong> ${
-            incident.incident_type_display
-          }</div>
-          <div><strong>Impact Level:</strong>
-            <span class="impact-badge impact-${(
-              incident.impact_level || ""
-            ).toLowerCase()}">
-              ${incident.impact_level_display || "—"}
-            </span>
-          </div>
-        </div>
-        ${carouselHTML}
-        ${dotsHTML}
-        <div class="incident-meta">
-          <p><strong>Date:</strong> ${formatDate(incident.created_at)}</p>
-          <p><strong>Reporter:</strong> ${incident.reporter_name}</p>
-          <p><strong>Vessel:</strong> ${incident.vessel_name || "—"}</p>
-          <p><strong>Location:</strong> ${incident.location}</p>
-        </div>
-        <div class="incident-description">
-          <p><strong>Description:</strong> ${incident.description}</p>
-        </div>
-        ${actionsHTML}
-      </div>`;
-  };
-
-  // helper function for the time display:
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const options = {
-      year: "numeric",
-      month: "long",
-      day: "2-digit",
-    };
-    return date.toLocaleDateString("en-US", options);
-  };
   // Initial attach
   attachImagePreviewListeners();
   document.querySelectorAll(".incident-card").forEach(updateCarouselControls);
@@ -550,3 +583,13 @@ const showToast = (msg, isError = false) => {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 };
+
+// Make functions globally accessible for search functionality
+// window.buildIncidentCard = buildIncidentCard;
+// window.updateCarouselControls = updateCarouselControls;
+// window.attachImagePreviewListeners = attachImagePreviewListeners;
+// window.showEndNotice = showEndNotice;
+// window.loadNextPage = loadNextPage;
+// window.page = page;
+// window.hasMore = hasMore;
+// window.isLoading = isLoading;

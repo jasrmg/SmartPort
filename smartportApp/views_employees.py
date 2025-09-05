@@ -89,3 +89,4 @@ def incident_feed_view(request):
   }
   return render(request, "smartportApp/employee/incident-feed.html", context)
 
+

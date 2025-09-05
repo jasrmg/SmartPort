@@ -128,5 +128,8 @@ urlpatterns = [
   # TODO: MIGRATE IT TO A DIFFERENT FILE
   # path("employee-dashboard/", views.employee_dashboard, name="employee-dashboard"),
 
-  path("get-resolution-details/<int:incident_id>/", views.get_resolution_details, name='get_resolution_details')
+  path("get-resolution-details/<int:incident_id>/", views.get_resolution_details, name='get_resolution_details'),
+
+  # SEARCH FUNCTIONALITIES
+  path('api/search-incidents/', views.search_incidents, name='universal_search_incidents'),
 ]
