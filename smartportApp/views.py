@@ -464,7 +464,7 @@ def master_manifest_detail_view(request, mastermanifest_id):
   }
   return render(request, "smartportApp/admin/mastermanifest.html", context)
 
-from django.db.models import F, Q
+from django.db.models import F, Q, Value
 def report_feed_view(request):
   sort = request.GET.get("sort", "newest")
   incidents = IncidentReport.objects.all()
@@ -1752,6 +1752,7 @@ def get_resolution_details(request, incident_id):
 
 # search functionality
 from django.views.decorators.http import require_http_methods
+from django.db.models.functions import Concat
 
 @login_required
 @require_http_methods(["GET"])
@@ -1770,13 +1771,20 @@ def search_incidents(request):
     incidents = IncidentReport.objects.filter(is_approved=True)
 
   # apply search filter if query exists
+
   if query:
+    incidents = incidents.annotate(
+      reporter_full_name=Concat(
+        'reporter__first_name', Value(' '), 'reporter__last_name'
+      )
+    )
     search_filter = (
       Q(incident_type__icontains=query) |
       Q(other_incident_type__icontains=query) |
       Q(vessel__name__icontains=query) |
       Q(reporter__first_name__icontains=query) |
       Q(reporter__last_name__icontains=query) |
+      Q(reporter_full_name__icontains=query) |
       Q(location__icontains=query) |
       Q(description__icontains=query)
     )
