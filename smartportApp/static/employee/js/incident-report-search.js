@@ -1,5 +1,4 @@
 // Search functionality for incident reports
-console.log(window);
 let searchTimeout = null;
 let currentSearchQuery = "";
 let isSearchActive = false;
@@ -32,14 +31,6 @@ document.addEventListener("DOMContentLoaded", () => {
       scrollTimeout = setTimeout(() => {
         const cards = document.querySelectorAll(".incident-card");
 
-        console.log("=== SCROLL EVENT ===");
-        console.log("Cards found:", cards.length);
-        console.log("isSearchActive:", isSearchActive);
-        console.log("currentSearchQuery:", currentSearchQuery);
-        console.log("window.page:", window.page);
-        console.log("window.hasMore:", window.hasMore);
-        console.log("window.isLoading:", window.isLoading);
-
         if (cards.length === 0) {
           console.log("No cards found, skipping");
           return;
@@ -51,10 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // Otherwise, use the second-to-last card as before
         if (cards.length === 1) {
           triggerCard = cards[0];
-          console.log("Using single card for trigger");
         } else {
           triggerCard = cards[cards.length - 2];
-          console.log("Using second-last card for trigger");
         }
 
         if (!triggerCard) {
@@ -66,22 +55,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const windowHeight = window.innerHeight;
         const threshold = windowHeight + 100;
 
-        console.log("Trigger card rect.top:", rect.top);
-        console.log("Window height + 100:", threshold);
-        console.log("Should trigger?", rect.top < threshold);
-
         if (rect.top < threshold) {
           if (isSearchActive && currentSearchQuery) {
-            console.log(">>> Triggering loadMoreSearchResults");
             loadMoreSearchResults();
           } else if (window.loadNextPage) {
-            console.log(">>> Triggering regular loadNextPage");
             window.loadNextPage();
           } else {
             console.log("No appropriate function to call");
           }
         }
-        console.log("=== END SCROLL EVENT ===");
       }, 150);
     });
 
@@ -138,11 +120,19 @@ const performSearch = async (query) => {
   const filterSelect = document.querySelector(".filter-select");
   const currentSort = filterSelect ? filterSelect.value : "newest";
 
-  // Show loading state
-  feed.innerHTML = `<div class="loader"></div>`;
+  // Show loading state with search-specific message
+  feed.innerHTML = `
+    <div class="search-loader">
+      <div class="loader"></div>
+      <p class="search-loading-text">Searching incidents...</p>
+    </div>`;
 
   // Set search active state
   isSearchActive = true;
+
+  // Start timer for minimum loading time
+  const startTime = Date.now();
+  const minLoadingTime = 500; // 500ms minimum
 
   try {
     const response = await fetch(
@@ -163,9 +153,14 @@ const performSearch = async (query) => {
 
     const result = await response.json();
 
-    console.log("Search results:", result);
-    console.log("Total incidents found:", result.total_count);
-    console.log("Incidents in this page:", result.incidents.length);
+    // Calculate remaining time to reach minimum loading duration
+    const elapsedTime = Date.now() - startTime;
+    const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+
+    // Wait for remaining time if needed
+    if (remainingTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remainingTime));
+    }
 
     // Clear the feed
     feed.innerHTML = "";
@@ -217,15 +212,16 @@ const performSearch = async (query) => {
     window.page = 2; // Next page to load
     window.hasMore = result.has_more;
     window.isLoading = false;
-
-    console.log(
-      "Search completed. window.page set to:",
-      window.page,
-      "hasMore:",
-      window.hasMore
-    );
   } catch (err) {
-    console.error("Search failed:", err);
+    // Calculate remaining time even for errors
+    const elapsedTime = Date.now() - startTime;
+    const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+
+    // Wait for remaining time if needed
+    if (remainingTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remainingTime));
+    }
+
     feed.innerHTML = `
       <div class="error-msg">
         <i class="fas fa-exclamation-triangle"></i>
@@ -241,20 +237,12 @@ const performSearch = async (query) => {
 };
 
 const loadMoreSearchResults = async () => {
-  console.log("=== loadMoreSearchResults called ===");
-  console.log("window.isLoading:", window.isLoading);
-  console.log("window.hasMore:", window.hasMore);
-  console.log("isSearchActive:", isSearchActive);
-  console.log("currentSearchQuery:", currentSearchQuery);
-  console.log("window.page:", window.page);
-
   if (
     window.isLoading ||
     !window.hasMore ||
     !isSearchActive ||
     !currentSearchQuery
   ) {
-    console.log("Early return due to conditions not met");
     return;
   }
 
@@ -262,7 +250,20 @@ const loadMoreSearchResults = async () => {
   const filterSelect = document.querySelector(".filter-select");
   const currentSort = filterSelect ? filterSelect.value : "newest";
 
-  console.log("Making request to page:", window.page);
+  const startTime = Date.now();
+  const minLoadingTime = 300;
+
+  // Show loading indicator for more results
+  const feed = document.getElementById("incidentFeed");
+  if (feed && !feed.querySelector(".loading-more-indicator")) {
+    const loadingIndicator = document.createElement("div");
+    loadingIndicator.className = "loading-more-indicator";
+    loadingIndicator.innerHTML = `
+    <div class="loader small"></div>
+    <span>Loading more results...</span>
+  `;
+    feed.appendChild(loadingIndicator);
+  }
 
   try {
     const response = await fetch(
@@ -272,7 +273,7 @@ const loadMoreSearchResults = async () => {
       {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
-          "X-CSRFToken": window.csrftoken || "",
+          "X-CSRFToken": csrftoken,
         },
       }
     );
@@ -282,10 +283,17 @@ const loadMoreSearchResults = async () => {
     }
 
     const data = await response.json();
-    console.log("Load more search results response:", data);
-    console.log("Additional incidents loaded:", data.incidents.length);
 
-    const feed = document.getElementById("incidentFeed");
+    // Calculate remaining time to reach minimum loading duration
+    const elapsedTime = Date.now() - startTime;
+    const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+
+    // Wait for remaining time if needed
+    if (remainingTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remainingTime));
+    }
+
+    const feed = document.getElementById("incidentFeed"); //
 
     data.incidents.forEach((incident) => {
       const cardHTML = window.buildIncidentCard(incident);
@@ -298,19 +306,37 @@ const loadMoreSearchResults = async () => {
       window.attachImagePreviewListeners();
     }
 
+    // Remove loading indicator
+    const loadingIndicator = feed.querySelector(".loading-more-indicator");
+    if (loadingIndicator) {
+      loadingIndicator.remove();
+    }
+
     window.page++;
-    console.log("Updated window.page to:", window.page);
 
     if (!data.has_more) {
       window.hasMore = false;
-      console.log("No more pages available");
       window.showEndNotice();
     }
   } catch (err) {
+    // Calculate remaining time even for errors
+    const elapsedTime = Date.now() - startTime;
+    const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+
+    // Wait for remaining time if needed
+    if (remainingTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, remainingTime));
+    }
+
     console.error("Error loading more search results:", err);
+
+    // Remove loading indicator on error
+    const loadingIndicator = feed.querySelector(".loading-more-indicator");
+    if (loadingIndicator) {
+      loadingIndicator.remove();
+    }
   } finally {
     window.isLoading = false;
-    console.log("=== loadMoreSearchResults completed ===");
   }
 };
 
@@ -385,7 +411,6 @@ const originalScrollHandler = window.addEventListener;
 
 // Override the scroll event to handle both regular pagination and search pagination
 document.addEventListener("DOMContentLoaded", () => {
-  // Remove the existing scroll listener and add our enhanced one
   let scrollTimeout = null;
 
   // Only add scroll listener if not already added by main file

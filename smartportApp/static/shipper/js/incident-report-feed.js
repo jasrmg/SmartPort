@@ -4,7 +4,6 @@ window.page = 2;
 window.isLoading = false;
 window.hasMore = true;
 let feed;
-console.log("HELLO WORLD");
 // ----------------------- CARD BUILDER -----------------------
 window.buildIncidentCard = (incident) => {
   const images = Array.isArray(incident?.images) ? incident.images : [];
@@ -522,20 +521,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = statusLabel.closest(".incident-card");
       const incidentId = card.dataset.cardId;
 
-      console.log("Clicked resolved status for incident ID:", incidentId);
-
       try {
         const response = await fetch(`/get-resolution-details/${incidentId}/`, {
           headers: { "X-Requested-With": "XMLHttpRequest" },
         });
-        console.log("Response status:", response.status);
         const data = await response.json();
-        console.log("Full backend response:", data);
-
-        // Check each condition separately
-        console.log("data.success:", data.success);
-        console.log("data.resolution:", data.resolution);
-        console.log("Condition check:", data.success && data.resolution);
 
         if (data.success && data.resolution) {
           const resolutionText = document.getElementById(
@@ -560,8 +550,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           resolutionModal.style.display = "flex";
         } else {
-          console.log("Condition failed, showing toast");
-          console.log("Error from backend:", data.error);
           showToast("Could not load resolution details", true);
         }
       } catch (err) {
@@ -583,13 +571,3 @@ const showToast = (msg, isError = false) => {
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 };
-
-// Make functions globally accessible for search functionality
-// window.buildIncidentCard = buildIncidentCard;
-// window.updateCarouselControls = updateCarouselControls;
-// window.attachImagePreviewListeners = attachImagePreviewListeners;
-// window.showEndNotice = showEndNotice;
-// window.loadNextPage = loadNextPage;
-// window.page = page;
-// window.hasMore = hasMore;
-// window.isLoading = isLoading;
