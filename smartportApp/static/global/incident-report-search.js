@@ -1,3 +1,4 @@
+console.log("search");
 // Search functionality for incident reports
 let searchTimeout = null;
 let currentSearchQuery = "";

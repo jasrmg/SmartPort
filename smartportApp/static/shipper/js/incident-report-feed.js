@@ -3,7 +3,7 @@ window.currentSort = "newest";
 window.page = 2;
 window.isLoading = false;
 window.hasMore = true;
-let feed;
+let feed, fullscreenWrapper, fullscreenImg;
 // ----------------------- CARD BUILDER -----------------------
 window.buildIncidentCard = (incident) => {
   const images = Array.isArray(incident?.images) ? incident.images : [];
@@ -301,10 +301,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.success) {
         // remove the no incident to show if its in the html:
-        // const noResultsMsg = document.querySelector(".no-results");
-        // if (noResultsMsg) {
-        //   noResultsMsg.remove();
-        // }
+        const noResultsMsg = document.querySelector(".no-results");
+        if (noResultsMsg) {
+          noResultsMsg.remove();
+        }
         // const cardHTML = buildIncidentCard(data.incident);
         // const feed = document.getElementById("incidentFeed");
         // feed.insertAdjacentHTML("afterbegin", cardHTML);
@@ -397,8 +397,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   feed = document.getElementById("incidentFeed");
   const filterSelect = document.querySelector(".filter-select");
-  const fullscreenWrapper = document.getElementById("fullscreenImageWrapper");
-  const fullscreenImg = document.getElementById("fullscreenImage");
+  fullscreenWrapper = document.getElementById("fullscreenImageWrapper");
+  fullscreenImg = document.getElementById("fullscreenImage");
   const closeFullscreenBtn = document.querySelector(".close-fullscreen");
 
   // ----------------------- FILTER SELECT -----------------------
