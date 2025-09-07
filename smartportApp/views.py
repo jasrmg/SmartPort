@@ -15,7 +15,7 @@ from django.db.models import Case, When, IntegerField
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
 
 # import the helper functions
-from smartportApp.utils.utils import serialize_incident, create_notification, determine_impact_level, with_approval_priority
+from smartportApp.utils.utils import serialize_incident, create_notification, determine_impact_level, with_approval_priority, enforce_access
 
 
 
@@ -85,91 +85,6 @@ def format_duration_string(duration_str):
 
   except Exception:
     return "—"
-
-def enforce_admin_access(request):
-  ''' Check if the user is authenticated and has the employee role. '''
-  if not request.user.is_authenticated:
-    return HttpResponseForbidden("401 You are not authorized to view this page.")
-  
-  role = request.user.userprofile.role
-  text = "This page is restricted to employee accounts."
-  if role != "admin":
-    if role == "employee":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "incident-feed-view"})
-    elif role == "custom":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "customs-dashboard"})
-    elif role == "shipper":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "shipper-dashboard"})  
-    return render(request, "smartportApp/403-forbidden-page.html", {"text": "Only shippers can access this page."})
-  
-  return None
-# --------------------------------- ADMIN ---------------------------------
-# -------------------- TEMPLATES --------------------
-def admin_dashboard(request):
-  auth_check = enforce_admin_access(request)
-  if auth_check:
-    return auth_check
-
-  # 1. count active vessels
-  active_vessel_count = Vessel.objects.exclude(status=Vessel.VesselStatus.UNDER_MAINTENANCE).count()
-  # 2. count pending submanifests
-  pending_submanifest_count = SubManifest.objects.filter(status="pending_admin").count()
-  # 3. count incidents in the last 30 days
-  thirty_days_ago = timezone.localdate() - timedelta(days=30)
-  recent_incident_count = IncidentReport.objects.filter(created_at__gte=thirty_days_ago).count();
-  # 4. get 5 active voyages (in transit) for table
-  active_voyages = (
-    Voyage.objects
-    .filter(Q(status=Voyage.VoyageStatus.IN_TRANSIT) | Q(status=Voyage.VoyageStatus.ASSIGNED))
-    .select_related("vessel", "departure_port", "arrival_port")
-    .order_by("eta")[:5]
-  )
-
-
-
-  today = timezone.localdate()
-  arrivals_today_count = Voyage.objects.filter(arrival_date__date=today).count()
-
-  # Incident reports created today
-  incidents_today_count = IncidentReport.objects.filter(created_at__date=today).count()
-  print("INCIDENT: ", incidents_today_count)
-  context = {
-    "active_vessel_count": active_vessel_count,
-    "pending_submanifest_count": pending_submanifest_count,
-    "recent_incident_count": recent_incident_count,
-    "active_voyages": active_voyages,
-    "arrivals_today_count": arrivals_today_count,
-    "incidents_today_count": incidents_today_count,
-    # flag for the topbar wether to show the searchbar or the text:
-    "show_logo_text": True,
-  }
-
-  return render(request, "smartportApp/admin/dashboard.html", context)
-
-# ENDPOINT TO FILL THE VESSEL ON THE DASHBOARD MAP
-def get_vessels_for_map(request):
-  voyages = Voyage.objects.select_related('vessel', 'departure_port', 'arrival_port').filter(
-    status__in=[Voyage.VoyageStatus.ASSIGNED, Voyage.VoyageStatus.IN_TRANSIT]
-  )
-
-  data = []
-  for v in voyages:
-    data.append({
-      "voyage_number": v.voyage_number,
-      "vessel_name": v.vessel.name,
-      "status": v.status,
-      "departure": {
-        "lat": v.departure_port.latitude,
-        "lng": v.departure_port.longitude
-      },
-      "arrival": {
-        "lat": v.arrival_port.latitude,
-        "lng": v.arrival_port.longitude
-      }
-    })
-
-  return JsonResponse(data, safe=False)
-
 
 from django.db.models.functions import TruncMonth
 from django.db.models import Sum, Count
@@ -321,6 +236,75 @@ def incident_chart_data(request):
     "this_month_count": this_month_count
   })
 
+
+# ENDPOINT TO FILL THE VESSEL ON THE DASHBOARD MAP
+def get_vessels_for_map(request):
+  voyages = Voyage.objects.select_related('vessel', 'departure_port', 'arrival_port').filter(
+    status__in=[Voyage.VoyageStatus.ASSIGNED, Voyage.VoyageStatus.IN_TRANSIT]
+  )
+
+  data = []
+  for v in voyages:
+    data.append({
+      "voyage_number": v.voyage_number,
+      "vessel_name": v.vessel.name,
+      "status": v.status,
+      "departure": {
+        "lat": v.departure_port.latitude,
+        "lng": v.departure_port.longitude
+      },
+      "arrival": {
+        "lat": v.arrival_port.latitude,
+        "lng": v.arrival_port.longitude
+      }
+    })
+
+  return JsonResponse(data, safe=False)
+
+
+# --------------------------------- ADMIN ---------------------------------
+# -------------------- TEMPLATES --------------------
+def admin_dashboard(request):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
+
+  # 1. count active vessels
+  active_vessel_count = Vessel.objects.exclude(status=Vessel.VesselStatus.UNDER_MAINTENANCE).count()
+  # 2. count pending submanifests
+  pending_submanifest_count = SubManifest.objects.filter(status="pending_admin").count()
+  # 3. count incidents in the last 30 days
+  thirty_days_ago = timezone.localdate() - timedelta(days=30)
+  recent_incident_count = IncidentReport.objects.filter(created_at__gte=thirty_days_ago).count();
+  # 4. get 5 active voyages (in transit) for table
+  active_voyages = (
+    Voyage.objects
+    .filter(Q(status=Voyage.VoyageStatus.IN_TRANSIT) | Q(status=Voyage.VoyageStatus.ASSIGNED))
+    .select_related("vessel", "departure_port", "arrival_port")
+    .order_by("eta")[:5]
+  )
+
+
+
+  today = timezone.localdate()
+  arrivals_today_count = Voyage.objects.filter(arrival_date__date=today).count()
+
+  # Incident reports created today
+  incidents_today_count = IncidentReport.objects.filter(created_at__date=today).count()
+  print("INCIDENT: ", incidents_today_count)
+  context = {
+    "active_vessel_count": active_vessel_count,
+    "pending_submanifest_count": pending_submanifest_count,
+    "recent_incident_count": recent_incident_count,
+    "active_voyages": active_voyages,
+    "arrivals_today_count": arrivals_today_count,
+    "incidents_today_count": incidents_today_count,
+    # flag for the topbar wether to show the searchbar or the text:
+    "show_logo_text": True,
+  }
+
+  return render(request, "smartportApp/admin/dashboard.html", context)
+
 def admin_all_vessels_view(request):
   vessels = get_vessels_data()
   context = {
@@ -329,9 +313,16 @@ def admin_all_vessels_view(request):
   return render(request, "smartportApp/admin/admin-vessels.html", context)
 
 def assign_route_view(request):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
   return render(request, "smartportApp/admin/assign-route.html")
 
 def manage_voyage_view(request):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
+  
   voyages = get_active_voyages()
   context = {
     "voyages": voyages
@@ -343,6 +334,10 @@ def manage_voyage_view(request):
   return render(request, "smartportApp/admin/manage-voyage.html", context)
 
 def voyage_report_view(request):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
+
   reports = VoyageReport.objects.select_related('voyage__vessel', 'created_by').filter(voyage__status="arrived").order_by('-created_at')
   paginator = Paginator(reports, 1)
   page_number = request.GET.get('page')
@@ -362,6 +357,10 @@ def voyage_report_view(request):
   return render(request, "smartportApp/admin/voyage-report.html", context)
 
 def activity_log_view(request):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
+  
   vessels = Vessel.objects.all()
 
   context = {
@@ -370,10 +369,18 @@ def activity_log_view(request):
   return render(request, "smartportApp/admin/vessel-activity-log.html", context)
 
 def admin_users_view(request):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
+  
   return render(request, "smartportApp/admin/admin-users.html")
 
 from django.utils.timezone import make_aware, is_naive
 def admin_manifest_view(request):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
+  
   vessel_type = request.GET.get("vessel_type", "all")
   origin = request.GET.get("origin_port", "all")
   destination = request.GET.get("destination_port", "all")
@@ -441,6 +448,10 @@ def admin_manifest_view(request):
   return render(request, "smartportApp/admin/manifest.html", context)
 
 def submanifest_view(request, submanifest_id):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
+  
   submanifest = get_object_or_404(SubManifest.objects.select_related(
     "voyage", "voyage__vessel", "created_by", "master_manifest"
   ).prefetch_related("cargo_items", "documents"), pk=submanifest_id)
@@ -454,6 +465,10 @@ def submanifest_view(request, submanifest_id):
 
 
 def master_manifest_detail_view(request, mastermanifest_id):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
+  
   master_manifest = get_object_or_404(MasterManifest, pk=mastermanifest_id)
   submanifests = SubManifest.objects.filter(voyage=master_manifest.voyage)
 
@@ -468,6 +483,10 @@ def master_manifest_detail_view(request, mastermanifest_id):
 
 from django.db.models import F, Q, Value
 def report_feed_view(request):
+  auth_check = enforce_access(request, 'admin')
+  if auth_check:
+    return auth_check
+  
   sort = request.GET.get("sort", "newest")
   incidents = IncidentReport.objects.all()
 

@@ -8,25 +8,6 @@ from django.core.paginator import Paginator, EmptyPage
 
 from django.http import JsonResponse, HttpResponseForbidden
 
-def enforce_employee_access(request):
-  ''' Check if the user is authenticated and has the employee role. '''
-  if not request.user.is_authenticated:
-    return HttpResponseForbidden("401 You are not authorized to view this page.")
-  
-  role = request.user.userprofile.role
-  text = "This page is restricted to employee accounts."
-  if role != "employee":
-    if role == "admin":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "admin-dashboard"})
-    elif role == "custom":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "customs-dashboard"})
-    elif role == "shipper":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "shipper-dashboard"})  
-    return render(request, "smartportApp/403-forbidden-page.html", {"text": "Only shippers can access this page."})
-  
-  return None
-
-
 def incident_feed_view(request):
   auth_check = enforce_access(request, 'employee')
   if auth_check:
