@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from . models import IncidentReport
-from smartportApp.utils.utils import with_approval_priority, serialize_incident
+from smartportApp.utils.utils import with_approval_priority, serialize_incident, enforce_access
 
 from django.db.models import F, Q
 from django.db.models import Case, When, IntegerField
@@ -28,7 +28,7 @@ def enforce_employee_access(request):
 
 
 def incident_feed_view(request):
-  auth_check = enforce_employee_access(request)
+  auth_check = enforce_access(request, 'employee')
   if auth_check:
     return auth_check
   

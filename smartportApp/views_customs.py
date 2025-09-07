@@ -9,28 +9,13 @@ from django.db import transaction
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 
-def enforce_custom_access(request):
-  ''' Check if the user is authenticated and has the custom role. '''
-  if not request.user.is_authenticated:
-    return HttpResponseForbidden("401 You are not authorized to view this page.")
-  
-  role = request.user.userprofile.role
+from smartportApp.utils.utils import enforce_access
 
-  if role != "custom":
-    if role == "admin":
-      return render(request, "smartportApp/unauthorized.html", {"text": "Admins cannot access custom pages.", "link": "admin-dashboard"})
-    elif role == "shipper":
-      return render(request, "smartportApp/unauthorized.html", {"text": "Shippers cannot access custom pages.", "link": "shipper-dashboard"})
-    elif role == "employee":
-      return render(request, "smartportApp/unauthorized.html", {"text": "Employees cannot access custom pages.", "link": "employee-dashboard"})  
-    return render(request, "smartportApp/unauthorized.html", {"text": "Only custom can access this page."})
-  
-  return None
   
 
 # ====================== TEMPLATES ======================
 def dashboard_view(request):
-  auth_check = enforce_custom_access(request)
+  auth_check = enforce_access(request, 'custom')
   if auth_check:
     return auth_check
   
@@ -57,7 +42,7 @@ def dashboard_view(request):
 
 def submanifest_review_view(request):
 
-  auth_check = enforce_custom_access(request)
+  auth_check = enforce_access(request, 'custom')
   if auth_check:
     return auth_check
   
@@ -79,7 +64,7 @@ def submanifest_review_view(request):
 def review_history_view(request):
   """Main view for review history page - only handles initial page load"""
 
-  auth_check = enforce_custom_access(request)
+  auth_check = enforce_access(request, 'custom')
   if auth_check:
     return auth_check
   

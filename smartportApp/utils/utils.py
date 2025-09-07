@@ -14,11 +14,19 @@ def enforce_access(request, required_role):
   
   role = request.user.userprofile.role
   text = ""
+  if required_role == "shipper":
+    text = "Only shipper accounts can access this page."
+  elif required_role == "employee":
+    text = "Only employee accounts can access this page."
+  elif required_role == "custom":
+    text = "Only custom accounts can access this page."
+  elif required_role == "admin":
+    text = "Only admin accounts can access this page."
+
   if role != required_role:
     if role == "admin":
       return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "admin-dashboard"})
     elif role == "shipper":
-      text = "This page is restricted to shipper accounts."
       return render(request, "smartportapp/403-forbidden-page.html", {"text": text, "link": "shipper-dashboard"})
     elif role == "custom":
       return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "customs-dashboard"})
