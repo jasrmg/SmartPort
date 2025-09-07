@@ -303,18 +303,50 @@ const setupBackToListButtons = () => {
     );
 };
 
-// Setup Flatpickr on date filter
 const setupFlatpickr = () => {
-  flatpickr("#dateFilter", {
-    clickOpens: true,
+  const dateFilterElement = document.getElementById("dateFilter");
+  const clearDateBtn = document.getElementById("clearDateBtn");
+
+  if (!dateFilterElement || !clearDateBtn) return;
+
+  const datePicker = flatpickr(dateFilterElement, {
     dateFormat: "Y-m-d",
     allowInput: false,
-    onChange: (dates, dateStr) => {
-      document.getElementById("dateFilter").textContent =
-        dateStr || "Select Date";
-      document.getElementById("selectedDate").value = dateStr;
+    onChange: (selectedDates, dateStr) => {
+      if (dateStr) {
+        dateFilterElement.value = dateStr;
+        // Reset to page 1 and reload with new filter
+        currentPage = 1;
+        loadPage(currentPage);
+      }
+      toggleClearBtn();
+    },
+    onClose: () => {
+      toggleClearBtn();
     },
   });
+
+  // Show/hide clear button based on value
+  const toggleClearBtn = () => {
+    if (dateFilterElement.value.trim() !== "") {
+      clearDateBtn.style.display = "block";
+    } else {
+      clearDateBtn.style.display = "none";
+    }
+  };
+
+  // Manual clear handler
+  clearDateBtn.addEventListener("click", () => {
+    console.log("Clear date filter clicked");
+    datePicker.clear();
+    dateFilterElement.value = "";
+    toggleClearBtn();
+    currentPage = 1;
+    loadPage(currentPage); // reload without date filter
+  });
+
+  // Show clear button on load if date exists
+  toggleClearBtn();
 };
 
 // Load port dropdown options
@@ -563,7 +595,6 @@ document.addEventListener("DOMContentLoaded", () => {
   bindVoyageCardEvents();
   bindSubmanifestTableActions();
   setupBackToListButtons();
-  setupFlatpickr();
   populatePorts();
 
   setupRejectModal();

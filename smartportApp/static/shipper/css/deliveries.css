@@ -145,6 +145,11 @@
 .submanifest-card-info strong {
   color: var(--primary);
 }
+p.no-submanifest {
+  grid-column: 1 / -1;
+  justify-self: center;
+  align-items: center;
+}
 
 .pagination-container {
   text-align: center;

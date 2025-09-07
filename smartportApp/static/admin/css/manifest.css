@@ -48,6 +48,30 @@
 #dateFilter {
   background-image: none;
 }
+.date-clear-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.date-clear-wrapper .form-select {
+  padding-right: 30px;
+}
+
+.clear-date {
+  position: absolute;
+  top: 50%;
+  right: 18%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  color: var(--dark-gray);
+  cursor: pointer;
+  user-select: none;
+  display: none; /* hidden by default */
+}
+
+.clear-date:hover {
+  color: var(--danger);
+}
 
 .form-select:focus {
   border-color: #2563eb;
@@ -106,6 +130,11 @@
 }
 .voyage-card-info strong {
   color: var(--primary);
+}
+p.no-voyage {
+  grid-column: 1 / -1;
+  justify-self: center;
+  align-items: center;
 }
 
 .pagination-container {

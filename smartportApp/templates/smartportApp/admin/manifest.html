@@ -118,9 +118,19 @@
       </div>
 
       <!--DATE-->
-      <div class="search-filter">
-        <div class="form-select" id="dateFilter" tabindex="0">Select Date</div>
-        <input type="hidden" id="selectedDate" name="selected_date" />
+      <div class="search-filter date-clear-wrapper">
+        <input
+          type="text"
+          id="dateFilter"
+          class="form-select"
+          name="date"
+          placeholder="Select Date"
+          value="{{ filters.date }}"
+          readonly
+        />
+        <span id="clearDateBtn" class="clear-date" title="Clear date filter"
+          >&times;</span
+        >
       </div>
     </div>
 

@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const originSelect = document.getElementById("originPortSelect");
   const destinationSelect = document.getElementById("destinationPortSelect");
   const vesselTypeSelect = document.getElementById("vesselTypeSelect");
+  const dateFilterElement = document.getElementById("dateFilter");
 
   let totalPages = parseInt(paginationContainer.dataset.totalPages);
   let currentPage = parseInt(paginationContainer.dataset.currentPage);
@@ -54,21 +55,18 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const getFilterParams = () => {
+    const params = new URLSearchParams();
     const vesselType = vesselTypeSelect.value;
     const originPort = originSelect.value;
     const destinationPort = destinationSelect.value;
-    const date = document.getElementById("selectedDate").value;
-    // console.log("get filter params: ", date);
+    const date = dateFilterElement.value;
 
-    const params = new URLSearchParams();
     if (vesselType && vesselType !== "all")
       params.append("vessel_type", vesselType);
     if (originPort && originPort !== "all")
-      console.log("Origin Port:", originPort);
-    params.append("origin_port", originPort);
+      params.append("origin_port", originPort);
     if (destinationPort && destinationPort !== "all")
-      console.log("Destination Port:", destinationPort);
-    params.append("destination_port", destinationPort);
+      params.append("destination_port", destinationPort);
     if (date) params.append("departure_date", date);
 
     return params.toString();
@@ -169,38 +167,44 @@ document.addEventListener("DOMContentLoaded", () => {
     select.addEventListener("change", () => loadPage(1));
   });
 
-  const dateFilterElement = document.getElementById("dateFilter");
-  const hiddenDateInput = document.getElementById("selectedDate");
+  const clearDateBtn = document.getElementById("clearDateBtn");
 
-  let dateSelected = false;
-
-  flatpickr(dateFilterElement, {
-    clickOpens: true,
+  const datePicker = flatpickr(dateFilterElement, {
     dateFormat: "Y-m-d",
     allowInput: false,
-    defaultDate: null,
     onChange: (selectedDates, dateStr) => {
-      dateSelected = true;
-      dateFilterElement.textContent = dateStr || "Select Date";
-      hiddenDateInput.value = dateStr;
-      loadPage(1); // reload with filter
-    },
-    onOpen: () => {
-      dateSelected = false; // Reset when calendar is opened
-    },
-    onClose: (selectedDates, dateStr) => {
-      if (!dateSelected) {
-        // Reset if user clicked out without choosing a date
-        dateFilterElement.textContent = "Select Date";
-        const selectedDay = document.querySelector(".flatpickr-day.selected");
-        if (selectedDay) {
-          selectedDay.classList.remove("selected");
-        }
-        hiddenDateInput.value = "";
-        loadPage(1); // Reset filter
+      if (dateStr) {
+        dateFilterElement.value = dateStr;
+        currentPage = 1;
+        loadPage(currentPage);
       }
+      toggleClearBtn();
+    },
+    onClose: () => {
+      toggleClearBtn();
     },
   });
 
+  // Show/hide clear button based on value
+  const toggleClearBtn = () => {
+    if (dateFilterElement.value.trim() !== "") {
+      clearDateBtn.style.display = "block";
+    } else {
+      clearDateBtn.style.display = "none";
+    }
+  };
+
+  // Manual clear handler
+  clearDateBtn.addEventListener("click", () => {
+    console.log("Clear date filter clicked");
+    datePicker.clear();
+    dateFilterElement.value = "";
+    toggleClearBtn();
+    currentPage = 1;
+    loadPage(currentPage); // reload without date filter
+  });
+
+  // Show clear button on load if date exists
+  toggleClearBtn();
   initPagination();
 });
