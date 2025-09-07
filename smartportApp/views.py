@@ -17,6 +17,8 @@ from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentIm
 # import the helper functions
 from smartportApp.utils.utils import serialize_incident, create_notification, determine_impact_level, with_approval_priority
 
+
+
 # Create your views here.
 
 @login_required

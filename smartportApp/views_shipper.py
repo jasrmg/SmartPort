@@ -18,27 +18,7 @@ logger = logging.getLogger(__name__)
 
 import json
 
-from smartportApp.utils.utils import with_approval_priority, serialize_incident, create_notification_bulk
-
-
-
-def enforce_shipper_access(request):
-  ''' Check if the user is authenticated and has the shipper role. '''
-  if not request.user.is_authenticated:
-    return HttpResponseForbidden("401 You are not authorized to view this page.")
-  
-  role = request.user.userprofile.role
-  text = "This page is restricted to shipper accounts."
-  if role != "shipper":
-    if role == "admin":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "admin-dashboard"})
-    elif role == "custom":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "customs-dashboard"})
-    elif role == "employee":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "employee-dashboard"})  
-    return render(request, "smartportApp/403-forbidden-page.html", {"text": "Only shippers can access this page."})
-  
-  return None
+from smartportApp.utils.utils import with_approval_priority, serialize_incident, create_notification_bulk, enforce_access
 
 # --------------------------------- SHIPPER ---------------------------------
 # -------------------- TEMPLATES --------------------
@@ -78,7 +58,7 @@ def shipper_shipment_volume_chart_api(request):
   API endpoint for monthly shipment volume chart data
   Returns cargo counts grouped by month
   """
-  auth_check = enforce_shipper_access(request)
+  auth_check = enforce_access(request, 'shipper')
   if auth_check:
     return JsonResponse({'error': 'Unauthorized'}, status=403)
   
@@ -280,7 +260,7 @@ def shipper_shipment_volume_chart_api(request):
 @login_required
 def shipper_dashboard(request):
   # check if authenticated and role is shipper
-  auth_check = enforce_shipper_access(request)
+  auth_check = enforce_access(request, 'shipper')
   if auth_check:
     return auth_check
 
@@ -341,7 +321,7 @@ def shipper_dashboard(request):
 
 def shipper_vessel_info_view(request):
   # check if authenticated and role is shipper
-  auth_check = enforce_shipper_access(request)
+  auth_check = enforce_access(request, 'shipper')
   if auth_check:
     return auth_check
   
@@ -353,7 +333,7 @@ def shipper_vessel_info_view(request):
 
 def shipper_deliveries_view(request):
   # check if authenticated and role is shipper
-  auth_check = enforce_shipper_access(request)
+  auth_check = enforce_access(request, 'shipper')
   if auth_check:
     return auth_check
 
@@ -438,7 +418,7 @@ def shipper_deliveries_view(request):
 
 def shipper_submit_shipment_view(request):
   # check if authenticated and role is shipper
-  auth_check = enforce_shipper_access(request)
+  auth_check = enforce_access(request, 'shipper')
   if auth_check:
     return auth_check
   
@@ -737,7 +717,7 @@ def edit_submit_shipment(request, submanifest_id):
   POST: Process all updates for the shipment
   GET: Display the form with the existing data
   """
-  auth_check = enforce_shipper_access(request)
+  auth_check = enforce_access(request, 'shipper')
   if auth_check:
     return auth_check
   # check if the submanifest status is rejected by admin or rejected by customs
@@ -955,7 +935,7 @@ def get_cargo_items(request, submanifest_id):
 @require_POST
 def confirm_delivery_view(request, cargo_id):
   # check if authenticated and role is shipper
-  auth_check = enforce_shipper_access(request)
+  auth_check = enforce_access(request, 'shipper')
   if auth_check:
     return auth_check
   
@@ -1072,7 +1052,7 @@ def submit_shipment(request):
     POST: Process and save the shipment data 
   """
   # check if authenticated and role is shipper
-  auth_check = enforce_shipper_access(request)
+  auth_check = enforce_access(request, 'shipper')
   if auth_check:
     return auth_check
   

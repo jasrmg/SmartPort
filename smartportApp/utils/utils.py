@@ -3,6 +3,31 @@ from ..models import Notification
 
 from django.db.models import Case, When, IntegerField
 
+from django.http import JsonResponse, HttpResponseForbidden
+from django.shortcuts import render
+
+def enforce_access(request, required_role):
+  print("enforce access working")
+  ''' Check if the user is authenticated and has the provided role. '''
+  if not request.user.is_authenticated:
+    return HttpResponseForbidden("401 You are not authorized to view this page.")
+  
+  role = request.user.userprofile.role
+  text = ""
+  if role != required_role:
+    if role == "admin":
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "admin-dashboard"})
+    elif role == "shipper":
+      text = "This page is restricted to shipper accounts."
+      return render(request, "smartportapp/403-forbidden-page.html", {"text": text, "link": "shipper-dashboard"})
+    elif role == "custom":
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "customs-dashboard"})
+    elif role == "employee":
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "employee-dashboard"})  
+    return render(request, "smartportApp/403-forbidden-page.html", {"text": "Only shippers can access this page."})
+  
+  return None
+
 # helper for the filter annotation:
 def with_approval_priority(queryset):
   return queryset.annotate(
