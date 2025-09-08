@@ -726,7 +726,7 @@ def edit_submit_shipment(request, submanifest_id):
   if submanifest.status not in allowed_statuses:
     context = {
       'link': 'shipper-dashboard',
-      'text': 'This <strong>shipment</strong> cannot be edited due to its current statusss.'
+      'text': 'This <strong>shipment</strong> cannot be edited due to its current status.'
     }
     return render(request, "smartportApp/403-forbidden-page.html", context)
 

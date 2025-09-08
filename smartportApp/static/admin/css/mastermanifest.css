@@ -49,6 +49,10 @@ h1 {
   align-items: center;
   gap: 10px;
 }
+.submanifest-number {
+  margin-top: 2rem;
+  color: var(--primary);
+}
 
 .info-grid {
   display: flex;

@@ -4,7 +4,7 @@ const voyageNumberDisplay = document.getElementById("voyage-number-display");
 const submanifestTableBody = document.getElementById("submanifest-tbody");
 const originSelect = document.getElementById("originPortSelect");
 const destinationSelect = document.getElementById("destinationPortSelect");
-const generateManifestBtn = document.getElementById("generate-manifest-btn");
+// const generateManifestBtn = document.getElementById("generate-manifest-btn");
 const warningText = document.getElementById("manifest-warning");
 const toastContainer = document.getElementById("toast-container");
 
@@ -57,10 +57,8 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
       return;
     }
 
-    // check if all submanifest is approved and enable it
-    const allApproved = submanifests.every(
-      (sm) => sm.status === "approved" || sm.status === "pending_customs"
-    );
+    // check if there is a submanifest that is approved
+    const hasApproved = submanifests.some((sm) => sm.status === "approved");
 
     // check if naay MASTERMANIFEST
     fetch(`/api/voyage/${voyageId}/has-master-manifest/`)
@@ -71,8 +69,8 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
       .then(({ has_manifest: masterManifestExists }) => {
         if (warningText) warningText.style.display = "none";
 
-        if (allApproved && masterManifestExists) {
-          // ✅ Case: All approved + Master manifest exists → Show View
+        if (hasApproved && masterManifestExists) {
+          // Case: has approved + Master manifest exists → Show View
           if (generateBtn) {
             generateBtn.style.display = "none";
             generateBtn.disabled = true;
@@ -104,8 +102,8 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
                 });
             };
           }
-        } else if (allApproved && !masterManifestExists) {
-          // ✅ Case: All approved + No master manifest → Show Generate
+        } else if (hasApproved && !masterManifestExists) {
+          // Case: there is approved submanifest + No master manifest → Show Generate
           if (generateBtn) {
             generateBtn.style.display = "inline-flex";
             generateBtn.disabled = false;
@@ -165,7 +163,7 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
 
     initApproveSubmanifest(voyageId);
 
-    if (generateBtn) generateBtn.disabled = !allApproved;
+    if (generateBtn) generateBtn.disabled = !hasApproved;
   } catch (err) {
     console.error("❌ Failed to fetch submanifests:", err);
   }

@@ -7,10 +7,10 @@ from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import render
 
 def enforce_access(request, required_role):
-  print("enforce access working")
   ''' Check if the user is authenticated and has the provided role. '''
   if not request.user.is_authenticated:
-    return HttpResponseForbidden("401 You are not authorized to view this page.")
+    return HttpResponseForbidden("Not authenticated")
+    # return render(request, "smartportApp/unauthorized.html", {"link": "auth_view"})
   
   role = request.user.userprofile.role
   text = ""

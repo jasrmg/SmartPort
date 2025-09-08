@@ -470,7 +470,7 @@ def master_manifest_detail_view(request, mastermanifest_id):
     return auth_check
   
   master_manifest = get_object_or_404(MasterManifest, pk=mastermanifest_id)
-  submanifests = SubManifest.objects.filter(voyage=master_manifest.voyage)
+  submanifests = SubManifest.objects.filter(master_manifest=master_manifest)
 
   total_cargo_count = Cargo.objects.filter(submanifest__in=submanifests).count()
 
@@ -1411,10 +1411,15 @@ def generate_master_manifest(request, voyage_id):
   
   try:
     voyage = Voyage.objects.get(voyage_id=voyage_id)
-    submanifest = SubManifest.objects.filter(voyage=voyage)
+    # only approved submanifest
+    approved_submanifest = SubManifest.objects.filter(voyage=voyage, status="approved")
 
-    if submanifest.filter(status__in=["pending_admin", "rejected_by_admin", "rejected_by_customs"]).exists():
-      return JsonResponse({"error": "Some submanifests are not approved yet."}, status=400)
+    # must have at least 1 submanifest that is approved
+    if not approved_submanifest.exists():
+      return JsonResponse({"error": "No approved submanifests available for this voyage."}, status=400)
+
+    # if submanifest.filter(status__in=["rejected_by_admin", "rejected_by_customs"]).exists():
+    #   return JsonResponse({"error": "Some submanifests are not approved yet."}, status=400)
     
     if MasterManifest.objects.filter(voyage=voyage).exists():
       return JsonResponse({"error": "Master Manifest already exists for this voyage."}, status=400)
@@ -1436,6 +1441,9 @@ def generate_master_manifest(request, voyage_id):
       # update the instance with the generated number:
       master_manifest.mastermanifest_number = manifest_number
       master_manifest.save(update_fields=["mastermanifest_number"])
+
+      # update submanifest to link it to the master manifest
+      approved_submanifest.update(master_manifest=master_manifest)
 
   except Voyage.DoesNotExist:
     return JsonResponse({"error": "Voyage not found"}, status=404)

@@ -334,6 +334,7 @@ p.no-voyage {
   padding: 0.8rem 1rem;
   border-bottom: 1px solid var(--gray);
   font-size: 0.95rem;
+  text-align: center;
 }
 
 .submanifest-table tr:last-child td {
