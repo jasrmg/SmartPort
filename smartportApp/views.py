@@ -1398,7 +1398,7 @@ def admin_approve_submanifest(request, submanifest_id):
     user=submanifest.created_by,
     title="Submanifest Approved",
     message=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
-    link_url=f"/submanifest/{submanifest.submanifest_id}/",
+    link_url="",
     triggered_by=request.user.userprofile
   )
   print("SAMPLE LINK URL: ", link_url)
