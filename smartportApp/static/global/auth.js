@@ -43,7 +43,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const user = userCredential.user;
 
         if (!user.emailVerified) {
-          showLoginError("Please verify your email before logging in");
+          // resend verification email
+          try {
+            const idToken = await user.getIdToken(true);
+
+            fetch("/api/account/send-custom-verification-email/", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${idToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email: user.email }),
+            });
+
+            showLoginError(
+              `Please verify your email before logging in. A new verification email has been sent to ${user.email}`
+            );
+          } catch (err) {
+            console.error("Error sending verification email: ", err);
+            showLoginError("Please verify your email before logging in.");
+          }
           return;
         }
 

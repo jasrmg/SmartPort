@@ -1401,8 +1401,7 @@ def admin_approve_submanifest(request, submanifest_id):
     link_url="",
     triggered_by=request.user.userprofile
   )
-  print("SAMPLE LINK URL: ", link_url)
-
+  #  TODO: create a notification for the custom
   return JsonResponse({"success": True, "message": "Submanifest approved successfully"})
 
 def generate_master_manifest(request, voyage_id):
