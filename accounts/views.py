@@ -551,10 +551,15 @@ def send_password_change_confirmation(user):
 
 # LOGIN:
 # HELPER FUNCTION TO ENSURE LOCAL USERS + USERPROFILE EXISTS BY PULLING DATA FROM THE FIRESTORE
-def sync_user_from_firestore(uid, email=None):
+def sync_user_from_firestore(uid, email=None, force_sync=False):
   """
   Returns a UserProfile instance. If no Firestore doc exists, fall back to Firebase Auth data.
   Creates a Django User with an unusable password (Firebase handles auth).
+
+  Args:
+    uid: Firebase UID
+    email: User email (optional)
+    force_sync: If True, always sync from Firestore even if local profile exists
   """
   db = firestore.client()
   fs_data = None
@@ -613,6 +618,13 @@ def sync_user_from_firestore(uid, email=None):
     username=email,
     defaults={"email": email, "first_name": first_name, "last_name": last_name}
   )
+  # Update Django User fields if they've changed
+  if not created or force_sync:
+    django_user.first_name = first_name
+    django_user.last_name = last_name
+    django_user.email = email
+    django_user.save()
+
   if created:
     django_user.set_unusable_password()
     django_user.save()
@@ -678,6 +690,8 @@ def firebase_login_view(request):
     # 1) Try to find UserProfile by firebase_uid
     try:
       user_profile = UserProfile.objects.get(firebase_uid=uid)
+      # sync local db to firebase
+      user_profile = sync_user_from_firestore(uid, email, force_sync=True)
     except UserProfile.DoesNotExist:
       user_profile = None
     
