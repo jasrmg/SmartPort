@@ -15,7 +15,7 @@ from django.db.models import Case, When, IntegerField
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
 
 # import the helper functions
-from smartportApp.utils.utils import serialize_incident, create_notification, determine_impact_level, with_approval_priority, enforce_access
+from smartportApp.utils.utils import serialize_incident, create_notification, determine_impact_level, with_approval_priority, enforce_access, notify_customs_submanifest_pending
 
 
 
@@ -1313,23 +1313,44 @@ def log_vessel_activity(vessel, action_type, description, user_profile):
 
 # # =========== MANIFEST ===========:
 def get_submanifests_by_voyage(request, voyage_id):
-  submanifests = SubManifest.objects.filter(voyage_id=voyage_id)
+    try:
+        # Check if master manifest exists for this voyage
+        from django.core.exceptions import ObjectDoesNotExist
+        try:
+            voyage = Voyage.objects.get(voyage_id=voyage_id)
+            has_manifest = hasattr(voyage, 'master_manifest') and voyage.master_manifest is not None
+        except ObjectDoesNotExist:
+            return JsonResponse({"error": "Voyage not found"}, status=404)
+        
+        # Filter submanifests based on whether master manifest exists
+        if has_manifest:
+            # Only show approved submanifests if master manifest exists
+            submanifests = SubManifest.objects.filter(
+                voyage_id=voyage_id, 
+                status='approved'
+            )
+        else:
+            # Show all submanifests if no master manifest
+            submanifests = SubManifest.objects.filter(voyage_id=voyage_id)
 
-  has_manifest = submanifests.exists()
-  data = [
-    {
-      "id": sm.submanifest_id,
-      "status": sm.status,
-      "status_label": sm.get_status_display(),
-      "submanifest_number": sm.submanifest_number,
-      "item_count": sm.cargo_items.count(),
-      "has_manifest": has_manifest
-    }
-    for sm in submanifests
-  ]
+        data = [
+            {
+                "id": sm.submanifest_id,
+                "status": sm.status,
+                "status_label": sm.get_status_display(),
+                "submanifest_number": sm.submanifest_number,
+                "item_count": sm.cargo_items.count(),
+            }
+            for sm in submanifests
+        ]
 
-  return JsonResponse({"submanifests": data})
-
+        return JsonResponse({
+            "submanifests": data,
+            "has_manifest": has_manifest
+        })
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 # REJECT SUBMANIFEST: ADMIN
 @require_POST
 def admin_reject_submanifest(request, submanifest_id):
@@ -1406,6 +1427,8 @@ def admin_approve_submanifest(request, submanifest_id):
     triggered_by=request.user.userprofile
   )
   #  TODO: create a notification for the custom
+  notify_customs_submanifest_pending(submanifest, triggered_by=request.user.userprofile)
+  
   return JsonResponse({"success": True, "message": "Submanifest approved successfully"})
 
 def generate_master_manifest(request, voyage_id):

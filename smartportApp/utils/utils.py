@@ -126,4 +126,28 @@ def create_notification_bulk(recipients, title, message, link_url="", triggered_
   ]
   Notification.objects.bulk_create(notifications)
 
+from django.urls import reverse
+
+def notify_customs_submanifest_pending(submanifest, triggered_by):
+  """
+  Sends notifications to all customs users when a submanifest
+  has been approved by the admin and is pending customs review.
+  """
+  # ✅ Get all customs users
+  customs_users = UserProfile.objects.filter(role="custom")
+
+  if not customs_users.exists():
+    return  # no customs officers in the system
+
+  # ✅ Build link to customs review page
+  link_url = reverse("submanifest-detail", args=[submanifest.submanifest_id])
+
+  # ✅ Create the notification for all customs
+  create_notification_bulk(
+    recipients=customs_users,
+    title="Submanifest Pending Customs Review",
+    message=f"Submanifest #{submanifest.submanifest_number} was approved by Admin and is now pending your review.",
+    link_url=link_url,
+    triggered_by=triggered_by
+  )
 
