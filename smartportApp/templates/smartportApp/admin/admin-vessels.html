@@ -136,8 +136,8 @@
         <h2 class="section-title">All Vessels</h2>
       </div>
 
-      <div class="table-responsive">
-        <table class="vessels-table">
+      <div class="table-responsive" id="tableContainer">
+        <table class="vessels-table" id="vesselsTable">
           <thead>
             <tr>
               <th>
@@ -173,6 +173,19 @@
             </tr>
           </thead>
           <tbody>
+            <!-- Search loader row (hidden by default) -->
+            <tr
+              id="searchLoaderRow"
+              class="search-loader-row"
+              style="display: none"
+            >
+              <td colspan="5" class="search-loader-cell">
+                <div class="search-loader-content">
+                  <div class="loader-spinner"></div>
+                  <p>Searching vessels...</p>
+                </div>
+              </td>
+            </tr>
             {% if vessels %} {% for vessel in vessels %}
             <tr data-vessel-id="{{ vessel.vessel_id }}">
               <td>{{ vessel.name }}</td>
@@ -440,4 +453,5 @@
 <!---->
 {% block script %}
 <script src="{% static 'admin/js/admin-vessels.js' %}"></script>
+<script src="{% static 'admin/js/admin-vessel-search.js' %}"></script>
 {% endblock %}

@@ -132,4 +132,5 @@ urlpatterns = [
 
   # SEARCH FUNCTIONALITIES
   path('api/search-incidents/', views.search_incidents, name='universal_search_incidents'),
+  path('api/vessels/search/', views.search_vessels, name='vessel-search'),
 ]

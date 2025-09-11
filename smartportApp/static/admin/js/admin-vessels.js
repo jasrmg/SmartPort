@@ -244,6 +244,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Successfully deleted — remove row from DOM
       targetRowToDelete.remove();
+      // Refresh search data if search is active
+      if (window.vesselSearch) {
+        window.vesselSearch.refreshOriginalData();
+      }
 
       // CHECK IF TABLE IS NOW EMPTY
       const remainingRows = tableBody.querySelectorAll("tr");
@@ -341,6 +345,10 @@ document.addEventListener("DOMContentLoaded", function () {
           name: vessel.name,
         })
       );
+      // Refresh search data if search is active
+      if (window.vesselSearch) {
+        window.vesselSearch.refreshOriginalData();
+      }
       const tableBody = document.querySelector(".vessels-table tbody");
 
       // If "No vessels found..." row exists, remove it
@@ -510,10 +518,16 @@ const makeStatusCellsEditable = () => {
   document.querySelectorAll("td.status-column").forEach((cell) => {
     cell.addEventListener("click", () => {
       console.log("test");
+      let currentStatus = cell.textContent.trim();
+      console.log("cs: ", currentStatus);
       if (cell.querySelector("select")) return;
 
       selectedCell = cell;
-      originalValue = cell.textContent.trim();
+      originalValue = currentStatus;
+
+      if (currentStatus === "Assigned") {
+        return;
+      }
 
       const matched = vesselStatusChoices.find(
         (opt) => opt.label.toLowerCase() === originalValue.toLowerCase()

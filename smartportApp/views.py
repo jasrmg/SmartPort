@@ -275,7 +275,9 @@ def admin_dashboard(request):
   pending_submanifest_count = SubManifest.objects.filter(status="pending_admin").count()
   # 3. count incidents in the last 30 days
   thirty_days_ago = timezone.localdate() - timedelta(days=30)
+  # get the incidents reported 30 days ago
   recent_incident_count = IncidentReport.objects.filter(created_at__gte=thirty_days_ago).count();
+  print("RECENT INCIDENTS: ", recent_incident_count)
   # 4. get 5 active voyages (in transit) for table
   active_voyages = (
     Voyage.objects
@@ -309,6 +311,8 @@ def admin_all_vessels_view(request):
   vessels = get_vessels_data()
   context = {
     "vessels": vessels,
+    "placeholder": "Search vessels",
+    "search_id": "vesselSearchInput",
   }
   return render(request, "smartportApp/admin/admin-vessels.html", context)
 
@@ -1891,3 +1895,59 @@ def search_incidents(request):
     'total_count': paginator.count
   })
   
+# SEARCH FUNCTIONALITY FOR THE VESSEL MANAGEMENT:
+@require_http_methods(["POST"])
+def search_vessels(request):
+  """
+    API endpoint for searching vessels by name, IMO, or type
+  """
+  try:
+    data = json.loads(request.body)
+    query = data.get('query', '').strip()
+    
+    if not query:
+      return JsonResponse({
+        'success': False,
+        'message': 'Search query is required'
+      }, status=400)
+        
+    # Perform case-insensitive search across multiple fields
+    vessels = Vessel.objects.filter(
+      Q(name__icontains=query) |
+      Q(imo__icontains=query) |
+      Q(vessel_type__icontains=query)
+    ).order_by('name')
+        
+    # Convert to list of dictionaries for JSON response
+    vessel_list = []
+    for vessel in vessels:
+      vessel_list.append({
+        'vessel_id': vessel.vessel_id,
+        'name': vessel.name,
+        'imo': vessel.imo,
+        'vessel_type': vessel.vessel_type,
+        'type_display': vessel.get_vessel_type_display(),
+        'status': vessel.status,
+        'status_display': vessel.get_status_display(),
+        'capacity': vessel.capacity,
+        'created_at': vessel.created_at.isoformat(),
+      })
+        
+    return JsonResponse({
+      'success': True,
+      'vessels': vessel_list,
+      'total_found': len(vessel_list),
+      'query': query
+    })
+        
+  except json.JSONDecodeError:
+    return JsonResponse({
+      'success': False,
+      'message': 'Invalid JSON data'
+    }, status=400)
+
+  except Exception as e:
+    return JsonResponse({
+      'success': False,
+      'message': f'Server error: {str(e)}'
+    }, status=500)
