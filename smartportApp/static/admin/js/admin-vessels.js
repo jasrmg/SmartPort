@@ -1,6 +1,5 @@
 const vesselStatusChoices = [
   { value: "available", label: "Available" },
-  { value: "assigned", label: "Assigned" },
   { value: "maintenance", label: "Under Maintenance" },
 ];
 const tableBody = document.querySelector(".vessels-table tbody");
@@ -460,7 +459,6 @@ const cancelStatusChange = () => {
 const getStatusClass = (label) => {
   const map = {
     Available: "available",
-    Assigned: "assigned",
     "Under Maintenance": "maintenance",
   };
   return map[label] || "";
@@ -511,6 +509,7 @@ const formatStatus = (val) => {
 const makeStatusCellsEditable = () => {
   document.querySelectorAll("td.status-column").forEach((cell) => {
     cell.addEventListener("click", () => {
+      console.log("test");
       if (cell.querySelector("select")) return;
 
       selectedCell = cell;
@@ -536,15 +535,12 @@ const makeStatusCellsEditable = () => {
 
       select.addEventListener("blur", () => {
         const selectedValue = select.value;
-        if (
-          selectedValue === originalValue.toLowerCase().replace(/\s+/g, "_")
-        ) {
+        const selectedLabel = select.options[select.selectedIndex].text;
+        if (selectedLabel === originalValue) {
           // No change made, just revert to original
           selectedCell.innerHTML = `<span class="status-badge ${selectedValue}">${originalValue}</span>`;
           return;
         }
-
-        const selectedLabel = select.options[select.selectedIndex].text;
         showConfirmModal(selectedLabel);
       });
     });
