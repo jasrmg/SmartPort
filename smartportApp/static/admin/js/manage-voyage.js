@@ -220,6 +220,7 @@ const updateVoyageStatus = async (voyageId, status, reason = "") => {
     }
 
     closeModals();
+    notifyVoyageUpdated();
     showSuccessModal();
   } catch (err) {
     alert("An error occurred. Please try again.");
@@ -251,4 +252,13 @@ const hideReasonMessage = () => {
   icon.className = "fas fa-check-circle";
   icon.style.color = "var(--accent)";
   text.innerText = "Vessel Creation Successful!";
+};
+
+// Support for search functionality - refresh search data after status updates
+const notifyVoyageUpdated = () => {
+  if (window.voyageSearch) {
+    setTimeout(() => {
+      window.voyageSearch.refreshOriginalData();
+    }, 100);
+  }
 };

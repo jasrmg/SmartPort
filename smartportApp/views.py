@@ -332,7 +332,9 @@ def manage_voyage_view(request):
   
   voyages = get_active_voyages()
   context = {
-    "voyages": voyages
+    "voyages": voyages,
+    "placeholder": "Search voyages",
+    "search_id": "voyageSearchInput",
   }
   # print("VOYAGES: ")
   # for v in voyages:
@@ -1674,7 +1676,7 @@ def decline_incident(request, incident_id):
     return JsonResponse({'success': False, 'error': str(e)})
 
 
-from django.db import transaction
+from django.db import transaction, models
 # RESOLVE INCIDENT(ADMIN)
 @csrf_exempt
 def resolve_incident(request, incident_id):
@@ -1977,3 +1979,52 @@ def search_vessels(request):
       'success': False,
       'message': f'Server error: {str(e)}'
     }, status=500)
+
+
+def search_voyages(request):
+  """
+    API endpoint to search voyages by voyage number, vessel name, or port names.
+    Returns JSON response with matching voyages.
+    """
+  try:
+    data = json.loads(request.body)
+    query = data.get('query', '').strip()
+
+    if not query:
+      return JsonResponse({'voyages': []})
+    
+    # Only include active voyages (not arrived) as shown in your template
+    voyages = Voyage.objects.filter(
+      (models.Q(voyage_number__icontains=query) |
+        models.Q(vessel__name__icontains=query) |
+        models.Q(departure_port__port_name__icontains=query) |
+        models.Q(departure_port__port_code__icontains=query) |
+        models.Q(arrival_port__port_name__icontains=query) |
+        models.Q(arrival_port__port_code__icontains=query)) &
+      ~models.Q(status=Voyage.VoyageStatus.ARRIVED)  # Exclude arrived voyages
+    ).select_related('vessel', 'departure_port', 'arrival_port').order_by('-created_at')[:50]  # Limit results
+
+    voyage_data = []
+    for voyage in voyages:
+      # Format dates
+      departure_formatted = voyage.departure_date.strftime("%b %d, %Y - %I:%M %p") if voyage.departure_date else "N/A"
+      eta_formatted = voyage.eta.strftime("%b %d, %Y - %I:%M %p") if voyage.eta else "N/A"
+
+      voyage_data.append({
+        'voyage_id': voyage.voyage_id,
+        'voyage_number': voyage.voyage_number,
+        'vessel_name': voyage.vessel.name if voyage.vessel else "N/A",
+        'origin_port': voyage.departure_port.port_name if voyage.departure_port else "N/A",
+        'destination_port': voyage.arrival_port.port_name if voyage.arrival_port else "N/A",
+        'departure_date': departure_formatted,
+        'eta': eta_formatted,
+        'status': voyage.status,
+        'status_display': voyage.get_status_display(),
+      })
+
+    return JsonResponse({'voyages': voyage_data})
+  
+  except json.JSONDecodeError:
+    return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+  except Exception as e:
+    return JsonResponse({'error': f'Search failed: {str(e)}'}, status=500)

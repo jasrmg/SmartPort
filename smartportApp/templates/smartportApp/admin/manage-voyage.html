@@ -178,6 +178,19 @@
             </tr>
           </thead>
           <tbody>
+            <!-- Search loader row (hidden by default) -->
+            <tr
+              id="searchLoaderRow"
+              class="search-loader-row"
+              style="display: none"
+            >
+              <td colspan="7" class="search-loader-cell">
+                <div class="search-loader-content">
+                  <div class="loader-spinner"></div>
+                  <p>Searching voyages...</p>
+                </div>
+              </td>
+            </tr>
             {% if voyages %} {% for voyage in voyages %}
             <tr data-voyage-id="{{ voyage.voyage_id }}">
               <td>{{ voyage.voyage_number }}</td>
@@ -286,4 +299,5 @@
 <!---->
 {% block script %}
 <script src="{% static 'admin/js/manage-voyage.js' %}"></script>
+<script src="{% static 'admin/js/voyage-search.js' %}"></script>
 {% endblock %}
