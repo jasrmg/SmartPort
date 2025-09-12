@@ -320,7 +320,10 @@ def assign_route_view(request):
   auth_check = enforce_access(request, 'admin')
   if auth_check:
     return auth_check
-  return render(request, "smartportApp/admin/assign-route.html")
+  context = {
+    "show_logo_text": True,
+  }
+  return render(request, "smartportApp/admin/assign-route.html", context)
 
 def manage_voyage_view(request):
   auth_check = enforce_access(request, 'admin')
