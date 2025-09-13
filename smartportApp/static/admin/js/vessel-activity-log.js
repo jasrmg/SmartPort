@@ -25,7 +25,7 @@ const fetchFilteredVessels = async () => {
     const data = await res.json();
     const elapsed = performance.now() - start;
 
-    if (500 - elapsed > 0)
+    if (50000 - elapsed > 0)
       await new Promise((res) => setTimeout(res, 500 - elapsed));
 
     if (data.vessels) {
