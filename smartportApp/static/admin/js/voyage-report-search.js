@@ -1,10 +1,9 @@
 let searchTimeout;
 const searchInput = document.getElementById("voyageSearchInput");
-// const voyageCardsContainer = document.querySelector(".voyage-cards-container");
-// const spinner = document.getElementById("voyageLoader");
 const emptyState = document.getElementById("emptyState");
 const emptyStateText = document.getElementById("emptyStateText");
 let currentSearchQuery = "";
+let isSearchActive = false;
 
 // Initialize search functionality
 document.addEventListener("DOMContentLoaded", () => {
@@ -20,7 +19,7 @@ const initializeSearch = () => {
 };
 
 const initializeFilterListeners = () => {
-  // Add listeners to filter dropdowns to clear search when they change
+  // Modified to work with search results
   [
     "filter-vessel-type",
     "filter-origin-port",
@@ -28,18 +27,18 @@ const initializeFilterListeners = () => {
   ].forEach((id) => {
     const filterElement = document.getElementById(id);
     if (filterElement) {
-      filterElement.addEventListener("change", clearSearchOnFilterChange);
+      filterElement.addEventListener("change", handleFilterChange);
     }
   });
 };
 
-const clearSearchOnFilterChange = () => {
-  if (searchInput && searchInput.value.trim() !== "") {
-    searchInput.value = "";
-    currentSearchQuery = "";
-    // The filter change will trigger the existing pagination logic
-    // which will reset the view to show filtered results
+const handleFilterChange = () => {
+  // If search is active, apply filters to search results
+  if (currentSearchQuery && currentSearchQuery.length >= 2) {
+    performSearch(currentSearchQuery);
   }
+  // If no search is active, use regular pagination
+  // (This will be handled by the existing pagination logic)
 };
 
 const handleSearchInput = (e) => {
@@ -52,12 +51,13 @@ const handleSearchInput = (e) => {
   // Set new timeout for delayed search
   searchTimeout = setTimeout(() => {
     if (query.length >= 2) {
+      isSearchActive = true;
       performSearch(query);
     } else if (query.length === 0) {
-      // Reset to show all results when search is cleared
+      isSearchActive = false;
       resetSearch();
     }
-  }, 300); // 300ms delay to avoid too many requests
+  }, 300);
 };
 
 const handleSearchKeydown = (e) => {
@@ -66,33 +66,35 @@ const handleSearchKeydown = (e) => {
     const query = e.target.value.trim();
     if (query.length >= 2) {
       clearTimeout(searchTimeout);
+      isSearchActive = true;
       performSearch(query);
     }
   }
 };
 
-// const showSpinner = () => {
-//   if (spinner) {
-//     spinner.style.display = "flex";
-//   }
-// };
-
-// const hideSpinner = () => {
-//   if (spinner) {
-//     spinner.style.display = "none";
-//   }
-// };
-
 const performSearch = async (query) => {
   try {
     showSpinner();
 
-    // Minimum delay for UX (500ms as requested)
+    // Get current filter values
+    const vesselType =
+      document.getElementById("filter-vessel-type")?.value || "all";
+    const originEl = document.getElementById("filter-origin-port");
+    const destEl = document.getElementById("filter-destination-port");
+
+    const originPort =
+      originEl && originEl.value !== "undefined" ? originEl.value : "all";
+    const destPort =
+      destEl && destEl.value !== "undefined" ? destEl.value : "all";
+
+    // Minimum delay for UX
     const delay = new Promise((resolve) => setTimeout(resolve, 500));
 
     const searchParams = new URLSearchParams({
       q: query,
-      search_type: "voyage_reports",
+      vessel_type: vesselType,
+      origin: originPort,
+      destination: destPort,
     });
 
     const response = await fetch(`/api/voyage-report/search/?${searchParams}`, {
@@ -130,6 +132,9 @@ const displaySearchResults = (data, query) => {
     voyageCardsContainer.innerHTML = data.results
       .map((item) => createVoyageCard(item))
       .join("");
+
+    // Remove centering class when showing results
+    voyageCardsContainer.classList.remove("show-empty-state");
 
     // Hide empty state if visible
     if (emptyState) {
@@ -196,18 +201,12 @@ const createVoyageCard = (item) => {
 };
 
 const highlightSearchMatch = (text, query) => {
-  // console.log(`Highlighting: text="${text}", query="${query}"`);
   if (!query || !text || query.length < 2) {
     return text;
   }
 
-  // Escape special regex characters in query
   const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  // Create case-insensitive regex to find matches
   const regex = new RegExp(`(${escapedQuery})`, "gi");
-
-  // Replace matches with highlighted version
   return text.replace(regex, '<span class="search-highlight">$1</span>');
 };
 
@@ -222,7 +221,8 @@ const showNoSearchResults = (query) => {
     </div>
   `;
 
-  // Hide empty state if visible
+  voyageCardsContainer.classList.add("show-empty-state");
+
   if (emptyState) {
     emptyState.style.display = "none";
   }
@@ -238,62 +238,22 @@ const showSearchError = () => {
       <small>Please try again or refresh the page</small>
     </div>
   `;
+
+  voyageCardsContainer.classList.add("show-empty-state");
 };
 
 const resetSearch = async () => {
   try {
     showSpinner();
     currentSearchQuery = "";
-    // Minimum delay for UX
-    const delay = new Promise((resolve) => setTimeout(resolve, 300));
+    isSearchActive = false;
 
-    // Reset to page 1 with current filters
-    const vesselType =
-      document.getElementById("filter-vessel-type")?.value || "all";
-    const originEl = document.getElementById("filter-origin-port");
-    const destEl = document.getElementById("filter-destination-port");
-
-    const originPort =
-      originEl && originEl.value !== "undefined" ? originEl.value : "all";
-    const destPort =
-      destEl && destEl.value !== "undefined" ? destEl.value : "all";
-
-    const query = new URLSearchParams({
-      page: 1,
-      vessel_type: vesselType,
-      origin: originPort,
-      destination: destPort,
-    }).toString();
-
-    const response = await fetch(`/voyage-report/filter/?${query}`, {
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        "X-CSRFToken": csrftoken,
-      },
-    });
-
-    const html = await response.text();
-    await delay;
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const newContainer = doc.querySelector(".voyage-cards-container");
-
-    if (newContainer) {
-      voyageCardsContainer.innerHTML = newContainer.innerHTML;
-
-      // Show empty state if no results
-      if (newContainer.children.length === 0) {
-        if (emptyState && emptyStateText) {
-          emptyState.style.display = "block";
-          emptyStateText.textContent = "No voyage reports found.";
-        }
-      }
-
-      // Rebind event listeners
-      if (window.rebindVoyageCardEvents) {
-        window.rebindVoyageCardEvents();
-      }
+    // Reset to page 1 with current filters using existing pagination logic
+    if (window.fetchPage) {
+      await window.fetchPage(1);
+    } else {
+      // Fallback if fetchPage is not available
+      location.reload();
     }
   } catch (error) {
     console.error("Reset search error:", error);
@@ -301,3 +261,9 @@ const resetSearch = async () => {
     hideSpinner();
   }
 };
+
+// Expose search state to other modules
+window.getSearchState = () => ({
+  isActive: isSearchActive,
+  query: currentSearchQuery,
+});

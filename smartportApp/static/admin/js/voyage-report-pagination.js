@@ -22,11 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener("change", () => {
-        currentPage = 1;
-        fetchPage(1); // Reset to first page when filter is changed
+        // Check if search is active
+        const searchState = window.getSearchState?.() || {
+          isActive: false,
+          query: "",
+        };
+
+        if (!searchState.isActive) {
+          currentPage = 1;
+          fetchPage(1); // Reset to first page when filter is changed
+        }
+        // If search is active, the search module will handle the filter change
       });
     }
   });
+
   document.addEventListener("click", (e) => {
     if (e.target.matches(".pagination-btn")) {
       const page = parseInt(e.target.dataset.page);
@@ -40,27 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Attach filter dropdown listeners
-  initFilterListeners();
-
   updatePaginationWindow();
 });
-
-const initFilterListeners = () => {
-  [
-    "filter-vessel-type",
-    "filter-origin-port",
-    "filter-destination-port",
-  ].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("change", () => {
-        currentPage = 1;
-        fetchPage(1);
-      });
-    }
-  });
-};
 
 const showSpinner = () => {
   spinner.style.display = "flex";
@@ -103,11 +94,24 @@ const fetchPage = async (pageNum = 1) => {
     originEl && originEl.value !== "undefined" ? originEl.value : "all";
   const destPort =
     destEl && destEl.value !== "undefined" ? destEl.value : "all";
+
+  // Check if search is active
+  const searchState = window.getSearchState?.() || {
+    isActive: false,
+    query: "",
+  };
+  let searchQuery = "";
+
+  if (searchState.isActive) {
+    searchQuery = searchState.query;
+  }
+
   const query = new URLSearchParams({
     page: pageNum,
     vessel_type: vesselType,
     origin: originPort,
     destination: destPort,
+    q: searchQuery, // Include search query in pagination
   }).toString();
 
   try {
@@ -160,5 +164,6 @@ const resetPaginationForSearch = () => {
   }
 };
 
-// Make this function globally available
+// Make functions globally available
 window.resetPaginationForSearch = resetPaginationForSearch;
+window.fetchPage = fetchPage;

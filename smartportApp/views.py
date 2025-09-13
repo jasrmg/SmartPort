@@ -2035,12 +2035,73 @@ def search_voyages(request):
   except Exception as e:
     return JsonResponse({'error': f'Search failed: {str(e)}'}, status=500)
 
+# @require_http_methods(["GET"])
+# def voyage_report_search(request):
+#   query = request.GET.get('q', '').strip()
+
+#   if len(query) < 2:
+#     return JsonResponse({'results': []})
+  
+
+
+#   # Search across multiple fields
+#   search_filter = Q()
+#   search_filter |= Q(voyage__vessel__name__icontains=query)
+#   search_filter |= Q(voyage__voyage_number__icontains=query)
+#   search_filter |= Q(voyage__departure_port__port_name__icontains=query)
+#   search_filter |= Q(voyage__arrival_port__port_name__icontains=query)
+#   search_filter |= Q(voyage__departure_port__port_code__icontains=query)
+#   search_filter |= Q(voyage__arrival_port__port_code__icontains=query)
+
+#   # Filter completed voyages only (assuming you want reports for completed voyages)
+#   reports = VoyageReport.objects.filter(
+#     search_filter,
+#     voyage__status='arrived'  # or whatever status indicates completion
+#   ).select_related(
+#     'voyage__vessel',
+#     'voyage__departure_port',
+#     'voyage__arrival_port'
+#   ).order_by('-created_at')[:25]  # CHANGE TO 25 IN PROD
+
+#   parsed_reports = parse_voyage_report_page(reports)
+
+#   # Convert to JSON-serializable format
+#   results = []
+#   for item in parsed_reports:
+#     report = item['report']
+#     parsed = item['parsed']
+    
+#     # Convert the report model to a dictionary
+#     report_dict = {
+#       'voyage_report_id': report.voyage_report_id,
+#       'created_at': report.created_at.isoformat() if report.created_at else None,
+#       'delayed_reason': report.delayed_reason,
+#       # Add other fields you need from the report model
+#     }
+    
+#     results.append({
+#       'report': report_dict,
+#       'parsed': parsed  # This should already be a dict from your parser
+#     })
+    
+#   return JsonResponse({
+#     'results': results,
+#     'count': len(results)
+#   })
+
+
+# ======================= SEARCH AND FILTER VOYAGE REPORT PART =======================
 @require_http_methods(["GET"])
 def voyage_report_search(request):
   query = request.GET.get('q', '').strip()
 
   if len(query) < 2:
     return JsonResponse({'results': []})
+
+  # Get filter parameters
+  vessel_type = request.GET.get('vessel_type', 'all')
+  origin_port = request.GET.get('origin', 'all')
+  destination_port = request.GET.get('destination', 'all')
 
   # Search across multiple fields
   search_filter = Q()
@@ -2051,15 +2112,28 @@ def voyage_report_search(request):
   search_filter |= Q(voyage__departure_port__port_code__icontains=query)
   search_filter |= Q(voyage__arrival_port__port_code__icontains=query)
 
-  # Filter completed voyages only (assuming you want reports for completed voyages)
+  # Build the base queryset with search filter
   reports = VoyageReport.objects.filter(
     search_filter,
-    voyage__status='arrived'  # or whatever status indicates completion
+    voyage__status='arrived'
   ).select_related(
     'voyage__vessel',
     'voyage__departure_port',
     'voyage__arrival_port'
-  ).order_by('-created_at')[:25]  # CHANGE TO 25 IN PROD
+  )
+
+  # Apply additional filters
+  if vessel_type != 'all':
+    reports = reports.filter(voyage__vessel__vessel_type=vessel_type)
+  
+  if origin_port != 'all':
+    reports = reports.filter(voyage__departure_port__port_id=origin_port)
+  
+  if destination_port != 'all':
+    reports = reports.filter(voyage__arrival_port__port_id=destination_port)
+
+  # Order and limit results
+  reports = reports.order_by('-created_at')[:25]
 
   parsed_reports = parse_voyage_report_page(reports)
 
@@ -2074,15 +2148,73 @@ def voyage_report_search(request):
       'voyage_report_id': report.voyage_report_id,
       'created_at': report.created_at.isoformat() if report.created_at else None,
       'delayed_reason': report.delayed_reason,
-      # Add other fields you need from the report model
     }
     
     results.append({
       'report': report_dict,
-      'parsed': parsed  # This should already be a dict from your parser
+      'parsed': parsed
     })
-    
+      
   return JsonResponse({
     'results': results,
     'count': len(results)
   })
+
+
+@require_http_methods(["GET"])
+def voyage_report_filter(request):
+  # Get parameters
+  page_number = request.GET.get('page', 1)
+  vessel_type = request.GET.get('vessel_type', 'all')
+  origin_port = request.GET.get('origin', 'all')
+  destination_port = request.GET.get('destination', 'all')
+  search_query = request.GET.get('q', '').strip()  # Add search query parameter
+
+  # Start with base queryset
+  reports = VoyageReport.objects.select_related(
+    'voyage__vessel', 
+    'created_by', 
+    'voyage__departure_port', 
+    'voyage__arrival_port'
+  ).filter(voyage__status="arrived")
+
+  # Apply search filter if search query exists
+  if search_query and len(search_query) >= 2:
+    search_filter = Q()
+    search_filter |= Q(voyage__vessel__name__icontains=search_query)
+    search_filter |= Q(voyage__voyage_number__icontains=search_query)
+    search_filter |= Q(voyage__departure_port__port_name__icontains=search_query)
+    search_filter |= Q(voyage__arrival_port__port_name__icontains=search_query)
+    search_filter |= Q(voyage__departure_port__port_code__icontains=search_query)
+    search_filter |= Q(voyage__arrival_port__port_code__icontains=search_query)
+    reports = reports.filter(search_filter)
+
+  # Apply additional filters
+  if vessel_type != 'all':
+    reports = reports.filter(voyage__vessel__vessel_type=vessel_type)
+  
+  if origin_port != 'all':
+    reports = reports.filter(voyage__departure_port__port_id=origin_port)
+  
+  if destination_port != 'all':
+    reports = reports.filter(voyage__arrival_port__port_id=destination_port)
+
+  reports = reports.order_by('-created_at')
+  
+  # Paginate
+  paginator = Paginator(reports, 25)
+  if not str(page_number).isdigit():
+    page_number = 1
+  
+  page_obj = paginator.get_page(page_number)
+  parsed_reports = parse_voyage_report_page(page_obj)
+
+  context = {
+    'page_obj': parsed_reports,
+    'paginator': paginator,
+    'current_page': page_obj.number,
+    'has_next': page_obj.has_next(),
+    'has_prev': page_obj.has_previous(),
+  }
+  
+  return render(request, "smartportApp/admin/voyage-report.html", context)
