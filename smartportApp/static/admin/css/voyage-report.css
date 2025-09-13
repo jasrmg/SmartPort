@@ -316,3 +316,146 @@
     margin: 1in;
   }
 }
+
+/* SEARCH STYLES */
+/* Search Section Styles */
+.search-section {
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  position: relative;
+  max-width: 400px;
+}
+
+.search-bar i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 14px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 12px 15px 12px 40px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.search-bar input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+/* No Search Results Styles */
+.no-search-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.no-search-results i {
+  font-size: 48px;
+  color: #ddd;
+  margin-bottom: 16px;
+}
+
+.no-search-results p {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.no-search-results small {
+  font-size: 14px;
+  color: #888;
+}
+
+/* Search Error Styles */
+.search-error {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.search-error i {
+  font-size: 48px;
+  color: #f56565;
+  margin-bottom: 16px;
+}
+
+.search-error p {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.search-error small {
+  font-size: 14px;
+  color: #888;
+}
+/* empty state */
+/* Centering for empty states */
+.voyage-cards-container.show-empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+/* Modern browser support using :has() selector (optional, as fallback) */
+.voyage-cards-container:has(.empty-state),
+.voyage-cards-container:has(.no-search-results),
+.voyage-cards-container:has(.search-error) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+/* Update existing empty state styles */
+.empty-state,
+.no-search-results,
+.search-error {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Search highlighting styles */
+.search-highlight {
+  background-color: #fff3cd;
+  transition: background-color 0.3s ease;
+}
+
+/* Search result card animation */
+.search-result-card {
+  animation: searchResultFadeIn 0.3s ease-in-out;
+  border-left: 3px solid #007bff;
+}
+
+@keyframes searchResultFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Alternative highlight colors for better contrast */
+.search-highlight {
+  background-color: #ffeb3b;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 500;
+}

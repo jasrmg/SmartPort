@@ -111,6 +111,7 @@ const fetchPage = async (pageNum = 1) => {
   }).toString();
 
   try {
+    console.log("try");
     const res = await fetch(`/voyage-report/filter/?${query}`, {
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -127,6 +128,15 @@ const fetchPage = async (pageNum = 1) => {
 
     if (newContainer) {
       voyageCardsContainer.innerHTML = newContainer.innerHTML;
+
+      // Remove centering class when showing results
+      voyageCardsContainer.classList.remove("show-empty-state");
+
+      // Check if we need to show empty state
+      if (newContainer.children.length === 0) {
+        voyageCardsContainer.classList.add("show-empty-state");
+      }
+
       //rebind click listeners to the newly loaded report cards
       if (window.rebindVoyageCardEvents) window.rebindVoyageCardEvents();
     }
@@ -142,3 +152,13 @@ const fetchPage = async (pageNum = 1) => {
     hideSpinner();
   }
 };
+
+const resetPaginationForSearch = () => {
+  currentPage = 1;
+  if (paginationWindow) {
+    updatePaginationWindow();
+  }
+};
+
+// Make this function globally available
+window.resetPaginationForSearch = resetPaginationForSearch;

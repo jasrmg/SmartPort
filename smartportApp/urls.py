@@ -134,4 +134,5 @@ urlpatterns = [
   path('api/search-incidents/', views.search_incidents, name='universal_search_incidents'),
   path('api/vessels/search/', views.search_vessels, name='vessel-search'),
   path('api/voyages/search/', views.search_voyages, name='voyage-search'),
+  path('api/voyage-report/search/', views.voyage_report_search, name='voyage-report-search'),
 ]

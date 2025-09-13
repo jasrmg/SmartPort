@@ -178,8 +178,9 @@
         {% endfor %}
         <!---->
         {% else %}
-        <div class="empty-state">
-          <i class="fas fa-info-circle"></i> No voyage reports found.
+        <div class="empty-state" id="emptyState">
+          <i class="fas fa-info-circle"></i>
+          <span id="emptyStateText">No voyage reports found.</span>
         </div>
         {% endif %}
       </div>
@@ -299,8 +300,21 @@
   {% block script %}
   <!-- FOR PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const voyageCardsContainer = document.querySelector(
+        ".voyage-cards-container"
+      );
+      const emptyState = document.getElementById("emptyState");
 
+      // Add centering class if empty state is visible on page load
+      if (emptyState && emptyState.style.display !== "none") {
+        voyageCardsContainer.classList.add("show-empty-state");
+      }
+    });
+  </script>
   <script src="{% static 'admin/js/voyage-report.js' %}"></script>
   <script src="{% static 'admin/js/voyage-report-pagination.js' %}"></script>
+  <script src="{% static 'admin/js/voyage-report-search.js' %}"></script>
   {% endblock %}
 </div>
