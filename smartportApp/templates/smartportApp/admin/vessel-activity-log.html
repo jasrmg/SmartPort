@@ -147,10 +147,22 @@
         </select>
       </div>
     </div>
+    <!-- Spinner -->
+    <div id="vesselLoader" class="vessel-loader" style="display: none">
+      <div class="vessel-spinner"></div>
+      <p>Searching for Vessels...</p>
+    </div>
     <div class="vessels-grid" id="vessel-grid">
-      <!-- Spinner -->
-      <div id="vesselLoader" class="vessel-loader" style="display: none">
-        <div class="vessel-spinner"></div>
+      <!--TABANG-->
+      <div class="vessel-card" data-vessel-id="1">
+        <div class="vessel-card-icon"><i class="fas fa-ship"></i></div>
+        <div class="vessel-card-details">
+          <h3 class="vessel-card-name">Mv Juan</h3>
+          <p class="vessel-card-info">IMO1233211 · Ro-Ro</p>
+          <p class="vessel-card-status">
+            <span class="status-indicator maintenance"></span> Under Maintenance
+          </p>
+        </div>
       </div>
       {% if vessels %} {% for vessel in vessels %}
       <div class="vessel-card" data-vessel-id="{{ vessel.vessel_id }}">

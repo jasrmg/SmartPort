@@ -15,7 +15,7 @@ const fetchFilteredVessels = async () => {
   const status = vesselStatusFilter.value;
 
   try {
-    loader.style.display = "block";
+    loader.style.display = "flex";
     vesselGrid
       .querySelectorAll(".vessel-card")
       .forEach((card) => card.remove());
@@ -25,8 +25,8 @@ const fetchFilteredVessels = async () => {
     const data = await res.json();
     const elapsed = performance.now() - start;
 
-    if (1000 - elapsed > 0)
-      await new Promise((res) => setTimeout(res, 1000 - elapsed));
+    if (500 - elapsed > 0)
+      await new Promise((res) => setTimeout(res, 500 - elapsed));
 
     if (data.vessels) {
       data.vessels.forEach((v) => {

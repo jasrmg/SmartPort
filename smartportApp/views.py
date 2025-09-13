@@ -376,6 +376,8 @@ def activity_log_view(request):
 
   context = {
     "vessels": vessels,
+    "show_logo_text": True,
+    "test": 9
   }
   return render(request, "smartportApp/admin/vessel-activity-log.html", context)
 
