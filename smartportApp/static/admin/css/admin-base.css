@@ -47,6 +47,10 @@ h6 {
   font-weight: 600;
 }
 
+small {
+  font-style: italic;
+}
+
 .container {
   display: flex;
   min-height: 100vh;

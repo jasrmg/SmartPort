@@ -124,7 +124,7 @@ const performSearch = async (query) => {
   // Show loading state with search-specific message
   feed.innerHTML = `
     <div class="search-loader">
-      <div class="loader"></div>
+      <div class="loader spinner"></div>
       <p class="search-loading-text">Searching incidents...</p>
     </div>`;
 

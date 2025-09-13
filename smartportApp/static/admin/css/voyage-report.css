@@ -51,21 +51,27 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.6); /* Optional: semi-transparent white */
+  background: rgba(255, 255, 255, 0.8);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   z-index: 10;
+}
+.voyage-loader p {
+  margin: 0;
+  color: var(--dark-gray);
+  font-size: 0.9rem;
 }
 
 .voyage-spinner {
   width: 40px;
   height: 40px;
-  border: 5px solid var(--gray);
+  border: 5px solid var(--light-gray);
   border-top: 5px solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: auto;
+  margin-bottom: 1rem;
 }
 
 @keyframes spin {

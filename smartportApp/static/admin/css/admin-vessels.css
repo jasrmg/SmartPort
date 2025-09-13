@@ -639,8 +639,8 @@ td.status-column:has(.status-badge.assigned) {
 .loader-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid var(--light-gray);
-  border-top: 4px solid var(--primary);
+  border: 5px solid var(--light-gray);
+  border-top: 5px solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
