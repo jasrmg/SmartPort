@@ -549,7 +549,11 @@ def report_feed_view(request):
     data = [serialize_incident(incident) for incident in page_obj]
     return JsonResponse({"incidents": data, "has_more": page_obj.has_next()})
   
-  return render(request, "smartportApp/admin/incident-report-feed.html", {"page_obj": page_obj})
+  context = {
+    "page_obj": page_obj,
+    "placeholder": "Search Incident"
+  }
+  return render(request, "smartportApp/admin/incident-report-feed.html", context)
 
 
 
