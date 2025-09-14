@@ -104,10 +104,26 @@
   </div>
   <!-- User Type Tabs -->
   <div class="user-type-tabs">
-    <button class="tab-btn active" data-role="admin">Admins</button>
-    <button class="tab-btn" data-role="employee">Employees</button>
-    <button class="tab-btn" data-role="shipper">Shippers</button>
-    <button class="tab-btn" data-role="custom">Customs</button>
+    <button class="tab-btn active" data-role="admin">
+      Admins
+      <span class="search-badge" id="adminBadge" style="display: none"></span>
+    </button>
+    <button class="tab-btn" data-role="employee">
+      Employees
+      <span
+        class="search-badge"
+        id="employeeBadge"
+        style="display: none"
+      ></span>
+    </button>
+    <button class="tab-btn" data-role="shipper">
+      Shippers
+      <span class="search-badge" id="shipperBadge" style="display: none"></span>
+    </button>
+    <button class="tab-btn" data-role="custom">
+      Customs
+      <span class="search-badge" id="customBadge" style="display: none"></span>
+    </button>
   </div>
 
   <!-- User Grid -->
@@ -293,4 +309,5 @@
 <!--SCRIPT-->
 {% block script %}
 <script src="{% static 'admin/js/admin-users.js' %}"></script>
+<script src="{% static 'admin/js/user-search.js' %}"></script>
 {% endblock %}

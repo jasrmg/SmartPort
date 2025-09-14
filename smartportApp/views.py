@@ -386,7 +386,12 @@ def admin_users_view(request):
   if auth_check:
     return auth_check
   
-  return render(request, "smartportApp/admin/admin-users.html")
+  context = {
+    "placeholder": "Search users",
+    "search_id": "userSearchInput"
+  }
+
+  return render(request, "smartportApp/admin/admin-users.html", context)
 
 from django.utils.timezone import make_aware, is_naive
 def admin_manifest_view(request):
@@ -2220,3 +2225,45 @@ def voyage_report_filter(request):
   }
   
   return render(request, "smartportApp/admin/voyage-report.html", context)
+
+
+def search_users(request):
+  query = request.GET.get("query", "").strip()
+
+  if not query:
+    return JsonResponse({"error": "Missing query parameter"}, status=400)
+  
+  if len(query) < 2:
+    return JsonResponse({"error": "Query must be at least 2 characters"}, status=400)
+    
+  users = UserProfile.objects.filter(
+    Q(first_name__icontains=query) |
+    Q(last_name__icontains=query) |
+    Q(email__icontains=query) |
+    Q(role__icontains=query)
+  ).order_by('role', 'first_name', 'last_name')
+
+  # Group results by role
+  results_by_role = {}
+  total_results = 0
+  
+  for user in users:
+    role = user.role
+    if role not in results_by_role:
+      results_by_role[role] = []
+    
+    results_by_role[role].append({
+      'first_name': user.first_name,
+      'last_name': user.last_name,
+      'role': user.role,
+      'avatar': user.avatar or "",
+      'is_online': user.is_online,
+      'email': user.email,
+    })
+    total_results += 1
+
+  return JsonResponse({
+    "query": query,
+    "total_results": total_results,
+    "results_by_role": results_by_role
+  })

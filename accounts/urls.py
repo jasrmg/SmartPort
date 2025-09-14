@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+from smartportApp.views import search_users
+
 urlpatterns = [
   path('me/', views.get_current_user),
   path("firebase-register/", views.firebase_register_view, name="firebase_register_view"),
@@ -32,6 +34,9 @@ urlpatterns = [
   # API ENDPOINT FOR FETCHING THE USERS IN THE DB:
   path("get-users/", views.get_users_by_role, name="get_users_by_role"),
 
-  # APU ENDPOINT FOR CREATING ADMIN OR EMPLOYEE IN ADMIN SIDE:
+  # API ENDPOINT FOR CREATING ADMIN OR EMPLOYEE IN ADMIN SIDE:
   path("create-user/", views.create_user_account, name="create_user_account"),
+
+  # API ENDPOINT FOR SEARCHING THE USER
+  path('search-users/', search_users, name='search_users'),
 ]

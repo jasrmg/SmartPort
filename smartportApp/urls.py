@@ -136,4 +136,5 @@ urlpatterns = [
   path('api/vessels/search/', views.search_vessels, name='vessel-search'),
   path('api/voyages/search/', views.search_voyages, name='voyage-search'),
   path('api/voyage-report/search/', views.voyage_report_search, name='voyage-report-search'),
+  # path('api/users/search/', views.search_users, name='search_users'),
 ]
