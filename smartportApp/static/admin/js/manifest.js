@@ -16,6 +16,8 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
     return;
   }
 
+  resetSubmanifestSorting();
+
   voyageNumberDisplay.textContent = voyageNumber;
   voyageListSection.style.display = "none";
   voyageSubmanifest.style.display = "block";
@@ -161,6 +163,9 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
         </tr>`;
       submanifestTableBody.insertAdjacentHTML("beforeend", row);
     });
+
+    storeOriginalSubmanifestOrder();
+    initializeSubmanifestSorting();
 
     initApproveSubmanifest(voyageId);
 
@@ -589,6 +594,182 @@ const bindRejectButtons = () => {
   });
 };
 
+// -------------------- Table sorting functionality for submanifests --------------------
+let originalSubmanifestOrder = [];
+
+const initializeSubmanifestSorting = () => {
+  const table = document.querySelector(".submanifest-table");
+  if (!table) return;
+
+  const sortButtons = table.querySelectorAll(".sort-btn");
+  const tbody = table.querySelector("tbody");
+
+  sortButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      const column = parseInt(this.dataset.column);
+      const currentOrder = this.dataset.order;
+      let newOrder = "asc";
+
+      // Determine new sort order
+      if (currentOrder === "asc") {
+        newOrder = "desc";
+      } else if (currentOrder === "desc") {
+        newOrder = "none";
+      } else {
+        newOrder = "asc";
+      }
+
+      // Reset all other sort buttons
+      sortButtons.forEach((btn) => {
+        if (btn !== this) {
+          btn.dataset.order = "none";
+          btn.querySelector("i").className = "fas fa-sort";
+        }
+      });
+
+      // Update current button
+      this.dataset.order = newOrder;
+      updateSubmanifestSortIcon(this, newOrder);
+
+      // Sort the table
+      if (newOrder === "none") {
+        // Reset to original order
+        restoreOriginalSubmanifestOrder();
+      } else {
+        sortSubmanifestTable(column, newOrder);
+      }
+    });
+  });
+};
+
+const updateSubmanifestSortIcon = (button, order) => {
+  const icon = button.querySelector("i");
+  switch (order) {
+    case "asc":
+      icon.className = "fas fa-sort-up";
+      break;
+    case "desc":
+      icon.className = "fas fa-sort-down";
+      break;
+    case "none":
+    default:
+      icon.className = "fas fa-sort";
+      break;
+  }
+};
+
+const storeOriginalSubmanifestOrder = () => {
+  const tbody = document.querySelector(".submanifest-table tbody");
+  if (!tbody) return;
+
+  originalSubmanifestOrder = Array.from(tbody.querySelectorAll("tr")).filter(
+    (row) => !row.querySelector("td[colspan]") // Exclude "no data" rows
+  );
+};
+
+const restoreOriginalSubmanifestOrder = () => {
+  const tbody = document.querySelector(".submanifest-table tbody");
+  if (!tbody) return;
+
+  // Clear tbody
+  tbody.innerHTML = "";
+
+  // Re-append rows in original order
+  originalSubmanifestOrder.forEach((row) => tbody.appendChild(row));
+
+  // Add the "no data" row back if it exists and there are no data rows
+  if (originalSubmanifestOrder.length === 0) {
+    const noDataRow = document.createElement("tr");
+    noDataRow.innerHTML = '<td colspan="5">No submanifests found.</td>';
+    tbody.appendChild(noDataRow);
+  }
+};
+
+const sortSubmanifestTable = (columnIndex, order) => {
+  const tbody = document.querySelector(".submanifest-table tbody");
+  if (!tbody) return;
+
+  const rows = Array.from(tbody.querySelectorAll("tr")).filter(
+    (row) => !row.querySelector("td[colspan]") // Exclude "no data" rows
+  );
+
+  rows.sort((a, b) => {
+    const cellA = a.cells[columnIndex];
+    const cellB = b.cells[columnIndex];
+
+    if (!cellA || !cellB) return 0;
+
+    let valueA = cellA.textContent.trim();
+    let valueB = cellB.textContent.trim();
+
+    // Handle different data types
+    let comparison = 0;
+
+    switch (columnIndex) {
+      case 0: // Submanifest ID - alphanumeric (SUBM-YYYYMMDD-ID format)
+        comparison = valueA.localeCompare(valueB, undefined, {
+          numeric: true,
+        });
+        break;
+      case 1: // Consignee Name - text
+        comparison = valueA.localeCompare(valueB);
+        break;
+      case 2: // Consignor Name - text
+        comparison = valueA.localeCompare(valueB);
+        break;
+      case 3: // Status - text (but should sort by status hierarchy)
+        // Define status order for logical sorting
+        const statusOrder = {
+          pending_admin: 1,
+          rejected_by_admin: 2,
+          pending_customs: 3,
+          rejected_by_customs: 4,
+          approved: 5,
+        };
+
+        // Extract status from the span element
+        const statusA =
+          cellA.querySelector(".status-badge")?.className.split(" ")[1] || "";
+        const statusB =
+          cellB.querySelector(".status-badge")?.className.split(" ")[1] || "";
+
+        const orderA = statusOrder[statusA] || 999;
+        const orderB = statusOrder[statusB] || 999;
+
+        comparison = orderA - orderB;
+
+        // If status order is the same, sort by text
+        if (comparison === 0) {
+          comparison = valueA.localeCompare(valueB);
+        }
+        break;
+      default:
+        comparison = valueA.localeCompare(valueB);
+    }
+
+    return order === "desc" ? -comparison : comparison;
+  });
+
+  // Clear tbody and re-append rows in sorted order
+  tbody.innerHTML = "";
+  rows.forEach((row) => tbody.appendChild(row));
+
+  // Add the "no data" row back at the end if no data rows exist
+  if (rows.length === 0) {
+    const noDataRow = document.createElement("tr");
+    noDataRow.innerHTML = '<td colspan="5">No submanifests found.</td>';
+    tbody.appendChild(noDataRow);
+  }
+};
+
+const resetSubmanifestSorting = () => {
+  const sortButtons = document.querySelectorAll(".submanifest-table .sort-btn");
+  sortButtons.forEach((btn) => {
+    btn.dataset.order = "none";
+    btn.querySelector("i").className = "fas fa-sort";
+  });
+};
+
 // Init
 document.addEventListener("DOMContentLoaded", () => {
   bindVoyageCardEvents();
@@ -596,6 +777,11 @@ document.addEventListener("DOMContentLoaded", () => {
   setupBackToListButtons();
   populatePorts();
 
+  // setupFlatpickr();
+
   setupRejectModal();
   bindRejectButtons();
+
+  // Initialize sorting functionality (it will be re-initialized when data loads)
+  initializeSubmanifestSorting();
 });

@@ -505,3 +505,43 @@ p.no-voyage {
 .submanifest-table {
   min-width: 800px; /* Adjust based on your needs */
 }
+
+/* UPDATED TABLE CSS */
+/* Add these styles to your manifest.css file */
+
+.sort-btn {
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+}
+
+.sort-btn i {
+  margin-left: 5px;
+  color: #666;
+}
+
+.sort-btn[data-order="asc"] i,
+.sort-btn[data-order="desc"] i {
+  color: #007bff;
+}
+
+.submanifest-table th {
+  border: 2px solid white;
+  text-align: left;
+  padding: 10px;
+  background-color: var(--light);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--primary);
+}
+
+/* Ensure the Action column header doesn't have button styling */
+.submanifest-table th:last-child {
+  padding: 8px;
+  text-align: center;
+}
