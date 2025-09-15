@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unauthorized Access</title>
+    <style>
+      :root {
+        --primary: #0a1f44;
+        --secondary: #1e3a8a;
+        --accent: #2d9c5a;
+        --danger: #d14343;
+        --highlight: #d4af37;
+        --light-blue: #4682b4;
+        --lighter-blue: #8ca6db;
+        --light: #f8fafc;
+        --gray: #e5e7eb;
+        --dark-gray: #6b7280;
+        --white: #fff;
+        --container-bg: #fefefe;
+        --border-color: #d1d5db;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, var(--light) 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* Animated background particles */
+      .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .particle {
+        position: absolute;
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+      }
+
+      /* Gold + Gray particles */
+      .particle:nth-child(1) {
+        width: 16px;
+        height: 16px;
+        top: 20%;
+        left: 10%;
+        background: rgba(212, 175, 55, 0.25);
+        animation-delay: 0s;
+      }
+      .particle:nth-child(2) {
+        width: 20px;
+        height: 20px;
+        top: 60%;
+        left: 80%;
+        background: rgba(229, 231, 235, 0.4);
+        animation-delay: 2s;
+      }
+      .particle:nth-child(3) {
+        width: 12px;
+        height: 12px;
+        top: 80%;
+        left: 20%;
+        background: rgba(212, 175, 55, 0.2);
+        animation-delay: 4s;
+      }
+      .particle:nth-child(4) {
+        width: 18px;
+        height: 18px;
+        top: 30%;
+        left: 70%;
+        background: rgba(229, 231, 235, 0.5);
+        animation-delay: 1s;
+      }
+      .particle:nth-child(5) {
+        width: 24px;
+        height: 24px;
+        top: 70%;
+        left: 50%;
+        background: rgba(212, 175, 55, 0.3);
+        animation-delay: 3s;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) rotate(0deg);
+          opacity: 0.4;
+        }
+        50% {
+          transform: translateY(-20px) rotate(180deg);
+          opacity: 0.8;
+        }
+      }
+
+      .container {
+        background: var(--container-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        text-align: center;
+        max-width: 480px;
+        width: 90%;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15),
+          0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+        position: relative;
+        z-index: 10;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: slideUp 0.6s ease-out;
+        backdrop-filter: blur(10px);
+      }
+
+      .container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2),
+          0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .icon-container {
+        position: relative;
+        margin-bottom: 2rem;
+        display: inline-block;
+      }
+
+      .unauthorized-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--danger) 0%, #ff5a5a 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: 0 15px 30px rgba(209, 67, 67, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 15px 30px rgba(209, 67, 67, 0.3);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 20px 40px rgba(209, 67, 67, 0.4);
+        }
+      }
+
+      .shield-icon {
+        width: 60px;
+        height: 60px;
+        fill: var(--white);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      }
+
+      .error-code {
+        color: var(--danger);
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      h1 {
+        color: var(--primary);
+        font-size: 2.4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: var(--dark-gray);
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+      }
+
+      .go-back-btn {
+        background: linear-gradient(
+          135deg,
+          var(--light-blue) 0%,
+          var(--lighter-blue) 100%
+        );
+        color: var(--white);
+        border: none;
+        padding: 1rem 2.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(70, 130, 180, 0.3);
+      }
+
+      .go-back-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(70, 130, 180, 0.4);
+      }
+
+      .go-back-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 4px 12px rgba(70, 130, 180, 0.3);
+      }
+
+      /* Responsive design */
+      @media (max-width: 480px) {
+        .container {
+          padding: 2rem 1.5rem;
+          margin: 1rem;
+        }
+        .unauthorized-icon {
+          width: 100px;
+          height: 100px;
+        }
+        .shield-icon {
+          width: 50px;
+          height: 50px;
+        }
+        h1 {
+          font-size: 1.8rem;
+        }
+        p {
+          font-size: 1rem;
+        }
+        .go-back-btn {
+          padding: 0.8rem 2rem;
+          font-size: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+
+    <div class="container">
+      <div class="icon-container">
+        <div class="unauthorized-icon">
+          <svg
+            class="shield-icon"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11H15.5C16.4,11 17,11.4 17,12V16C17,16.6 16.6,17 16,17H8C7.4,17 7,16.6 7,16V12C7,11.4 7.4,11 8,11H8.5V10C8.5,8.6 9.6,7 12,7M12,8.2C10.2,8.2 9.7,9.2 9.7,10V11H14.3V10C14.3,9.2 13.8,8.2 12,8.2Z"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <div class="error-code">Error 401</div>
+      <h1>Unauthorized Access</h1>
+      <p>
+        Sorry, you don't have permission to access this resource. Please contact
+        your administrator if you believe this is a mistake.
+      </p>
+
+      <button class="go-back-btn" onclick="goBack()">Go Back</button>
+    </div>
+
+    <script>
+      function goBack() {
+        const btn = document.querySelector(".go-back-btn");
+        btn.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          btn.style.transform = "";
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            window.location.href = "/";
+          }
+        }, 150);
+      }
+
+      // Particle movement effect
+      document.addEventListener("mousemove", (e) => {
+        const particles = document.querySelectorAll(".particle");
+        const x = e.clientX / window.innerWidth;
+        const y = e.clientY / window.innerHeight;
+        particles.forEach((particle, index) => {
+          const speed = (index + 1) * 0.5;
+          const xOffset = (x - 0.5) * speed * 20;
+          const yOffset = (y - 0.5) * speed * 20;
+          particle.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+        });
+      });
+    </script>
+  </body>
+</html>
