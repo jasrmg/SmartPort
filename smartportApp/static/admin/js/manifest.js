@@ -55,7 +55,7 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
       if (viewBtn) viewBtn.style.display = "none";
       if (generateBtn) generateBtn.style.display = "none";
       submanifestTableBody.innerHTML = `
-        <tr><td colspan="5">No submanifests found.</td></tr>`;
+        <tr><td colspan="5" class="no-submanifest">No submanifests found.</td></tr>`;
       return;
     }
 

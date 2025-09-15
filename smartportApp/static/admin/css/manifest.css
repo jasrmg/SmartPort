@@ -303,7 +303,7 @@ p.no-voyage {
   position: sticky;
   top: 0;
   background-color: var(--light);
-  z-index: 1;
+  z-index: 2;
 }
 
 .table-responsive::-webkit-scrollbar {
@@ -320,21 +320,22 @@ p.no-voyage {
 .submanifest-table {
   width: 100%;
   min-width: 800px;
+  border-collapse: collapse;
+}
+.no-submanifest {
+  text-align: center;
+  padding: 1rem;
+  font-style: italic;
+  color: var(--dark-gray);
+  background-color: var(--light);
+  font-size: 0.95rem;
+  border-radius: 6px;
 }
 
-.submanifest-table th {
-  text-align: left;
-  padding: 0.8rem 1rem;
-  background-color: var(--light);
-  font-weight: 600;
-  color: var(--primary);
-  font-size: 0.9rem;
-}
 .submanifest-table td {
   padding: 0.8rem 1rem;
   border-bottom: 1px solid var(--gray);
   font-size: 0.95rem;
-  text-align: center;
 }
 
 .submanifest-table tr:last-child td {
@@ -500,10 +501,6 @@ p.no-voyage {
 /* Optional: Make the table responsive */
 .table-responsive {
   overflow-x: auto;
-}
-
-.submanifest-table {
-  min-width: 800px; /* Adjust based on your needs */
 }
 
 /* UPDATED TABLE CSS */
