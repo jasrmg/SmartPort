@@ -49,6 +49,7 @@ h2 {
   font-size: 18px;
   color: var(--accent);
   margin-top: 24px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -61,16 +62,15 @@ h2 {
 .field-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px 24px;
+  gap: 10px;
   margin-bottom: 16px;
 }
 
 .field {
   flex: 1 1 45%;
-  background-color: var(--light);
+  background-color: var(--gray);
   padding: 10px 14px;
   border-radius: 6px;
-  margin-top: 10px;
 }
 .field.full-width {
   grid-column: span 2;
