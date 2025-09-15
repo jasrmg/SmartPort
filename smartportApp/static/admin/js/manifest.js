@@ -606,6 +606,12 @@ const initializeSubmanifestSorting = () => {
 
   sortButtons.forEach((button) => {
     button.addEventListener("click", function () {
+      // Check if there's any actual data to sort
+      const dataRows = tbody.querySelectorAll("tr:not([class*='no-'])");
+      if (dataRows.length === 0) {
+        return; // Don't sort if there's no data
+      }
+
       const column = parseInt(this.dataset.column);
       const currentOrder = this.dataset.order;
       let newOrder = "asc";
@@ -680,7 +686,8 @@ const restoreOriginalSubmanifestOrder = () => {
   // Add the "no data" row back if it exists and there are no data rows
   if (originalSubmanifestOrder.length === 0) {
     const noDataRow = document.createElement("tr");
-    noDataRow.innerHTML = '<td colspan="5">No submanifests found.</td>';
+    noDataRow.innerHTML =
+      '<td colspan="5" class="no-submanifest">No submanifests found.</td>';
     tbody.appendChild(noDataRow);
   }
 };
@@ -765,6 +772,9 @@ const sortSubmanifestTable = (columnIndex, order) => {
 const resetSubmanifestSorting = () => {
   const sortButtons = document.querySelectorAll(".submanifest-table .sort-btn");
   sortButtons.forEach((btn) => {
+    // Clear the original order array
+    originalSubmanifestOrder = [];
+
     btn.dataset.order = "none";
     btn.querySelector("i").className = "fas fa-sort";
   });
