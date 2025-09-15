@@ -53,7 +53,7 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
       if (viewBtn) viewBtn.style.display = "none";
       if (generateBtn) generateBtn.style.display = "none";
       submanifestTableBody.innerHTML = `
-        <tr><td colspan="4">No submanifests found.</td></tr>`;
+        <tr><td colspan="5">No submanifests found.</td></tr>`;
       return;
     }
 
@@ -130,7 +130,8 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
       const row = `
         <tr>
           <td>${escapeHtml(sm.submanifest_number || "")}</td>
-          <td>${escapeHtml(sm.item_count?.toString() || "0")}</td>
+          <td>${escapeHtml(sm.consignee_name || "N/A")}</td>
+          <td>${escapeHtml(sm.consignor_name || "N/A")}</td>
           <td><span class="status-badge  ${escapeHtml(
             sm.status || ""
           )}">${escapeHtml(sm.status_label || "")}</span></td>
