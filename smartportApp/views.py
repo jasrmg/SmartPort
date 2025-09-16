@@ -436,7 +436,7 @@ def admin_manifest_view(request):
       print("Invalid date input:", departure_date)
   voyages = voyages.order_by("-departure_date")
 
-  paginator = Paginator(voyages, 1)  # Adjust page size as needed
+  paginator = Paginator(voyages, 25)  # Adjust page size as needed
   page_number = request.GET.get("page", 1)
 
   try:

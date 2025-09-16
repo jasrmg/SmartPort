@@ -281,10 +281,10 @@ p.no-voyage {
   font-size: 0.95rem;
 }
 
-.no-voyage {
+/* .no-voyage {
   display: flex;
   width: 100%;
-}
+} */
 
 .hidden {
   display: none;
@@ -541,4 +541,73 @@ p.no-voyage {
 .submanifest-table th:last-child {
   padding: 8px;
   text-align: center;
+}
+/*LOADER*/
+.voyage-list-container {
+  position: relative;
+}
+
+/* Loader container */
+.voyage-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.voyage-loader p {
+  margin: 0;
+  color: var(--dark-gray);
+  font-size: 0.9rem;
+}
+
+/* Spinner element */
+.voyage-spinner {
+  width: 40px;
+  height: 40px;
+  border: 5px solid var(--light-gray);
+  border-top: 5px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.voyage-cards-container:has(.no-voyage),
+.voyage-cards-container:has(.empty-state),
+.voyage-cards-container:has(.no-search-results),
+.voyage-cards-container:has(.search-error) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+.empty-state {
+  gap: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  width: 100%;
+  max-width: 400px;
 }

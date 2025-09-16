@@ -1,5 +1,56 @@
 import { loadSubmanifests } from "./manifest.js"; // if you're using module bundlers
 
+const showManifestLoader = (message = "Searching Voyages...") => {
+  const loader = document.getElementById("manifestLoader");
+  if (loader) {
+    const loaderText = loader.querySelector("p");
+    if (loaderText) loaderText.textContent = message;
+    loader.style.display = "flex";
+  }
+};
+
+const hideManifestLoader = () => {
+  const loader = document.getElementById("manifestLoader");
+  if (loader) {
+    loader.style.display = "none";
+  }
+};
+
+const showLoaderWithMinDuration = async (
+  asyncFunction,
+  message = "Searching Voyages...",
+  minDuration = 500
+) => {
+  showManifestLoader(message);
+
+  const startTime = Date.now();
+
+  try {
+    const result = await asyncFunction();
+    const elapsed = Date.now() - startTime;
+
+    if (elapsed < minDuration) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, minDuration - elapsed)
+      );
+    }
+
+    return result;
+  } catch (error) {
+    const elapsed = Date.now() - startTime;
+
+    if (elapsed < minDuration) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, minDuration - elapsed)
+      );
+    }
+
+    throw error;
+  } finally {
+    hideManifestLoader();
+  }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const paginationContainer = document.getElementById("pagination-container");
   if (!paginationContainer) return;
@@ -74,31 +125,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const loadPage = async (page) => {
     try {
-      const filters = getFilterParams();
-      const res = await fetch(`?page=${page}&${filters}`);
-      const html = await res.text();
-      const doc = new DOMParser().parseFromString(html, "text/html");
+      await showLoaderWithMinDuration(async () => {
+        const filters = getFilterParams();
+        const res = await fetch(`?page=${page}&${filters}`);
+        const html = await res.text();
+        const doc = new DOMParser().parseFromString(html, "text/html");
 
-      const newCards = doc.querySelector(".voyage-cards-container");
-      const newPagination = doc.querySelector("#pagination-container");
+        const newCards = doc.querySelector(".voyage-cards-container");
+        const newPagination = doc.querySelector("#pagination-container");
 
-      const existingCardsContainer = document.querySelector(
-        ".voyage-cards-container"
-      );
-      if (newCards && existingCardsContainer) {
-        existingCardsContainer.replaceChildren(...newCards.children);
-      }
+        const existingCardsContainer = document.querySelector(
+          ".voyage-cards-container"
+        );
 
-      if (newPagination) {
-        document
-          .querySelector("#pagination-container")
-          ?.replaceWith(newPagination);
-      }
+        if (newCards && existingCardsContainer) {
+          existingCardsContainer.replaceChildren(...newCards.children);
 
-      bindVoyageCardEvents(existingCardsContainer);
-      initPagination();
+          // Check if no results found
+          const noVoyageElement =
+            existingCardsContainer.querySelector(".no-voyage");
+          if (noVoyageElement) {
+            noVoyageElement.textContent = "No entry found.";
+          }
+        }
+
+        if (newPagination) {
+          document
+            .querySelector("#pagination-container")
+            ?.replaceWith(newPagination);
+        }
+
+        bindVoyageCardEvents(existingCardsContainer);
+        initPagination();
+      }, "Searching Voyages...");
     } catch (err) {
       console.error("Pagination load error:", err);
+      hideManifestLoader();
     }
   };
 
