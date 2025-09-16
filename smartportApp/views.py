@@ -461,6 +461,7 @@ def admin_manifest_view(request):
       "destination": destination,
       "departure_date": departure_date,
     },
+    "placeholder": "Search voyages",
   }
 
   return render(request, "smartportApp/admin/manifest.html", context)

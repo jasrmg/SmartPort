@@ -9,7 +9,7 @@ from django.shortcuts import render
 def enforce_access(request, required_role):
   ''' Check if the user is authenticated and has the provided role. '''
   if not request.user.is_authenticated:
-    return HttpResponseForbidden("Not authenticated")
+    return render(request, "smartportApp/401-unauthorized.html", {"link": "auth_view"})
     # return render(request, "smartportApp/unauthorized.html", {"link": "auth_view"})
   
   role = request.user.userprofile.role
@@ -31,7 +31,7 @@ def enforce_access(request, required_role):
     elif role == "custom":
       return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "customs-dashboard"})
     elif role == "employee":
-      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "employee-dashboard"})  
+      return render(request, "smartportApp/403-forbidden-page.html", {"text": text, "link": "incident-feed-view"})  
     return render(request, "smartportApp/403-forbidden-page.html", {"text": "Only shippers can access this page."})
   
   return None
