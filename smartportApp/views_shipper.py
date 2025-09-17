@@ -720,6 +720,19 @@ def edit_submit_shipment(request, submanifest_id):
   auth_check = enforce_access(request, 'shipper')
   if auth_check:
     return auth_check
+  
+  # check if the submanifest exists
+  submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
+  
+  # check if voyage is no longer accepting submission. e.g. status != assigned
+  if submanifest.voyage.status != Voyage.VoyageStatus.ASSIGNED:
+    context = {
+      'link': 'shipper-dashboard',
+      'text': 'This <strong>voyage</strong> is no longer accepting submanifest submissions. Please prepare your documents for the next available voyage.'
+    }
+    return render(request, "smartportApp/403-forbidden-page.html", context)
+
+
   # check if the submanifest status is rejected by admin or rejected by customs
   allowed_statuses = ["rejected_by_admin", "rejected_by_customs"]
   submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
