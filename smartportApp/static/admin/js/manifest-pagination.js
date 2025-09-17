@@ -269,4 +269,5 @@ document.addEventListener("DOMContentLoaded", () => {
   // Show clear button on load if date exists
   toggleClearBtn();
   initPagination();
+  window.loadPage = loadPage;
 });

@@ -611,3 +611,34 @@ p.no-voyage {
   width: 100%;
   max-width: 400px;
 }
+
+/* Search highlighting */
+.search-highlight {
+  background-color: #ffeb3b;
+  padding: 2px 4px;
+  font-weight: 500;
+  border-radius: 3px;
+}
+
+/* Search-specific empty state */
+.voyage-cards-container .empty-state.search-empty {
+  flex-direction: column;
+  text-align: center;
+  gap: 12px;
+}
+
+.voyage-cards-container .empty-state.search-empty i {
+  font-size: 48px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.voyage-cards-container .empty-state.search-empty .no-voyage {
+  font-size: 16px;
+  margin: 0;
+}
+
+.voyage-cards-container .empty-state.search-empty small {
+  color: #666;
+  font-size: 12px;
+}

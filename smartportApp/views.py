@@ -462,6 +462,7 @@ def admin_manifest_view(request):
       "departure_date": departure_date,
     },
     "placeholder": "Search voyages",
+    "search_id": "voyageSearchInput",
   }
 
   return render(request, "smartportApp/admin/manifest.html", context)
@@ -2271,3 +2272,68 @@ def search_users(request):
     "total_results": total_results,
     "results_by_role": results_by_role
   })
+
+
+def voyage_search_api(request):
+  """API endpoint for searching voyages"""
+  query = request.GET.get('q', '').strip()
+  
+  if not query or len(query) < 2:
+    return JsonResponse({'voyages': []})
+  
+  # Get filter parameters
+  vessel_type = request.GET.get('vessel_type', '')
+  origin_port = request.GET.get('origin_port', '')
+  destination_port = request.GET.get('destination_port', '')
+  date = request.GET.get('date', '')
+  
+  # Build search query
+  search_q = Q()
+  
+  # Search in voyage number, vessel name, and port names
+  search_q |= Q(voyage_number__icontains=query)
+  search_q |= Q(vessel__name__icontains=query)
+  search_q |= Q(departure_port__port_name__icontains=query)
+  search_q |= Q(arrival_port__port_name__icontains=query)
+  
+  # Start with base queryset
+  voyages = Voyage.objects.select_related(
+    'vessel', 'departure_port', 'arrival_port'
+  ).filter(search_q)
+  
+  # Apply filters
+  if vessel_type and vessel_type != 'all':
+    voyages = voyages.filter(vessel__vessel_type=vessel_type)
+  
+  if origin_port and origin_port != 'all':
+    voyages = voyages.filter(departure_port_id=origin_port)
+      
+  if destination_port and destination_port != 'all':
+    voyages = voyages.filter(arrival_port_id=destination_port)
+      
+  if date:
+    try:
+      from datetime import datetime
+      search_date = datetime.strptime(date, '%Y-%m-%d').date()
+      voyages = voyages.filter(departure_date__date=search_date)
+    except ValueError:
+      pass
+  
+  # Order by departure date (newest first)
+  voyages = voyages.order_by('-departure_date')[:50]  # Limit results
+  
+  # Serialize the data
+  voyage_data = []
+  for voyage in voyages:
+    voyage_data.append({
+      'voyage_id': voyage.voyage_id,
+      'voyage_number': voyage.voyage_number,
+      'vessel_name': voyage.vessel.name,
+      'departure_port_name': voyage.departure_port.port_name if voyage.departure_port else None,
+      'arrival_port_name': voyage.arrival_port.port_name if voyage.arrival_port else None,
+      'departure_date': voyage.departure_date.isoformat() if voyage.departure_date else None,
+      'arrival_date': voyage.arrival_date.isoformat() if voyage.arrival_date else None,
+      'eta': voyage.eta.isoformat() if voyage.eta else None,
+    })
+  
+  return JsonResponse({'voyages': voyage_data})
