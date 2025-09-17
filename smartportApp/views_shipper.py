@@ -1054,7 +1054,75 @@ def custom_clearance_view(request, submanifest_id):
     'has_documents': len(documents_data) > 0,
   }
   
-  return render(request, 'smartportApp/custom-clearance_test.html', context)
+  return render(request, 'smartportApp/custom-clearance.html', context)
+
+def dummy(request, submanifest_id):
+    # view to display the custom clearance
+    user = request.user.userprofile
+    print("TANGANG USER: ", user)
+
+    # get submanifest with its related data:
+    submanifest = get_object_or_404(
+        SubManifest.objects.select_related(
+            'voyage__vessel',
+            'voyage__departure_port',
+            'voyage__arrival_port',
+            'custom_clearance__created_by',
+            'custom_clearance__reviewed_by'
+        ).prefetch_related('documents', 'cargo_items'),
+        submanifest_id=submanifest_id,
+        # created_by=1
+    )
+
+    # check if clearance exists
+    try:
+        clearance = submanifest.custom_clearance
+    except CustomClearance.DoesNotExist:
+        clearance = None
+
+    # prepare documents data
+    documents_data = []
+    if submanifest.documents.exists():
+        for doc in submanifest.documents.all():
+            documents_data.append({
+                'type': doc.get_document_type_display(),
+                'filename': doc.get_download_filename(),
+                'uploaded_at': doc.uploaded_at,
+                'file_url': doc.file.url if doc.file else None
+            })
+    
+    # prepare cargo summary data
+    cargo_items = submanifest.cargo_items.all()
+    total_quantity = sum(cargo.quantity for cargo in cargo_items)
+    total_weight = sum(cargo.weight for cargo in cargo_items)
+    total_value = sum(cargo.value for cargo in cargo_items)
+    
+    # prepare clearance data:
+    clearance_data = {
+        'exists': clearance is not None,
+        'clearance_number': clearance.clearance_number if clearance else 'Pending',
+        'created_at': clearance.created_at if clearance else None,
+        'inspection_date': clearance.inspection_date if clearance else None,
+        'status': clearance.get_clearance_status_display() if clearance else 'Pending Review',
+        'remarks': clearance.remarks if clearance else None,
+        'cleared_by': clearance.reviewed_by if clearance else None,
+        'clearance_file': clearance.clearance_file if clearance else None,
+        'created_by': clearance.created_by if clearance else None,
+    }
+
+    context = {
+      'submanifest': submanifest,
+      'clearance': clearance_data,
+      'documents': documents_data,
+      'cargo_items': cargo_items,
+      'total_quantity': total_quantity,
+      'total_weight': total_weight,
+      'total_value': total_value,
+      'has_documents': len(documents_data) > 0,
+      'has_cargo': cargo_items.exists(),
+    }
+    
+    return render(request, 'smartportApp/custom-clearance_test.html', context)
 
 # ENDPOINT TO SUBMIT THE SHIPMENT(SUBMANIFEST DETAIL)
 @login_required

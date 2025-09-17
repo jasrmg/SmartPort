@@ -1,167 +1,223 @@
+{% load static %}
+<!---->
+{% load number_format %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SmartPort | Custom Clearance Details</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        background-color: #f5f5f5;
-      }
-      .container {
-        max-width: 800px;
-        margin: 0 auto;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-      .section {
-        margin-bottom: 30px;
-        padding: 15px;
-        border-left: 4px solid #007bff;
-        background-color: #f8f9fa;
-      }
-      .section-title {
-        font-size: 18px;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 10px;
-      }
-      p {
-        margin: 8px 0;
-        line-height: 1.4;
-      }
-      .label {
-        font-weight: bold;
-        color: #555;
-      }
-      .no-data {
-        color: #666;
-        font-style: italic;
-      }
-    </style>
+    <meta name="viewport" content="width=210mm, height=297mm" />
+    <title>Customs Clearance Certificate</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'global/custom-clearance.css' %}" />
   </head>
   <body>
-    <div class="container">
-      <h1>Custom Clearance Details</h1>
+    <!-- Printable Content -->
+    <div id="printableContent">
+      <div class="logo">
+        <img src="{% static 'republicseal.png' %}" alt="Republic Seal" />
+      </div>
 
-      <!-- Clearance Information Section -->
-      <div class="section">
-        <div class="section-title">Clearance Information</div>
-        <p>
-          <span class="label">Clearance Exists:</span> {{ clearance.exists }}
-        </p>
-        <p>
-          <span class="label">Clearance Number:</span>
+      <h2>Republic of the Philippines</h2>
+      <h3>Bureau of Customs</h3>
+      <h1>Customs Clearance Certificate</h1>
+      <hr />
+
+      <table>
+        <tr>
+          <th>Clearance No.</th>
+          <td>{{ clearance.clearance_number }}</td>
+          <th>Date Issued</th>
+          <td>{{ clearance.created_at|date:"M d, Y" }}</td>
+        </tr>
+        <tr>
+          <th>Port of Entry</th>
+          <td>
+            {{ submanifest.voyage.departure_port.port_name|default:"N/A" }}
+          </td>
+          <th>Destination Port</th>
+          <td>{{ submanifest.voyage.arrival_port.port_name|default:"N/A" }}</td>
+        </tr>
+      </table>
+
+      <table>
+        <tr>
+          <th colspan="2">Shipper (Consignor)</th>
+          <th colspan="2">Receiver (Consignee)</th>
+        </tr>
+        <tr>
+          <td colspan="2">
+            {{ submanifest.consignor_name|default:"N/A" }}<br />
+            {% if submanifest.consignor_address %}
+            <!---->
+            {{ submanifest.consignor_address|truncatewords:10 }}
+            <!---->
+            {% endif %}
+          </td>
+          <td colspan="2">
+            {{ submanifest.consignee_name|default:"N/A" }}<br />
+            {% if submanifest.consignee_address %}
+            <!---->
+            {{ submanifest.consignee_address|truncatewords:10 }}
+            <!---->
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+
+      <table>
+        <tr>
+          <th>Vessel Name</th>
+          <td>{{ submanifest.voyage.vessel.name|default:"N/A" }}</td>
+          <th>Voyage Number</th>
+          <td>{{ submanifest.voyage.voyage_number|default:"N/A" }}</td>
+        </tr>
+        <tr>
+          <th>Estimated Arrival</th>
+          <td colspan="3">
+            {{ submanifest.voyage.eta|date:"M d, Y"|default:"N/A" }}
+          </td>
+        </tr>
+      </table>
+
+      <!-- Container/Cargo Details -->
+      <table>
+        <tr>
+          <th>Container No.</th>
+          <td>{{ submanifest.container_no|default:"N/A" }}</td>
+          <th>Seal No.</th>
+          <td>{{ submanifest.seal_no|default:"N/A" }}</td>
+        </tr>
+        <tr>
+          <th>Bill of Lading No.</th>
+          <td colspan="3">{{ submanifest.bill_of_lading_no|default:"N/A" }}</td>
+        </tr>
+      </table>
+
+      <!-- Cargo Summary -->
+      {% if has_cargo %}
+      <table>
+        <tr>
+          <th>Total Items</th>
+          <td>{{ cargo_items|length }}</td>
+          <th>Total Quantity</th>
+          <td>{{ total_quantity|quantity_format }}</td>
+        </tr>
+        <tr>
+          <th>Total Weight (kg)</th>
+          <td>{{ total_weight|weight_format }}</td>
+          <th>Total Value (₱)</th>
+          <td>{{ total_value|currency }}</td>
+        </tr>
+      </table>
+      {% else %}
+      <table>
+        <tr>
+          <th colspan="5">No cargo items listed</th>
+        </tr>
+      </table>
+      {% endif %}
+
+      <!-- Submitted Documents Section -->
+      <div class="section-title">Submitted Documents:</div>
+      {% if has_documents %}
+      <ul>
+        {% for document in documents %}
+        <li>
+          {{ document.type }} - {{ document.filename }}
           <!---->
-          {{ clearance.clearance_number }}
-        </p>
-        <p><span class="label">Created At:</span> {{ clearance.created_at }}</p>
-        <p>
-          <span class="label">Inspection Data:</span>
-          <!---->
-          {{ clearance.inspection_data }}
-        </p>
-        <p><span class="label">Status:</span> {{ clearance.status }}</p>
-        <p><span class="label">Remarks:</span> {{ clearance.remarks }}</p>
-        <p>
-          <span class="label">Cleared By:</span>
-          <!---->
-          {{ clearance.cleared_by.first_name }}
-          <!---->
-          {{ clearance.cleared_by.last_name }}
-        </p>
-        <p>
-          <span class="label">Created By:</span>
-          <!---->
-          {{ clearance.created_by.first_name }}
-          <!---->
-          {{ clearance.created_by.last_name }}
-        </p>
-        {% if clearance.clearance_file %}
-        <!---->
-        {% for file in clearance.clearance_file %}
-        <p>
-          <span class="label">Clearance File:</span>
-          <a href="{{ clearance.clearance_file.url }}" target="_blank"
-            >Download File</a
-          >
-        </p>
-        {% empty %}
-        <p>
-          <span class="label">Clearance File:</span>
-          <span class="no-data">No file available</span>
-        </p>
+          ({{ document.uploaded_at|date:"M d, Y" }})
+        </li>
         {% endfor %}
+      </ul>
+      {% else %}
+      <p>No documents submitted</p>
+      {% endif %}
+
+      <!-- Customs Decision Section -->
+      <div class="section-title">Customs Decision:</div>
+      <p>
+        <strong>Status:</strong> {{ clearance.status }}<br />
+        {% if clearance.inspection_date %}
+        <strong>Inspection Date:</strong>
+        <!---->
+        {{ clearance.inspection_date|date:"M d, Y" }}<br />
+        {% endif %}
+        <!---->
+        {% if clearance.exists %} All documentation verified and in compliance
+        with domestic shipping regulations.
+        <!---->
+        {% else %} Clearance pending review.
+        <!---->
+        {% endif %}
+      </p>
+
+      <!-- Remarks Section -->
+      <div class="section-title">Remarks:</div>
+      <p>
+        {% if clearance.remarks != "Error Remarks" and clearance.remarks %}
+        <!---->
+        {{ clearance.remarks }}
+        <!---->
+        {% else %} No remarks available.
+        <!---->
+        {% endif %}
+      </p>
+
+      <!-- Signature Section -->
+      {% if clearance.exists and clearance.cleared_by %}
+      <div class="signature">
+        <strong>Cleared By:</strong><br />
+        {% if clearance.cleared_by.first_name %} Customs Officer:
+        <!---->
+        {{ clearance.cleared_by.first_name }}
+        <!---->
+        {{ clearance.cleared_by.last_name }}<br />
+        {% else %} Customs Officer: {{ clearance.cleared_by.username }}<br />
+        {% endif %} Date & Time:
+        <!---->
+        {{ clearance.created_at|date:"M d, Y - g:i A" }}
+      </div>
+      {% else %}
+      <div class="signature">
+        <strong>Status:</strong> Pending Clearance<br />
+        Created: {{ clearance.created_at|date:"M d, Y - g:i A" }}
+        <!---->
+        {% if clearance.created_by %}
+        <br />Submitted by: {% if clearance.created_by.first_name %}
+        <!---->
+        {{ clearance.created_by.first_name }}
+        <!---->
+        {{ clearance.created_by.last_name }}
+        <!---->
+        {% else %} {{ clearance.created_by.username }}
+        <!---->
+        {% endif %}
         <!---->
         {% endif %}
       </div>
+      {% endif %}
 
-      <!-- Documents Section -->
-      <div class="section">
-        <div class="section-title">Documents</div>
-        {% if has_documents %} {% for document in documents %}
-        <div
-          style="
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-          "
+      <!-- Clearance File Link (if available) -->
+      {% if clearance.clearance_file %}
+      <div class="section-title">Clearance Document:</div>
+      <p>
+        <a href="{{ clearance.clearance_file.url }}" target="_blank"
+          >Download Clearance Certificate</a
         >
-          <p><span class="label">Document Type:</span> {{ document.type }}</p>
-          <p><span class="label">Filename:</span> {{ document.filename }}</p>
-          <p>
-            <span class="label">Uploaded At:</span> {{ document.uploaded_at }}
-          </p>
-          {% if document.file_url %}
-          <p>
-            <span class="label">File:</span>
-            <a href="{{ document.file_url }}" target="_blank">View/Download</a>
-          </p>
-          {% else %}
-          <p>
-            <span class="label">File:</span>
-            <span class="no-data">No file URL available</span>
-          </p>
-          {% endif %}
-        </div>
-        {% endfor %} {% else %}
-        <p class="no-data">No documents available</p>
-        {% endif %}
-      </div>
-
-      <!-- Raw Data Section (for debugging) -->
-      <div class="section">
-        <div class="section-title">Raw Data (Debug)</div>
-        <p><span class="label">Clearance Data:</span></p>
-        <pre
-          style="
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-          "
-        >
-{{ clearance|pprint }}</pre
-        >
-
-        <p><span class="label">Documents Data:</span></p>
-        <pre
-          style="
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-          "
-        >
-{{ documents|pprint }}</pre
-        >
-      </div>
+      </p>
+      {% endif %}
     </div>
+
+    <!-- Print Button BELOW content -->
+    <div class="print-button-container no-print">
+      <button class="print-btn" onclick="printCertificate()">
+        Print Certificate
+      </button>
+    </div>
+
+    <script src="{% static 'custom-clearance.js' %}"></script>
   </body>
 </html>

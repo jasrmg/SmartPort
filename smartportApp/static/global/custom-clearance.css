@@ -1,0 +1,105 @@
+:root {
+  --primary: #0a1f44;
+  --secondary: #1e3a8a;
+  --border-color: #e5e7eb;
+  --light-bg: #f9fafb;
+  --dark-gray: #6b7280;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  color: black;
+  padding: 30px;
+  background: #f5f7fa;
+}
+
+#printableContent {
+  width: 180mm;
+  min-height: 260mm;
+  margin: auto;
+  background: white;
+  padding: 20mm;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  border: 2px solid black;
+}
+
+.logo {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.logo img {
+  width: 100px;
+  height: auto;
+}
+
+h1,
+h2,
+h3 {
+  text-align: center;
+  margin: 5px 0;
+}
+
+hr {
+  border: 1px solid black;
+  margin: 20px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+td,
+th {
+  border: 1px solid #000;
+  padding: 8px;
+  vertical-align: top;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.section-title {
+  font-weight: bold;
+  margin-top: 20px;
+  text-decoration: underline;
+  font-size: 1rem;
+}
+
+.signature {
+  margin-top: 50px;
+}
+
+.print-button-container {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.print-btn {
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: "Exo 2", sans-serif;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.print-btn:hover {
+  background-color: var(--secondary);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    margin: 0;
+    background: white;
+  }
+}

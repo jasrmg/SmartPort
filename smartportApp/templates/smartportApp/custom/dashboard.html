@@ -159,6 +159,12 @@
               >
             </td>
           </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="no-pending-clearance">
+              No Pending Clearance Request.
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
