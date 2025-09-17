@@ -93,6 +93,11 @@ th {
   background-color: var(--secondary);
 }
 
+@page {
+  size: A4;
+  margin: 20mm;
+}
+
 @media print {
   .no-print {
     display: none !important;

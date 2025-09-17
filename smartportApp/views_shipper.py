@@ -978,85 +978,85 @@ def confirm_delivery_view(request, cargo_id):
 # ENDPOINT TO VIEW THE CUSTOM CLEARANCE
 from django.shortcuts import render, get_object_or_404
 @login_required
+# def custom_clearance_view(request, submanifest_id):
+#   # view to display the custom clearance
+#   user = request.user.userprofile
+#   print("TANGANG USER: ", user)
+
+#   # get submanifest with its related data:
+#   submanifest = get_object_or_404(
+#     SubManifest.objects.select_related(
+#       'voyage__vessel',
+#       'voyage__departure_port',
+#       'voyage__arrival_port',
+#       'custom_clearance__created_by',
+#       'custom_clearance__reviewed_by'
+#     ).prefetch_related('documents'),
+#     submanifest_id=submanifest_id,
+#     # created_by=1
+#   )
+
+#   # check if clearance exists
+#   try:
+#     clearance = submanifest.custom_clearance
+#   except CustomClearance.DoesNotExist:
+#     clearance = None
+
+#   # prepare documents data
+#   documents_data = []
+#   if submanifest.documents.exists():
+#     for doc in submanifest.documents.all():
+#       documents_data.append({
+#         'type': doc.get_document_type_display(),
+#         'filename': doc.get_download_filename(),
+#         'uploaded_at': doc.uploaded_at,
+#         'file_url': doc.file.url if doc.file else None
+#       })
+  
+#   # prepare clearance data:
+#   clearance_data = {
+#     'exists': clearance is not None,
+#     'clearance_number': clearance.clearance_number if clearance else 'Error Clearance Number',
+#     'created_at': clearance.created_at if clearance else 'Error Created At',
+#     'inspection_data': clearance.inspection_date if clearance else 'Error Inspection Date',
+#     'status': clearance.get_clearance_status_display() if clearance else 'Error Status',
+#     'remarks': clearance.remarks if clearance else 'Error Remarks',
+#     'cleared_by': clearance.reviewed_by if clearance else 'No remarks available',
+#     'clearance_file': clearance.clearance_file if clearance else None,
+#     'created_by': clearance.created_by if clearance else None,
+#   }
+
+#   # Prepare submanifest data
+#   # submanifest_data = {
+#   #   'id': submanifest.submanifest_id,
+#   #   'number': submanifest.submanifest_number,
+#   #   'created_at': submanifest.created_at,
+#   #   'vessel_name': submanifest.voyage.vessel.name,
+#   #   'voyage_number': submanifest.voyage.voyage_number,
+#   #   'departure_port': submanifest.voyage.departure_port.port_name,
+#   #   'arrival_port': submanifest.voyage.arrival_port.port_name,
+#   #   'departure_date': submanifest.voyage.departure_date,
+#   #   'eta': submanifest.voyage.eta,
+#   #   'arrival_date': submanifest.voyage.arrival_date,
+#   #   'status': submanifest.get_status_display(),
+#   #   'status_raw': submanifest.status,
+#   #   'container_no': submanifest.container_no,
+#   #   'seal_no': submanifest.seal_no,
+#   #   'bill_of_lading_no': submanifest.bill_of_lading_no,
+#   #   'consignee_name': submanifest.consignee_name,
+#   #   'consignor_name': submanifest.consignor_name,
+#   # }
+
+#   context = {
+#     # 'submanifest': submanifest_data,
+#     'clearance': clearance_data,
+#     'documents': documents_data,
+#     'has_documents': len(documents_data) > 0,
+#   }
+  
+#   return render(request, 'smartportApp/custom-clearance.html', context)
+
 def custom_clearance_view(request, submanifest_id):
-  # view to display the custom clearance
-  user = request.user.userprofile
-  print("TANGANG USER: ", user)
-
-  # get submanifest with its related data:
-  submanifest = get_object_or_404(
-    SubManifest.objects.select_related(
-      'voyage__vessel',
-      'voyage__departure_port',
-      'voyage__arrival_port',
-      'custom_clearance__created_by',
-      'custom_clearance__reviewed_by'
-    ).prefetch_related('documents'),
-    submanifest_id=submanifest_id,
-    # created_by=1
-  )
-
-  # check if clearance exists
-  try:
-    clearance = submanifest.custom_clearance
-  except CustomClearance.DoesNotExist:
-    clearance = None
-
-  # prepare documents data
-  documents_data = []
-  if submanifest.documents.exists():
-    for doc in submanifest.documents.all():
-      documents_data.append({
-        'type': doc.get_document_type_display(),
-        'filename': doc.get_download_filename(),
-        'uploaded_at': doc.uploaded_at,
-        'file_url': doc.file.url if doc.file else None
-      })
-  
-  # prepare clearance data:
-  clearance_data = {
-    'exists': clearance is not None,
-    'clearance_number': clearance.clearance_number if clearance else 'Error Clearance Number',
-    'created_at': clearance.created_at if clearance else 'Error Created At',
-    'inspection_data': clearance.inspection_date if clearance else 'Error Inspection Date',
-    'status': clearance.get_clearance_status_display() if clearance else 'Error Status',
-    'remarks': clearance.remarks if clearance else 'Error Remarks',
-    'cleared_by': clearance.reviewed_by if clearance else 'No remarks available',
-    'clearance_file': clearance.clearance_file if clearance else None,
-    'created_by': clearance.created_by if clearance else None,
-  }
-
-  # Prepare submanifest data
-  # submanifest_data = {
-  #   'id': submanifest.submanifest_id,
-  #   'number': submanifest.submanifest_number,
-  #   'created_at': submanifest.created_at,
-  #   'vessel_name': submanifest.voyage.vessel.name,
-  #   'voyage_number': submanifest.voyage.voyage_number,
-  #   'departure_port': submanifest.voyage.departure_port.port_name,
-  #   'arrival_port': submanifest.voyage.arrival_port.port_name,
-  #   'departure_date': submanifest.voyage.departure_date,
-  #   'eta': submanifest.voyage.eta,
-  #   'arrival_date': submanifest.voyage.arrival_date,
-  #   'status': submanifest.get_status_display(),
-  #   'status_raw': submanifest.status,
-  #   'container_no': submanifest.container_no,
-  #   'seal_no': submanifest.seal_no,
-  #   'bill_of_lading_no': submanifest.bill_of_lading_no,
-  #   'consignee_name': submanifest.consignee_name,
-  #   'consignor_name': submanifest.consignor_name,
-  # }
-
-  context = {
-    # 'submanifest': submanifest_data,
-    'clearance': clearance_data,
-    'documents': documents_data,
-    'has_documents': len(documents_data) > 0,
-  }
-  
-  return render(request, 'smartportApp/custom-clearance.html', context)
-
-def dummy(request, submanifest_id):
     # view to display the custom clearance
     user = request.user.userprofile
     print("TANGANG USER: ", user)
@@ -1122,7 +1122,7 @@ def dummy(request, submanifest_id):
       'has_cargo': cargo_items.exists(),
     }
     
-    return render(request, 'smartportApp/custom-clearance_test.html', context)
+    return render(request, 'smartportApp/custom-clearance.html', context)
 
 # ENDPOINT TO SUBMIT THE SHIPMENT(SUBMANIFEST DETAIL)
 @login_required

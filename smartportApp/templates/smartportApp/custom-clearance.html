@@ -1,9 +1,11 @@
 {% load static %}
+<!---->
+{% load number_format %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=210mm, height=297mm" />
+    <!-- <meta name="viewport" content="width=210mm, height=297mm" /> -->
     <title>Customs Clearance Certificate</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
@@ -26,15 +28,17 @@
       <table>
         <tr>
           <th>Clearance No.</th>
-          <td>CC-2025-0345</td>
+          <td>{{ clearance.clearance_number }}</td>
           <th>Date Issued</th>
-          <td>May 20, 2025</td>
+          <td>{{ clearance.created_at|date:"M d, Y" }}</td>
         </tr>
         <tr>
           <th>Port of Entry</th>
-          <td>Cebu Port</td>
+          <td>
+            {{ submanifest.voyage.departure_port.port_name|default:"N/A" }}
+          </td>
           <th>Destination Port</th>
-          <td>Davao Port</td>
+          <td>{{ submanifest.voyage.arrival_port.port_name|default:"N/A" }}</td>
         </tr>
       </table>
 
@@ -45,12 +49,20 @@
         </tr>
         <tr>
           <td colspan="2">
-            GlobalTech Electronics Corporation<br />
-            123 Magsaysay Ave., Cebu City
+            {{ submanifest.consignor_name|default:"N/A" }}<br />
+            {% if submanifest.consignor_address %}
+            <!---->
+            {{ submanifest.consignor_address|truncatewords:10 }}
+            <!---->
+            {% endif %}
           </td>
           <td colspan="2">
-            Davao Gadgets Wholesale<br />
-            Davao asd, Davao
+            {{ submanifest.consignee_name|default:"N/A" }}<br />
+            {% if submanifest.consignee_address %}
+            <!---->
+            {{ submanifest.consignee_address|truncatewords:10 }}
+            <!---->
+            {% endif %}
           </td>
         </tr>
       </table>
@@ -58,58 +70,145 @@
       <table>
         <tr>
           <th>Vessel Name</th>
-          <td>MV Island Express 3</td>
+          <td>{{ submanifest.voyage.vessel.name|default:"N/A" }}</td>
           <th>Voyage Number</th>
-          <td>VX-1120</td>
+          <td>{{ submanifest.voyage.voyage_number|default:"N/A" }}</td>
         </tr>
         <tr>
           <th>Estimated Arrival</th>
-          <td colspan="3">May 22, 2025</td>
+          <td colspan="3">
+            {{ submanifest.voyage.eta|date:"M d, Y"|default:"N/A" }}
+          </td>
         </tr>
       </table>
 
+      <!-- Container/Cargo Details -->
       <table>
         <tr>
-          <th>Item Number</th>
-          <th>Description</th>
-          <th>Quantity</th>
-          <th>Weight</th>
-          <th>Value</th>
+          <th>Container No.</th>
+          <td>{{ submanifest.container_no|default:"N/A" }}</td>
+          <th>Seal No.</th>
+          <td>{{ submanifest.seal_no|default:"N/A" }}</td>
         </tr>
         <tr>
-          <td>xxx</td>
-          <td>Monitor</td>
-          <td>2</td>
-          <td>0.05 kg</td>
-          <td>10 pesos</td>
+          <th>Bill of Lading No.</th>
+          <td colspan="3">{{ submanifest.bill_of_lading_no|default:"N/A" }}</td>
         </tr>
       </table>
 
-      <div class="section-title">Submitted Documents:</div>
-      <ul>
-        <li>Bill Of Lading</li>
-        <li>Packing List</li>
-        <li>Commercial Invoice</li>
-        <li>Import Permit</li>
-      </ul>
+      <!-- Cargo Summary -->
+      {% if has_cargo %}
+      <table>
+        <tr>
+          <th>Total Items</th>
+          <td>{{ cargo_items|length }}</td>
+          <th>Total Quantity</th>
+          <td>{{ total_quantity|quantity_format }}</td>
+        </tr>
+        <tr>
+          <th>Total Weight (kg)</th>
+          <td>{{ total_weight|weight_format }}</td>
+          <th>Total Value (₱)</th>
+          <td>{{ total_value|currency }}</td>
+        </tr>
+      </table>
+      {% else %}
+      <table>
+        <tr>
+          <th colspan="5">No cargo items listed</th>
+        </tr>
+      </table>
+      {% endif %}
 
+      <!-- Submitted Documents Section -->
+      <div class="section-title">Submitted Documents:</div>
+      {% if has_documents %}
+      <ul>
+        {% for document in documents %}
+        <li>
+          {{ document.type }} - {{ document.filename }}
+          <!---->
+          ({{ document.uploaded_at|date:"M d, Y" }})
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No documents submitted</p>
+      {% endif %}
+
+      <!-- Customs Decision Section -->
       <div class="section-title">Customs Decision:</div>
       <p>
-        Cleared<br />No physical inspection required. All documentation verified
-        and in compliance with domestic shipping regulations.
+        <strong>Status:</strong> {{ clearance.status }}<br />
+        {% if clearance.inspection_date %}
+        <strong>Inspection Date:</strong>
+        <!---->
+        {{ clearance.inspection_date|date:"M d, Y" }}<br />
+        {% endif %}
+        <!---->
+        {% if clearance.exists %} All documentation verified and in compliance
+        with domestic shipping regulations.
+        <!---->
+        {% else %} Clearance pending review.
+        <!---->
+        {% endif %}
       </p>
 
+      <!-- Remarks Section -->
       <div class="section-title">Remarks:</div>
       <p>
-        All cargoes listed are within import compliance and manifest details are
-        matched. Approved for loading and departure.
+        {% if clearance.remarks != "Error Remarks" and clearance.remarks %}
+        <!---->
+        {{ clearance.remarks }}
+        <!---->
+        {% else %} No remarks available.
+        <!---->
+        {% endif %}
       </p>
 
+      <!-- Signature Section -->
+      {% if clearance.exists and clearance.cleared_by %}
       <div class="signature">
         <strong>Cleared By:</strong><br />
-        Customs Officer: John M. Reyes<br />
-        Date & Time: May 20, 2025 – 10:42 AM
+        {% if clearance.cleared_by.first_name %} Customs Officer:
+        <!---->
+        {{ clearance.cleared_by.first_name }}
+        <!---->
+        {{ clearance.cleared_by.last_name }}<br />
+        {% else %} Customs Officer: {{ clearance.cleared_by.username }}<br />
+        {% endif %} Date & Time:
+        <!---->
+        {{ clearance.created_at|date:"M d, Y - g:i A" }}
       </div>
+      {% else %}
+      <div class="signature">
+        <strong>Status:</strong> Pending Clearance<br />
+        Created: {{ clearance.created_at|date:"M d, Y - g:i A" }}
+        <!---->
+        {% if clearance.created_by %}
+        <br />Submitted by: {% if clearance.created_by.first_name %}
+        <!---->
+        {{ clearance.created_by.first_name }}
+        <!---->
+        {{ clearance.created_by.last_name }}
+        <!---->
+        {% else %} {{ clearance.created_by.username }}
+        <!---->
+        {% endif %}
+        <!---->
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Clearance File Link (if available) -->
+      {% if clearance.clearance_file %}
+      <div class="section-title">Clearance Document:</div>
+      <p>
+        <a href="{{ clearance.clearance_file.url }}" target="_blank"
+          >Download Clearance Certificate</a
+        >
+      </p>
+      {% endif %}
     </div>
 
     <!-- Print Button BELOW content -->
@@ -119,6 +218,11 @@
       </button>
     </div>
 
-    <script src="custom-clearance.js"></script>
+    <script>
+      console.log("custom clearance");
+      function printCertificate() {
+        window.print();
+      }
+    </script>
   </body>
 </html>
