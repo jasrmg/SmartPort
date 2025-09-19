@@ -15,7 +15,7 @@ from django.db.models import Case, When, IntegerField
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo
 
 # import the helper functions
-from smartportApp.utils.utils import serialize_incident, create_notification, determine_impact_level, with_approval_priority, enforce_access, notify_customs_submanifest_pending
+from smartportApp.utils.utils import serialize_incident, create_notification, determine_impact_level, with_approval_priority, enforce_access, log_vessel_activity
 
 
 
@@ -1310,26 +1310,7 @@ def add_vessel_log_entry(request, vessel_id):
     return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
-# HELPER FUNCTION TO CALL TO CREATE ACTIVITY LOG:
-def log_vessel_activity(vessel, action_type, description, user_profile):
-  """
-  creates an activity log for a vessel
-  args:
-    vessel: the vessel instance
-    action_type (str): the action type choice from the model
-    description (str): log message to display
-    user (UserProfile): to log who performed the action(admin)
-  """
 
-  if not all([vessel, action_type, description, user_profile]):
-    raise ValueError("Missing required fields for logging the activity")
-  
-  ActivityLog.objects.create(
-    vessel=vessel,
-    action_type=action_type,
-    description=description,
-    created_by=user_profile
-  )
 
 # =========== MANIFEST ===========:
 def get_submanifests_by_voyage(request, voyage_id):
@@ -1374,85 +1355,79 @@ def get_submanifests_by_voyage(request, voyage_id):
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
 
-# REJECT SUBMANIFEST: ADMIN
+# REJECT SUBMANIFEST: ADMIN BASIN WA NAY GAMIT
 @require_POST
-def admin_reject_submanifest(request, submanifest_id):
-  print("REJECTING")
-  if not request.user.userprofile.role == "admin":
-    return JsonResponse({"error": "Unauthorized"}, status=403)
+# def admin_reject_submanifest(request, submanifest_id):
+#   print("REJECTING")
+#   if not request.user.userprofile.role == "admin":
+#     return JsonResponse({"error": "Unauthorized"}, status=403)
   
-  try:
-    data = json.loads(request.body)
-    note = data.get("note", "").strip()
-    if not note:
-      return JsonResponse({"error": "Rejection reason required"}, status=400)
+#   try:
+#     data = json.loads(request.body)
+#     note = data.get("note", "").strip()
+#     if not note:
+#       return JsonResponse({"error": "Rejection reason required"}, status=400)
     
-    user = request.user.userprofile
+#     user = request.user.userprofile
 
-    sub = SubManifest.objects.get(submanifest_id=submanifest_id)
-    sub.status = "rejected_by_admin"
-    sub.admin_note = note
-    sub.updated_by = user
-    sub.save()
+#     sub = SubManifest.objects.get(submanifest_id=submanifest_id)
+#     sub.status = "rejected_by_admin"
+#     sub.admin_note = note
+#     sub.updated_by = user
+#     sub.save()
 
 
-    link_url = f"/edit/submitted-shipment/{sub.submanifest_id}/"
-    # send notification to the shipper
-    create_notification(
-      user=sub.created_by,
-      title="Submanifest Rejected",
-      message=f"Your submanifest ({sub.submanifest_number}) was rejected by the admin. Reason: {note}",
-      link_url=link_url,
-      triggered_by=user
-    )
+#     link_url = f"/edit/submitted-shipment/{sub.submanifest_id}/"
+#     # send notification to the shipper
+#     create_notification(
+#       user=sub.created_by,
+#       title="Submanifest Rejected",
+#       message=f"Your submanifest ({sub.submanifest_number}) was rejected by the admin. Reason: {note}",
+#       link_url=link_url,
+#       triggered_by=user
+#     )
 
-    return JsonResponse({"message": "Rejected"})
+#     return JsonResponse({"message": "Rejected"})
   
-  except SubManifest.DoesNotExist:
-    return JsonResponse({"error": "Submanifest not found"}, status=404)
+#   except SubManifest.DoesNotExist:
+#     return JsonResponse({"error": "Submanifest not found"}, status=404)
 
 
 
-# APPROVE SUBMANIFEST: ADMIN
-def admin_approve_submanifest(request, submanifest_id):
-  print("APPROVING")
-  if not request.user.userprofile.role == "admin":
-    return JsonResponse({"error": "Unauthorized"}, status=403)
+# APPROVE SUBMANIFEST: ADMIN BASIN WA NAY GAMIT
+# def admin_approve_submanifest(request, submanifest_id):
+#   print("APPROVING")
+#   if not request.user.userprofile.role == "admin":
+#     return JsonResponse({"error": "Unauthorized"}, status=403)
   
-  submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
+#   submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
 
-  if submanifest.status == "pending_customs":
-    return JsonResponse({"error": "Submanifest already approved"}, status=400)
+#   if submanifest.status == "pending_customs":
+#     return JsonResponse({"error": "Submanifest already approved"}, status=400)
   
-  submanifest.status = "pending_customs"
-  submanifest.save()
+#   submanifest.status = "pending_customs"
+#   submanifest.save()
 
-  # log activity
-  log_vessel_activity(
-    vessel=submanifest.voyage.vessel,
-    action_type=ActivityLog.ActionType.SUBMANIFEST_APPROVED,
-    description=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
-    user_profile=request.user.userprofile
-  )
-  # ActivityLog.objects.create(
-  #   action_type=ActivityLog.ActionType.NOTE,
-  #   description=f"Approved submanifest #{submanifest.submanifest_number}",
-  #   created_by=request.user.userprofile,
-  # )
+#   # log activity
+#   log_vessel_activity(
+#     vessel=submanifest.voyage.vessel,
+#     action_type=ActivityLog.ActionType.SUBMANIFEST_APPROVED,
+#     description=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
+#     user_profile=request.user.userprofile
+#   )
 
-  link_url = f"/submanifest/{submanifest.submanifest_id}/"
-  # send notification
-  create_notification(
-    user=submanifest.created_by,
-    title="Submanifest Approved",
-    message=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
-    link_url="",
-    triggered_by=request.user.userprofile
-  )
-  #  TODO: create a notification for the custom
-  notify_customs_submanifest_pending(submanifest, triggered_by=request.user.userprofile)
+#   # send notification to the shipper without link url
+#   print("============ NOTIFY SHIPPER ============= ")
+#   create_notification(
+#     user=submanifest.created_by,
+#     title="Submanifest Approved",
+#     message=f"Submanifestss #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
+#     link_url="",
+#     triggered_by=request.user.userprofile
+#   )
+
   
-  return JsonResponse({"success": True, "message": "Submanifest approved successfully"})
+#   return JsonResponse({"success": True, "message": "Submanifest approved successfully"})
 
 def generate_master_manifest(request, voyage_id):
   if request.method != "POST":

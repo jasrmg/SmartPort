@@ -243,14 +243,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (response.ok) {
         showToast(data.message);
-        // disable buttons:
-        // document.querySelector(
-        //   `.btn-icon.approve[data-submanifest-id="${submanifestId}"]`
-        // ).disabled = true;
-        // document.querySelector(
-        //   `.btn-icon.reject[data-submanifest-id="${submanifestId}"]`
-        // ).disabled = true;
-
         // hide the actions buttons:
         const actionContainer = document.querySelector(
           ".submanifest-actions-container"

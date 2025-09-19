@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from . models import SubManifest, CustomClearance, UserProfile, Cargo
+from . models import SubManifest, CustomClearance, UserProfile, Cargo, ActivityLog
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden
 
@@ -9,7 +9,7 @@ from django.db import transaction
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 
-from smartportApp.utils.utils import enforce_access
+from smartportApp.utils.utils import enforce_access, log_vessel_activity
 
   
 
@@ -138,12 +138,19 @@ def handle_clerance_action(request, submanifest_id, action):
           submanifest.status = "pending_customs"
           submanifest.updated_by = user
           submanifest.save(update_fields=["status", "updated_by", "updated_at"])
+          # UPDATE ACTIVITY LOG
+          # log_vessel_activity(
+          #   vessel=submanifest.voyage.vessel,
+          #   action_type=ActivityLog.ActionType.SUBMANIFEST_APPROVED,
+          #   description=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
+          #   user_profile=request.user.userprofile
+          # )
           # SEND NOTIF TO SHIPPER 
           create_notification(
             user=submanifest.created_by,
             title="Submanifest Approved",
             message=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
-            link_url=f"/submanifest/{submanifest.submanifest_id}/",
+            link_url="", # dont have a link because its used only to notify the shipper
             triggered_by=request.user.userprofile
           )
           # SEND NOTIF TO CUSTOMS 
@@ -154,7 +161,7 @@ def handle_clerance_action(request, submanifest_id, action):
                 recipients=custom_users,
                 title="Submanifest Approved",
                 message=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
-                link_url=f"/submanifest/{submanifest.submanifest_id}/",
+                link_url=f"/customs/submanifest/review/{submanifest.submanifest_id}/",
                 triggered_by=user
               )
           return JsonResponse({

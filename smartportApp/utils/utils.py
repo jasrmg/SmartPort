@@ -1,5 +1,5 @@
 from accounts.models import UserProfile
-from ..models import Notification 
+from ..models import Notification, ActivityLog
 
 from django.db.models import Case, When, IntegerField
 
@@ -75,6 +75,26 @@ def determine_impact_level(incident_type, description=""):
     return "medium"
   return "low"
 
+# HELPER FUNCTION TO CALL TO CREATE ACTIVITY LOG:
+def log_vessel_activity(vessel, action_type, description, user_profile):
+  """
+  creates an activity log for a vessel
+  args:
+    vessel: the vessel instance
+    action_type (str): the action type choice from the model
+    description (str): log message to display
+    user (UserProfile): to log who performed the action(admin)
+  """
+
+  if not all([vessel, action_type, description, user_profile]):
+    raise ValueError("Missing required fields for logging the activity")
+  
+  ActivityLog.objects.create(
+    vessel=vessel,
+    action_type=action_type,
+    description=description,
+    created_by=user_profile
+  )
 
 # NOTIFICATION HELPER:
 def create_notification(user, title, message, link_url=None, triggered_by=None):
@@ -90,7 +110,8 @@ def create_notification(user, title, message, link_url=None, triggered_by=None):
   """
   if not isinstance(user, UserProfile):
     raise ValueError("Expected `user` to be an instance of UserProfile")
-  
+  print("============== CREATING NOTIFICATION ==============")
+  print("LINK: ", link_url)
   Notification.objects.create(
     user=user,
     title=title,
@@ -128,26 +149,27 @@ def create_notification_bulk(recipients, title, message, link_url="", triggered_
 
 from django.urls import reverse
 
-def notify_customs_submanifest_pending(submanifest, triggered_by):
-  """
-  Sends notifications to all customs users when a submanifest
-  has been approved by the admin and is pending customs review.
-  """
-  # ✅ Get all customs users
-  customs_users = UserProfile.objects.filter(role="custom")
+# def notify_customs_submanifest_pending(submanifest, triggered_by):
+#   """
+#   Sends notifications to all customs users when a submanifest
+#   has been approved by the admin and is pending customs review.
+#   """
+#   # ✅ Get all customs users
+#   customs_users = UserProfile.objects.filter(role="custom")
 
-  if not customs_users.exists():
-    return  # no customs officers in the system
+#   if not customs_users.exists():
+#     return  # no customs officers in the system
 
-  # ✅ Build link to customs review page
-  link_url = reverse("submanifest-detail", args=[submanifest.submanifest_id])
-
-  # ✅ Create the notification for all customs
-  create_notification_bulk(
-    recipients=customs_users,
-    title="Submanifest Pending Customs Review",
-    message=f"Submanifest #{submanifest.submanifest_number} was approved by Admin and is now pending your review.",
-    link_url=link_url,
-    triggered_by=triggered_by
-  )
+#   # ✅ Build link to customs review page
+#   link_url = reverse("submanifest-review", args=[submanifest.submanifest_id])
+#   print("=============== NOTIFY CUSTOMS ===============")
+#   print("LINK NI CUSTOM: ", link_url)
+#   # ✅ Create the notification for all customs
+#   create_notification_bulk(
+#     recipients=customs_users,
+#     title="Submanifest Pending Customs Review",
+#     message=f"Submanifest #{submanifest.submanifest_number} was approved by Admin and is now pending your review.",
+#     link_url=link_url,
+#     triggered_by=triggered_by
+#   )
 
