@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
 from . models import Vessel, Voyage, Port, VoyageReport, ActivityLog, IncidentImage, IncidentReport, IncidentResolution, MasterManifest, SubManifest, Document, Notification, Cargo, CargoDelivery, CustomClearance, UserProfile
@@ -1057,72 +1057,114 @@ from django.shortcuts import render, get_object_or_404
 #   return render(request, 'smartportApp/custom-clearance.html', context)
 
 def custom_clearance_view(request, submanifest_id):
-    # view to display the custom clearance
-    user = request.user.userprofile
-    print("TANGANG USER: ", user)
+  """
+  Access rules:
+    - admin: allowed
+    - custom: allowed
+    - shipper: allowed ONLY if the shipper is the creator of the submanifest
 
-    # get submanifest with its related data:
-    submanifest = get_object_or_404(
-        SubManifest.objects.select_related(
-            'voyage__vessel',
-            'voyage__departure_port',
-            'voyage__arrival_port',
-            'custom_clearance__created_by',
-            'custom_clearance__reviewed_by'
-        ).prefetch_related('documents', 'cargo_items'),
-        submanifest_id=submanifest_id,
-        # created_by=1
-    )
+  AND a CustomClearance exists for that submanifest.
+  Any other role -> 403 PermissionDenied.
+  """
 
-    # check if clearance exists
-    try:
-        clearance = submanifest.custom_clearance
-    except CustomClearance.DoesNotExist:
-        clearance = None
+  # safe access to user's profile
+  user_profile = getattr(request.user, "userprofile", None)
+  print("TANGANG USER: ", user_profile)
 
-    # prepare documents data
-    documents_data = []
-    if submanifest.documents.exists():
-        for doc in submanifest.documents.all():
-            documents_data.append({
-                'type': doc.get_document_type_display(),
-                'filename': doc.get_download_filename(),
-                'uploaded_at': doc.uploaded_at,
-                'file_url': doc.file.url if doc.file else None
-            })
-    
-    # prepare cargo summary data
-    cargo_items = submanifest.cargo_items.all()
-    total_quantity = sum(cargo.quantity for cargo in cargo_items)
-    total_weight = sum(cargo.weight for cargo in cargo_items)
-    total_value = sum(cargo.value for cargo in cargo_items)
-    
-    # prepare clearance data:
-    clearance_data = {
-        'exists': clearance is not None,
-        'clearance_number': clearance.clearance_number if clearance else 'Pending',
-        'created_at': clearance.created_at if clearance else None,
-        'inspection_date': clearance.inspection_date if clearance else None,
-        'status': clearance.get_clearance_status_display() if clearance else 'Pending Review',
-        'remarks': clearance.remarks if clearance else None,
-        'cleared_by': clearance.reviewed_by if clearance else None,
-        'clearance_file': clearance.clearance_file if clearance else None,
-        'created_by': clearance.created_by if clearance else None,
-    }
+  auth_check = enforce_access(request, 'shipper')
+  if auth_check:
+    return auth_check
 
+
+  # get submanifest with its related data:
+  submanifest = get_object_or_404(
+    SubManifest.objects.select_related(
+      'created_by',
+      'voyage__vessel',
+      'voyage__departure_port',
+      'voyage__arrival_port',
+      'custom_clearance__created_by',
+      'custom_clearance__reviewed_by'
+    ).prefetch_related('documents', 'cargo_items'),
+    submanifest_id=submanifest_id,
+  )
+
+  # role-based gating
+  allowed_roles = ("admin", "custom", "shipper")
+  if user_profile.role not in allowed_roles:
     context = {
-      'submanifest': submanifest,
-      'clearance': clearance_data,
-      'documents': documents_data,
-      'cargo_items': cargo_items,
-      'total_quantity': total_quantity,
-      'total_weight': total_weight,
-      'total_value': total_value,
-      'has_documents': len(documents_data) > 0,
-      'has_cargo': cargo_items.exists(),
+      "text": "Youre not allowed to view this page, please contact the admin.",
+      "link": "incident-feed-view"
     }
-    
-    return render(request, 'smartportApp/custom-clearance.html', context)
+    return render(request, "smartportApp/403-forbidden-page.html", context)
+  
+
+  # check if clearance exists
+  try:
+    clearance = submanifest.custom_clearance
+  except CustomClearance.DoesNotExist:
+    # return HttpResponse("404", status=404);
+    clearance = None
+
+  # Extra constraint for shippers: must be the creator of the submanifest and requires to have a custom clearance to view this page
+  if user_profile.role == "shipper":
+    if submanifest.created_by_id != user_profile.pk:
+      context = {
+        "text": "You can only view your own shipments.",
+        "link": "shipper-dashboard"
+      }
+      return render(request, "smartportApp/403-forbidden-page.html", context)
+    if clearance is None:
+      # dapat 404 ni
+      context = {
+        "text": "This shipment has no clearance record yet.",
+        "link": "shipper-dashboard"
+      }
+      return render(request, "smartportApp/403-forbidden-page.html", context)
+
+  # Prepare documents list efficiently (avoid double .exists() query)
+  documents_qs = list(submanifest.documents.all())
+  documents_data = []
+  for doc in documents_qs:
+    documents_data.append({
+      "type": doc.get_document_type_display(),
+      "filename": doc.get_download_filename(),
+      "uploaded_at": doc.uploaded_at,
+      "file_url": doc.file.url if doc.file else None,
+    })
+  
+  # Prepare cargo summary using Decimal for accuracy
+  cargo_items = list(submanifest.cargo_items.all())
+  total_quantity = sum(cargo.quantity for cargo in cargo_items)
+  total_weight = sum((cargo.weight for cargo in cargo_items), Decimal("0"))
+  total_value = sum((cargo.value for cargo in cargo_items), Decimal("0"))
+  
+  # prepare clearance data:
+  clearance_data = {
+    'exists': clearance is not None,
+    'clearance_number': clearance.clearance_number if clearance else 'Pending',
+    'created_at': clearance.created_at if clearance else None,
+    'inspection_date': clearance.inspection_date if clearance else None,
+    'status': clearance.get_clearance_status_display() if clearance else 'Pending Review',
+    'remarks': clearance.remarks if clearance else None,
+    'cleared_by': clearance.reviewed_by if clearance else None,
+    'clearance_file': clearance.clearance_file if clearance else None,
+    'created_by': clearance.created_by if clearance else None,
+  }
+
+  context = {
+    'submanifest': submanifest,
+    'clearance': clearance_data,
+    'documents': documents_data,
+    'cargo_items': cargo_items,
+    'total_quantity': total_quantity,
+    'total_weight': total_weight,
+    'total_value': total_value,
+    'has_documents': len(documents_data) > 0,
+    'has_cargo': len(cargo_items) > 0
+  }
+  
+  return render(request, 'smartportApp/custom-clearance.html', context)
 
 # ENDPOINT TO SUBMIT THE SHIPMENT(SUBMANIFEST DETAIL)
 @login_required
