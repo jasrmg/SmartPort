@@ -310,6 +310,10 @@ p.no-submanifest {
   color: var(--accent);
   font-weight: bold;
 }
+.status-label.pending {
+  color: var(--highlight);
+  font-weight: bold;
+}
 
 /* ---------- BUTTON STYLES ---------- */
 .btn {

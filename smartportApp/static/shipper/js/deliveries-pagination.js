@@ -166,31 +166,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
       tbody.innerHTML = ""; // clear previous
       data.cargo.forEach((item) => {
+        let actionContent;
+
+        if (item.delivered) {
+          actionContent =
+            '<span class="status-label delivered">Delivered</span>';
+        } else if (data.voyage_arrived) {
+          actionContent = `
+      <button 
+        class="btn-icon approve"
+        data-cargo-id="${item.id}"
+        data-description="${item.description}"
+        data-quantity="${item.quantity}"
+        data-vessel="${item.vessel}"
+        title="Mark As Delivered">
+        <i class="fas fa-check"></i>
+      </button>
+    `;
+        } else {
+          actionContent =
+            '<span class="status-label pending">Vessel Not Arrived</span>';
+        }
+
         const row = `
-        <tr>
-          <td>${item.item_number}</td>
-          <td class="desc">${item.description}</td>
-          <td class="qty">${item.quantity}</td>
-          <td class="value">${item.value}</td>
-          <td>
-            ${
-              item.delivered
-                ? '<span class="status-label delivered">Delivered</span>'
-                : `
-                  <button 
-                    class="btn-icon approve"
-                    data-cargo-id="${item.id}"
-                    data-description="${item.description}"
-                    data-quantity="${item.quantity}"
-                    data-vessel="${item.vessel}"
-                    title="Mark As Delivered">
-                    <i class="fas fa-check"></i>
-                  </button>
-                `
-            }
-          </td>
-        </tr>
-      `;
+    <tr>
+      <td>${item.item_number}</td>
+      <td class="desc">${item.description}</td>
+      <td class="qty">${item.quantity}</td>
+      <td class="value">${item.value}</td>
+      <td>${actionContent}</td>
+    </tr>
+  `;
         tbody.insertAdjacentHTML("beforeend", row);
       });
 

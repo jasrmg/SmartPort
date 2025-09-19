@@ -906,7 +906,8 @@ def get_cargo_items(request, submanifest_id):
   try:
     sm = SubManifest.objects.select_related(
       'custom_clearance',
-      'voyage__vessel'  # Optimize DB access
+      'voyage__vessel',  # Optimize DB access
+      'voyage'
     ).get(pk=submanifest_id)
 
     vessel_name = sm.voyage.vessel.name if sm.voyage.vessel else "N/A"
@@ -920,7 +921,8 @@ def get_cargo_items(request, submanifest_id):
         'description': item.description,
         'quantity': item.quantity,
         'value': format_currency(item.value),
-        "delivered": hasattr(item, "delivery")
+        "delivered": hasattr(item, "delivery"),
+        'vessel': vessel_name
       })
 
     # clearance info
@@ -935,7 +937,8 @@ def get_cargo_items(request, submanifest_id):
       'has_clearance': has_clearance,
       'clearance_status': clearance_status,
       'submanifest_id': submanifest_id,
-      'status': sm.status
+      'status': sm.status,
+      'voyage_arrived': sm.voyage.status == "arrived"
     }
     return JsonResponse(response_data)
   except SubManifest.DoesNotExist:

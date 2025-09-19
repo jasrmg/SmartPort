@@ -259,7 +259,8 @@
             <td>
               {% if item.delivered %}
               <span class="status-label delivered">Delivered</span>
-              {% else %}
+              {% elif submanifest.0.voyage.status == "arrived" %}
+              <!---->
               <button
                 class="btn-icon approve"
                 title="Mark As Delivered"
@@ -269,6 +270,8 @@
               >
                 <i class="fas fa-check"></i>
               </button>
+              {% else %}
+              <span class="status-label pending">Vessel Not Arrived</span>
               {% endif %}
             </td>
           </tr>
