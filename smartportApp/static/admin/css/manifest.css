@@ -139,10 +139,9 @@ p.no-voyage {
 
 .pagination-container {
   text-align: center;
-  margin-top: 1rem;
-
-  display: flex;
+  margin-top: auto;
   justify-content: center;
+  align-items: auto;
 }
 .pagination-btn {
   background-color: var(--primary);
@@ -545,6 +544,10 @@ p.no-voyage {
 /*LOADER*/
 .voyage-list-container {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 70vh;
+  /* background-color: red; */
 }
 
 /* Loader container */
