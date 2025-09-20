@@ -328,6 +328,7 @@ def shipper_vessel_info_view(request):
   vessels = Vessel.objects.all().order_by('name')
   context = {
     'vessels': vessels,
+    'show_logo_text': True
   }
   return render(request, "smartportApp/shipper/vessel-info.html", context)
 
@@ -838,7 +839,7 @@ def get_vessel_details(request, vessel_id):
       data.update({
         "departure_port": latest_voyage.departure_port.port_name if latest_voyage.departure_port else "N/A",
         "arrival_port": latest_voyage.arrival_port.port_name if latest_voyage.arrival_port else "N/A",
-        "departure_date": latest_voyage.departure_date.strptime("%Y-%m-%d %H:%M"),
+        "departure_date": latest_voyage.departure_date.strftime("%Y-%m-%d %H:%M"),
         "eta": latest_voyage.eta.strftime("%Y-%m-%d %H:%M") if latest_voyage.eta else "N/A"
       })
 

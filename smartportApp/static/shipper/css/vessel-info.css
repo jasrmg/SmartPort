@@ -161,13 +161,27 @@ tbody tr:hover {
   }
 }
 
-.vessels-card-grid {
+/* .vessels-card-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 2rem;
   margin-top: 2rem;
   justify-content: flex-start;
+} */
+.vessels-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+
+  max-height: 70vh;
+  padding-right: 0.5rem;
+  overflow-y: auto;
 }
+
 .vessel-card {
   background: #fff;
   border-radius: 12px;
