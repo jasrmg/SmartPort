@@ -55,6 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const originPort = originSelect.value;
     const destinationPort = destinationSelect.value;
     const date = dateFilterElement.value;
+    const searchInput = document.getElementById("deliveriesSearch");
+    const searchQuery = searchInput ? searchInput.value.trim() : "";
 
     if (vesselType && vesselType !== "all")
       params.append("vessel_type", vesselType);
@@ -63,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (destinationPort && destinationPort !== "all")
       params.append("destination_port", destinationPort);
     if (date) params.append("date", date);
+    if (searchQuery) params.append("search", searchQuery);
 
     return params.toString();
   };
@@ -173,30 +176,30 @@ document.addEventListener("DOMContentLoaded", () => {
             '<span class="status-label delivered">Delivered</span>';
         } else if (data.voyage_arrived) {
           actionContent = `
-      <button 
-        class="btn-icon approve"
-        data-cargo-id="${item.id}"
-        data-description="${item.description}"
-        data-quantity="${item.quantity}"
-        data-vessel="${item.vessel}"
-        title="Mark As Delivered">
-        <i class="fas fa-check"></i>
-      </button>
-    `;
+            <button 
+              class="btn-icon approve"
+              data-cargo-id="${item.id}"
+              data-description="${item.description}"
+              data-quantity="${item.quantity}"
+              data-vessel="${item.vessel}"
+              title="Mark As Delivered">
+              <i class="fas fa-check"></i>
+            </button>
+          `;
         } else {
           actionContent =
             '<span class="status-label pending">Vessel Not Arrived</span>';
         }
 
         const row = `
-    <tr>
-      <td>${item.item_number}</td>
-      <td class="desc">${item.description}</td>
-      <td class="qty">${item.quantity}</td>
-      <td class="value">${item.value}</td>
-      <td>${actionContent}</td>
-    </tr>
-  `;
+          <tr>
+            <td>${item.item_number}</td>
+            <td class="desc">${item.description}</td>
+            <td class="qty">${item.quantity}</td>
+            <td class="value">${item.value}</td>
+            <td>${actionContent}</td>
+          </tr>
+        `;
         tbody.insertAdjacentHTML("beforeend", row);
       });
 
@@ -241,6 +244,15 @@ document.addEventListener("DOMContentLoaded", () => {
     newPaginationWindow?.addEventListener("click", handleClick);
 
     paginationContainer.style.display = totalPages <= 1 ? "none" : "flex";
+  };
+
+  window.initPagination = initPagination;
+
+  window.ensurePaginationStyling = function () {
+    const paginationContainer = document.getElementById("pagination-container");
+    if (paginationContainer) {
+      paginationContainer.style.display = "flex";
+    }
   };
 
   const handleClick = (e) => {
@@ -362,4 +374,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Init
   initPagination();
   bindCardClickEvents(); // needed if cards are already rendered on first load
+
+  document.addEventListener("submanifestCardClick", (e) => {
+    // console.log("clicked: ", e.target.value);
+    const { submanifestId } = e.detail;
+    currentSubmanifestId = submanifestId;
+    loadCargoForSubmanifest(submanifestId);
+
+    const submanifestNumber =
+      e.detail.card.querySelector("h3")?.textContent || "";
+    numberDisplay.textContent = submanifestNumber;
+    cardsContainer.style.display = "none";
+    cargoContainer.style.display = "grid";
+  });
 });

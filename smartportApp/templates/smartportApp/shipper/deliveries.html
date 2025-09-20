@@ -179,7 +179,7 @@
           </div>
           <div class="submanifest-card-title">
             <h3>{{ sub.submanifest_number }}</h3>
-            <p>{{ sub.consignee }}</p>
+            <p>{{ sub.consignor }} → {{ sub.consignee }}</p>
             <!--submanifest status-->
           </div>
         </div>
@@ -202,7 +202,10 @@
       </div>
       <!---->
       {% empty %}
-      <p class="no-submanifest">No submanifest found.</p>
+      <div class="empty-state search-empty">
+        <i class="fas fa-info-circle"></i>
+        <p class="no-submanifest">No deliveries found.</p>
+      </div>
       {% endfor %}
     </div>
 
@@ -402,5 +405,9 @@
 <script
   type="module"
   src="{% static 'shipper/js/deliveries-pagination.js' %}"
+></script>
+<script
+  type="module"
+  src="{% static 'shipper/js/deliveries-search.js' %}"
 ></script>
 {% endblock %}

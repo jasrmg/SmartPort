@@ -328,7 +328,7 @@ def shipper_vessel_info_view(request):
   vessels = Vessel.objects.all().order_by('name')
   context = {
     'vessels': vessels,
-    # 'test': [],
+    'test': [],
     'show_logo_text': True
   }
   return render(request, "smartportApp/shipper/vessel-info.html", context)
@@ -345,6 +345,7 @@ def shipper_deliveries_view(request):
   origin = request.GET.get("origin_port", "all")
   destination = request.GET.get("destination_port", "all")
   date = request.GET.get("date", "")
+  search_query = request.GET.get("search", "").strip()
   parsed_date = None
 
   submanifests = SubManifest.objects.select_related(
@@ -354,6 +355,17 @@ def shipper_deliveries_view(request):
     "custom_clearance",
     ).filter(created_by=shipper)
   
+  # SEARCH FILTER SEARCH FOR THE SUBMANIFEST NUMBER, CONSIGNEE AND CONSIGNOR ONLY:
+  if search_query:
+    submanifests = submanifests.filter(
+      Q(submanifest_number__icontains=search_query) |
+      Q(consignee_name__icontains=search_query) |
+      Q(consignor_name__icontains=search_query) 
+      # Q(container_no__icontains=search_query) |
+      # Q(bill_of_lading_no__icontains=search_query) |
+      # Q(voyage__vessel__name__icontains=search_query) |
+      # Q(voyage__vessel__imo__icontains=search_query)
+    )
 
   # APPLY FILTERS:
   if vessel_type != "all":
@@ -413,7 +425,10 @@ def shipper_deliveries_view(request):
       "origin": origin,
       "destination": destination,
       "date": date,
+      "search": search_query,
     },
+    "search_id": "deliveriesSearch",
+    "placeholder": "Search Submanifest..."
   }
 
   return render(request, "smartportApp/shipper/deliveries.html", context)
