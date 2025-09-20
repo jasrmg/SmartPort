@@ -161,6 +161,7 @@ p.no-search-found {
 }
 
 .pagination-container {
+  display: flex;
   text-align: center;
   margin-top: auto;
   justify-content: center;

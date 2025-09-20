@@ -20,6 +20,26 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentPage = parseInt(paginationContainer.dataset.currentPage);
   let currentSubmanifestId = null; // Track current submanifest
 
+  // Add this function after the variable declarations
+  const showLoadingState = () => {
+    const cardsContainer = document.querySelector(
+      ".submanifest-cards-container"
+    );
+    if (!cardsContainer) return;
+
+    cardsContainer.innerHTML = `
+    <div class="search-loading">
+      <div class="loading-spinner"></div>
+      <p>Loading deliveries...</p>
+    </div>
+  `;
+
+    // Hide pagination during loading
+    if (paginationContainer) {
+      paginationContainer.style.display = "none";
+    }
+  };
+
   const updatePaginationUI = () => {
     const paginationWindow = document.getElementById("pagination-window");
     if (!paginationWindow) return;
@@ -72,8 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const loadPage = async (page) => {
     try {
+      showLoadingState();
+
       const filters = getFilterParams();
-      const response = await fetch(`?page=${page}&${filters}`);
+      // Show loader for at least 500ms (same as search)
+      const [response] = await Promise.all([
+        fetch(`?page=${page}&${filters}`),
+        new Promise((resolve) => setTimeout(resolve, 500)),
+      ]);
       const html = await response.text();
       const doc = new DOMParser().parseFromString(html, "text/html");
 
@@ -87,15 +113,96 @@ document.addEventListener("DOMContentLoaded", () => {
         cardsContainer.replaceChildren(...newCards.children);
         bindCardClickEvents(); // rebind click after DOM changes
         bindDeliveryButtons();
+
+        // Check if we have "no results" state
+        const hasNoResults =
+          newCards.children.length === 1 &&
+          newCards.querySelector(".no-submanifest");
+
+        if (hasNoResults && paginationContainer) {
+          paginationContainer.style.display = "none";
+          return; // Exit early, don't process pagination
+        }
+
+        // Count actual result cards (excluding empty state divs) - ADD THIS VALIDATION
+        const actualCards =
+          cardsContainer.querySelectorAll(".submanifest-card");
+        const actualCardCount = actualCards.length;
+
+        console.log(
+          "📊 [PAGINATION] Actual card count after DOM update:",
+          actualCardCount
+        );
       }
 
       if (newPagination) {
+        // Get server-reported pagination data
+        const serverTotalPages = parseInt(
+          newPagination.dataset.totalPages || 0
+        );
+        const serverCurrentPage = parseInt(
+          newPagination.dataset.currentPage || 1
+        );
+
+        // Count actual cards to validate server data
+        const actualCards =
+          cardsContainer?.querySelectorAll(".submanifest-card") || [];
+        const actualCardCount = actualCards.length;
+
+        console.log("📄 [PAGINATION] Server pagination data:", {
+          serverTotalPages,
+          serverCurrentPage,
+          actualCardCount,
+        });
+
+        // Client-side validation: only show pagination if we actually have multiple pages worth of content
+        const shouldShowPagination =
+          actualCardCount > 0 && serverTotalPages > 1;
+
+        console.log("📄 [PAGINATION] Pagination decision:", {
+          serverTotalPages,
+          actualCardCount,
+          shouldShowPagination,
+        });
+
         paginationContainer.replaceWith(newPagination);
         paginationContainer = document.getElementById("pagination-container");
-        initPagination();
+
+        // Apply the same validation logic as search module
+        if (shouldShowPagination) {
+          console.log("📄 [PAGINATION] SHOWING pagination");
+          paginationContainer.style.display = "flex";
+          initPagination();
+        } else {
+          console.log(
+            "📄 [PAGINATION] HIDING pagination - single page or no results"
+          );
+          paginationContainer.style.display = "none";
+        }
+      } else if (paginationContainer) {
+        // Hide pagination if no pagination element in response
+        paginationContainer.style.display = "none";
       }
     } catch (err) {
       console.error("Pagination load error:", err);
+
+      // Show error state
+      const cardsContainer = document.querySelector(
+        ".submanifest-cards-container"
+      );
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+        <div class="search-error">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Failed to load deliveries. Please try again.</p>
+        </div>
+      `;
+      }
+
+      // Hide pagination on error
+      if (paginationContainer) {
+        paginationContainer.style.display = "none";
+      }
     }
   };
 
@@ -242,18 +349,9 @@ document.addEventListener("DOMContentLoaded", () => {
     newPrevBtn?.addEventListener("click", handlePrev);
     newNextBtn?.addEventListener("click", handleNext);
     newPaginationWindow?.addEventListener("click", handleClick);
-
-    paginationContainer.style.display = totalPages <= 1 ? "none" : "flex";
   };
 
   window.initPagination = initPagination;
-
-  window.ensurePaginationStyling = function () {
-    const paginationContainer = document.getElementById("pagination-container");
-    if (paginationContainer) {
-      paginationContainer.style.display = "flex";
-    }
-  };
 
   const handleClick = (e) => {
     const btn = e.target.closest(".pagination-btn");
@@ -323,11 +421,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Init filter change
+  // Init filter change - ADD LOGGING HERE
   [originSelect, destinationSelect, vesselTypeSelect].forEach((select) => {
-    select.addEventListener("change", () => {
+    select.addEventListener("change", async () => {
+      console.log(
+        `🎛️ [PAGINATION] Filter changed: ${select.id} = ${select.value}`
+      );
       currentPage = 1;
-      loadPage(currentPage);
+      // Show loading state before loading
+      showLoadingState();
+      await loadPage(currentPage);
     });
   });
 
@@ -336,11 +439,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const datePicker = flatpickr(dateFilterElement, {
     dateFormat: "Y-m-d",
     allowInput: false,
-    onChange: (selectedDates, dateStr) => {
+    onChange: async (selectedDates, dateStr) => {
       if (dateStr) {
+        console.log(`📅 [PAGINATION] Date filter changed: ${dateStr}`);
         dateFilterElement.value = dateStr;
         currentPage = 1;
-        loadPage(currentPage);
+
+        // Show loading state before loading
+        showLoadingState();
+        await loadPage(currentPage);
       }
       toggleClearBtn();
     },
@@ -359,13 +466,16 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Manual clear handler
-  clearDateBtn.addEventListener("click", () => {
-    console.log("Clear date filter clicked");
+  clearDateBtn.addEventListener("click", async () => {
+    console.log("🗑️ [PAGINATION] Clear date filter clicked");
     datePicker.clear();
     dateFilterElement.value = "";
     toggleClearBtn();
     currentPage = 1;
-    loadPage(currentPage); // reload without date filter
+
+    // Show loading state before loading
+    showLoadingState();
+    await loadPage(currentPage); // reload without date filter
   });
 
   // Show clear button on load if date exists
@@ -376,7 +486,6 @@ document.addEventListener("DOMContentLoaded", () => {
   bindCardClickEvents(); // needed if cards are already rendered on first load
 
   document.addEventListener("submanifestCardClick", (e) => {
-    // console.log("clicked: ", e.target.value);
     const { submanifestId } = e.detail;
     currentSubmanifestId = submanifestId;
     loadCargoForSubmanifest(submanifestId);
