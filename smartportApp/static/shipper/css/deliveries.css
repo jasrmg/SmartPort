@@ -151,10 +151,13 @@
 .submanifest-card-info strong {
   color: var(--primary);
 }
-p.no-submanifest {
+p.no-search-found {
   grid-column: 1 / -1;
   justify-self: center;
   align-items: center;
+  font-size: 16px;
+
+  color: #666;
 }
 
 .pagination-container {
@@ -601,13 +604,14 @@ i.icon {
 
   grid-column: 1 / -1;
   width: 100%;
+
+  gap: 10px;
 }
 
 .search-empty i {
-  font-size: 3rem;
-  color: var(--text-muted, #9ca3af);
-  margin-bottom: 1.5rem;
-  opacity: 0.6;
+  font-size: 48px;
+  color: #666;
+  margin-bottom: 8px;
 }
 
 .search-empty {
@@ -618,6 +622,7 @@ i.icon {
 }
 
 .search-empty small {
-  color: var(--text-secondary);
-  opacity: 0.8;
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
 }

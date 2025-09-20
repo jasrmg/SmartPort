@@ -2,7 +2,7 @@ import { bindDeliveryButtons } from "./deliveries.js";
 
 class DeliveriesSearch {
   constructor() {
-    this.searchInput = document.querySelector('.search-bar input[type="text"]');
+    this.searchInput = document.getElementById("deliveriesSearch");
     this.cardsContainer = document.querySelector(
       ".submanifest-cards-container"
     );
@@ -94,26 +94,37 @@ class DeliveriesSearch {
           // Rebind events after DOM update
           this.bindCardClickEvents();
           bindDeliveryButtons();
-        }
-      }
 
-      // Update pagination
-      if (newPagination && this.paginationContainer) {
-        console.log("pagination container if this.");
-        this.paginationContainer.replaceWith(newPagination);
-        this.paginationContainer = document.getElementById(
-          "pagination-container"
-        );
-        this.paginationContainer.style.display = "flex";
+          // Update pagination - only when showing results
+          if (newPagination) {
+            if (this.paginationContainer) {
+              this.paginationContainer.replaceWith(newPagination);
+              this.paginationContainer = document.getElementById(
+                "pagination-container"
+              );
+            }
 
-        // Trigger pagination reinit if the pagination module exists
-        if (window.initPagination) {
-          window.initPagination();
+            // Check if pagination should be visible (has more than 1 page)
+            const totalPages = parseInt(
+              this.paginationContainer?.dataset.totalPages || 0
+            );
+
+            if (this.paginationContainer && totalPages > 1) {
+              this.paginationContainer.style.display = "flex";
+
+              // Trigger pagination reinit if the pagination module exists
+              if (window.initPagination) {
+                window.initPagination();
+              }
+            } else if (this.paginationContainer) {
+              // Hide pagination if only 1 page or no pages
+              this.paginationContainer.style.display = "none";
+            }
+          } else if (this.paginationContainer) {
+            // Hide pagination if no pagination element in response
+            this.paginationContainer.style.display = "none";
+          }
         }
-      } else if (this.paginationContainer) {
-        // Show pagination container with proper styling if it was hidden
-        console.log("pagination container flex");
-        this.paginationContainer.style.display = "flex";
       }
     } catch (error) {
       console.error("Search failed:", error);
@@ -183,7 +194,7 @@ class DeliveriesSearch {
     this.cardsContainer.innerHTML = `
       <div class="empty-state search-empty">
         <i class="fas fa-search"></i>
-        <p class="no-submanifest">No deliveries found matching "${query}"</p>
+        <p class="no-search-found">No deliveries found matching "${query}"</p>
         <small>Try searching by submanifest number, consignee, or container number</small>
       </div>
     `;
