@@ -74,7 +74,7 @@ def review_history_view(request):
   ).order_by("-updated_at")
 
   # pagination 10 per page
-  paginator = Paginator(submanifest, 2)
+  paginator = Paginator(submanifest, 25)
   page_number = request.GET.get("page")
   page_obj = paginator.get_page(page_number)
 
@@ -347,7 +347,7 @@ def review_history_api(request):
 
     print(f"Found {submanifest.count()} submanifests")
 
-    paginator = Paginator(submanifest, 2)
+    paginator = Paginator(submanifest, 25)
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 

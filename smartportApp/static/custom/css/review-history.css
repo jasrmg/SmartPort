@@ -4,7 +4,11 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   padding: 1.5rem;
   /* margin-bottom: 1.5rem; */
-  max-height: 90vh;
+  min-height: 84vh;
+  max-height: 84vh;
+
+  display: flex;
+  flex-direction: column;
 }
 
 .section-header {
@@ -140,7 +144,7 @@ th {
 /* pagination controls */
 .pagination-container {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: auto;
 
   display: flex;
   justify-content: center;
