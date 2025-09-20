@@ -828,8 +828,12 @@ def shipper_incident_feed_view(request):
     return JsonResponse({"incidents": data, "has_more": page_obj.has_next()})
   
   # return render(request, "smartportApp/admin/incident-report-feed.html", {"page_obj": page_obj})
+  context = {
+    "page_obj": page_obj,
+    "placeholder": "Search incident" 
+  }
 
-  return render(request, "smartportApp/shipper/incident-report-feed.html", {"page_obj": page_obj})
+  return render(request, "smartportApp/shipper/incident-report-feed.html", context)
 
 # --------------------  END OF TEMPLATES --------------------
 
