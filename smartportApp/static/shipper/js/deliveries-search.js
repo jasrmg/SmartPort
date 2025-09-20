@@ -13,6 +13,16 @@ class DeliveriesSearch {
     this.init();
   }
 
+  highlightSearchTerm(text, searchTerm) {
+    if (!searchTerm || !text) return text;
+
+    const regex = new RegExp(
+      `(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+      "gi"
+    );
+    return text.replace(regex, '<span class="search-highlight">$1</span>');
+  }
+
   init() {
     if (!this.searchInput) {
       console.warn("Search input not found");
@@ -46,6 +56,18 @@ class DeliveriesSearch {
         }
         this.performSearch(e.target.value.trim());
       }
+    });
+  }
+
+  clearSearchHighlighting() {
+    const highlightedElements = document.querySelectorAll(".search-highlight");
+    highlightedElements.forEach((element) => {
+      const parent = element.parentNode;
+      parent.replaceChild(
+        document.createTextNode(element.textContent),
+        element
+      );
+      parent.normalize(); // Merge adjacent text nodes
     });
   }
 
@@ -282,10 +304,40 @@ class DeliveriesSearch {
     }
   }
 
+  applySearchHighlighting(card, searchTerm) {
+    // Highlight in submanifest number (h3 tag)
+    const titleElement = card.querySelector("h3");
+    if (titleElement) {
+      const originalText = titleElement.textContent;
+      titleElement.innerHTML = this.highlightSearchTerm(
+        originalText,
+        searchTerm
+      );
+    }
+
+    // Highlight in consignor → consignee (p tag)
+    const consignorConsigneeElement = card.querySelector(
+      ".submanifest-card-title p"
+    );
+    if (consignorConsigneeElement) {
+      const originalText = consignorConsigneeElement.textContent;
+      consignorConsigneeElement.innerHTML = this.highlightSearchTerm(
+        originalText,
+        searchTerm
+      );
+    }
+  }
+
   bindCardClickEvents() {
     const cards = document.querySelectorAll(".submanifest-card");
 
     cards.forEach((card) => {
+      // Apply search highlighting if there's an active search
+      const searchTerm = this.searchInput?.value.trim();
+      if (searchTerm) {
+        this.applySearchHighlighting(card, searchTerm);
+      }
+
       card.addEventListener("click", () => {
         const submanifestId = card.dataset.submanifestId;
 

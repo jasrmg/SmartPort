@@ -627,3 +627,11 @@ i.icon {
   font-size: 12px;
   font-style: italic;
 }
+
+/*SEARCH HIGHLIGHT*/
+.search-highlight {
+  background-color: #ffeb3b;
+  padding: 2px 4px;
+  font-weight: 500;
+  border-radius: 3px;
+}
