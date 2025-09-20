@@ -569,6 +569,26 @@ i.icon {
   }
 }
 /* Empty search state */
+.no-submanifest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  width: 100%;
+  background: var(--light);
+  border: 2px dashed var(--gray);
+  border-radius: 1rem;
+  color: #666;
+  font-size: 1.1rem;
+  font-weight: 500;
+  gap: 0.75rem;
+}
+.submanifest-cards-container:has(.no-submanifest) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
 .empty-state.search-empty {
   display: flex;
   flex-direction: column;
@@ -590,7 +610,7 @@ i.icon {
   opacity: 0.6;
 }
 
-.search-empty .no-submanifest {
+.search-empty {
   font-size: 1.1rem;
   font-weight: 500;
   color: var(--text-primary);
