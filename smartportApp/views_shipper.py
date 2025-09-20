@@ -328,6 +328,7 @@ def shipper_vessel_info_view(request):
   vessels = Vessel.objects.all().order_by('name')
   context = {
     'vessels': vessels,
+    'test': [],
     'show_logo_text': True
   }
   return render(request, "smartportApp/shipper/vessel-info.html", context)
