@@ -20,10 +20,9 @@
 }
 .pagination-container {
   text-align: center;
-  margin-top: 1rem;
-
-  display: flex;
+  margin-top: auto;
   justify-content: center;
+  align-items: auto;
 }
 
 .pagination-btn {
@@ -125,9 +124,12 @@
 }
 
 /* Voyage Report List Styles */
-/* .voyage-reports-list-container {
-  margin-bottom: 2rem;
-} */
+.voyage-reports-list-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 70vh;
+  /* background-color: red; */
+}
 .voyage-reports-header {
   display: flex;
   justify-content: space-between;
