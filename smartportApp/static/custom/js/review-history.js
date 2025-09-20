@@ -24,6 +24,30 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentSortBy = "updated_at";
   let currentSortOrder = "desc";
 
+  // Add row click functionality
+  function addRowClickHandlers() {
+    const clickableRows = tableBody.querySelectorAll(
+      ".clickable-row[data-submanifest-id]"
+    );
+    clickableRows.forEach((row) => {
+      row.addEventListener("click", function (e) {
+        // Prevent navigation if clicking on status badge or other interactive elements
+        if (e.target.closest(".status-badge")) {
+          return;
+        }
+
+        const submanifestId = this.dataset.submanifestId;
+        if (submanifestId) {
+          // Open submanifest review page in new tab
+          window.open(
+            `/customs/submanifest/review/${submanifestId}/`,
+            "_blank"
+          );
+        }
+      });
+    });
+  }
+
   // Add sort button click handlers
   document.querySelectorAll(".sort-btn").forEach((btn) => {
     btn.addEventListener("click", function () {
@@ -86,6 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
   updatePaginationWindow();
   updateNavigationButtons();
   updateSortIcons();
+  addRowClickHandlers(); // Add this line to initialize row click handlers
 
   function updatePaginationWindow() {
     paginationWindow.innerHTML = "";
@@ -167,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const statusText = item.status === "approved" ? "Approved" : "Rejected";
 
         return `
-                <tr>
+                <tr class="clickable-row" data-submanifest-id="${item.id}" style="cursor: pointer;">
                     <td>${item.submanifest_number}</td>
                     <td>${item.consignee_name}</td>
                     <td>${item.created_at}</td>
@@ -228,6 +253,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             updatePaginationWindow();
             updateSortIcons();
+            addRowClickHandlers(); // Re-add click handlers after updating table content
             hideLoadingState();
 
             const newUrl = new URL(window.location);

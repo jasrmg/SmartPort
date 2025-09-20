@@ -115,7 +115,7 @@
       </thead>
       <tbody id="table-body">
         {% for sm in page_obj %}
-        <tr>
+        <tr class="clickable-row" data-submanifest-id="{{ sm.submanifest_id }}">
           <td>{{ sm.submanifest_number }}</td>
           <td>{{ sm.consignee_name }}</td>
           <td>{{ sm.created_at|date:"M d, Y" }}</td>

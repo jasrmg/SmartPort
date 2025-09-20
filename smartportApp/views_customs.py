@@ -357,6 +357,7 @@ def review_history_api(request):
     data = []
     for sm in page_obj:
       data.append({
+        'id': sm.submanifest_id,
         'submanifest_number': sm.submanifest_number,
         'consignee_name': sm.consignee_name,
         'created_at': sm.created_at.strftime('%b %d, %Y'),
