@@ -145,6 +145,60 @@
     </table>
   </div>
 </div>
+
+<div id="toast-container"></div>
+{% endblock %}
+<!---->
+{% block modal %}
+<!-- Reject Modal -->
+<div id="rejectModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Reject Submanifest</h3>
+    </div>
+    <div class="modal-body">
+      <form id="rejectForm">
+        <input type="hidden" id="rejectSubmanifestId" />
+        <textarea
+          id="rejectNote"
+          required
+          rows="5"
+          placeholder="Add Rejection Note"
+        ></textarea>
+        <div class="modal-actions">
+          <button type="button" id="cancelRejectBtn" class="btn-cancel">
+            Cancel
+          </button>
+          <button type="submit" class="btn-danger">Reject</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Approve Modal -->
+<div id="approveModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Approve Submanifest</h3>
+    </div>
+    <div class="modal-body">
+      <form id="approveForm">
+        <input type="hidden" id="approveSubmanifestId" />
+        <p>
+          Are you sure you want to approve this submanifest? This action is
+          irreversible.
+        </p>
+        <div class="modal-actions">
+          <button type="button" id="cancelApproveBtn" class="btn-cancel">
+            Cancel
+          </button>
+          <button type="submit" class="btn-update">Approve</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
 <!---->
 {% block script %}

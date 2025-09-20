@@ -1,4 +1,51 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Toast function
+  const showToast = (msg, isError = false, duration = 2500) => {
+    const toast = document.createElement("div");
+    toast.className = `custom-toast ${isError ? "error" : ""}`;
+    toast.textContent = msg;
+
+    let container = document.getElementById("toast-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "toast-container";
+      document.body.appendChild(container);
+    }
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add("fade-out");
+      toast.addEventListener("transitionend", () => toast.remove());
+    }, duration);
+  };
+
+  // Get CSRF token
+  function getCSRFToken() {
+    return (
+      document.querySelector("[name=csrfmiddlewaretoken]")?.value ||
+      document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content") ||
+      getCookie("csrftoken")
+    );
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
   // TABLE SORT FUNCTIONALITY
   const table = document.querySelector(".custom-table");
   const sortButtons = document.querySelectorAll(".sort-btn");
@@ -168,39 +215,151 @@ document.addEventListener("DOMContentLoaded", function () {
       window.open(`/customs/submanifest/review/${submanifestId}/`, "_blank");
     });
   });
+
+  // APPROVE AND REJECT FUNCTIONALITY
+  const approveModal = document.getElementById("approveModal");
+  const rejectModal = document.getElementById("rejectModal");
+  const approveForm = document.getElementById("approveForm");
+  const rejectForm = document.getElementById("rejectForm");
+  const cancelApproveBtn = document.getElementById("cancelApproveBtn");
+  const cancelRejectBtn = document.getElementById("cancelRejectBtn");
+
+  // Add event listeners to approve buttons
+  document.querySelectorAll(".btn-icon.accept").forEach((button) => {
+    button.addEventListener("click", function () {
+      const row = this.closest("tr");
+      const submanifestId =
+        row.querySelector(".btn-icon.view").dataset.submanifestId;
+
+      document.getElementById("approveSubmanifestId").value = submanifestId;
+      approveModal.style.display = "flex";
+    });
+  });
+
+  // Add event listeners to reject buttons
+  document.querySelectorAll(".btn-icon.reject").forEach((button) => {
+    button.addEventListener("click", function () {
+      const row = this.closest("tr");
+      const submanifestId =
+        row.querySelector(".btn-icon.view").dataset.submanifestId;
+
+      document.getElementById("rejectSubmanifestId").value = submanifestId;
+      rejectModal.style.display = "flex";
+    });
+  });
+
+  // Handle approve form submission
+  approveForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const submanifestId = document.getElementById("approveSubmanifestId").value;
+
+    fetch(`/customs/clearance/${submanifestId}/approve/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRFToken(),
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          showToast(data.error, true);
+        } else {
+          showToast(data.message || "Submanifest approved successfully!");
+          // Remove the row from the table or refresh the page
+          const row = document
+            .querySelector(`[data-submanifest-id="${submanifestId}"]`)
+            .closest("tr");
+          row.remove();
+
+          // Check if table is empty and show no data message
+          const remainingRows = tbody.querySelectorAll("tr").length;
+          if (remainingRows === 0) {
+            const noDataRow = document.createElement("tr");
+            noDataRow.innerHTML =
+              '<td colspan="6" class="no-pending-submanifest">No pending submanifests found.</td>';
+            tbody.appendChild(noDataRow);
+          }
+        }
+        approveModal.style.display = "none";
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        showToast("An error occurred while approving the submanifest.", true);
+        approveModal.style.display = "none";
+      });
+  });
+
+  // Handle reject form submission
+  rejectForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const submanifestId = document.getElementById("rejectSubmanifestId").value;
+    const note = document.getElementById("rejectNote").value.trim();
+
+    if (!note) {
+      showToast("Rejection reason is required.", true);
+      return;
+    }
+
+    fetch(`/customs/clearance/${submanifestId}/reject/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCSRFToken(),
+      },
+      body: JSON.stringify({ note: note }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          showToast(data.error, true);
+        } else {
+          showToast(data.message || "Submanifest rejected successfully!");
+          // Remove the row from the table
+          const row = document
+            .querySelector(`[data-submanifest-id="${submanifestId}"]`)
+            .closest("tr");
+          row.remove();
+
+          // Check if table is empty and show no data message
+          const remainingRows = tbody.querySelectorAll("tr").length;
+          if (remainingRows === 0) {
+            const noDataRow = document.createElement("tr");
+            noDataRow.innerHTML =
+              '<td colspan="6" class="no-pending-submanifest">No pending submanifests found.</td>';
+            tbody.appendChild(noDataRow);
+          }
+        }
+        rejectModal.style.display = "none";
+        document.getElementById("rejectNote").value = ""; // Clear the textarea
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        showToast("An error occurred while rejecting the submanifest.", true);
+        rejectModal.style.display = "none";
+      });
+  });
+
+  // Modal close handlers
+  cancelApproveBtn.addEventListener("click", function () {
+    approveModal.style.display = "none";
+  });
+
+  cancelRejectBtn.addEventListener("click", function () {
+    rejectModal.style.display = "none";
+    document.getElementById("rejectNote").value = ""; // Clear the textarea
+  });
+
+  // Close modals when clicking outside
+  window.addEventListener("click", function (e) {
+    if (e.target === approveModal) {
+      approveModal.style.display = "none";
+    }
+    if (e.target === rejectModal) {
+      rejectModal.style.display = "none";
+      document.getElementById("rejectNote").value = ""; // Clear the textarea
+    }
+  });
 });
-
-// CSS for better visual feedback
-// const style = document.createElement("style");
-// style.textContent = `
-//     .sort-btn {
-//         background: none;
-//         border: none;
-//         cursor: pointer;
-//         font-weight: bold;
-//         width: 100%;
-//         text-align: left;
-//         padding: 8px;
-//         transition: background-color 0.2s;
-//     }
-
-//     .sort-btn:hover {
-//         background-color: rgba(0, 0, 0, 0.1);
-//     }
-
-//     .sort-btn i {
-//         margin-left: 5px;
-//         color: #666;
-//     }
-
-//     .sort-btn[data-order="asc"] i,
-//     .sort-btn[data-order="desc"] i {
-//         color: #007bff;
-//     }
-
-//     .custom-table th {
-//         padding: 10px;
-//         position: relative;
-//     }
-// `;
-// document.head.appendChild(style);
