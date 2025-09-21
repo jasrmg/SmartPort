@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const allBtns = paginationContainer.querySelectorAll("button");
     allBtns.forEach((btn) => (btn.disabled = true));
 
-    searchInput.disabled = true;
+    // searchInput.disabled = true;
   }
 
   function hideLoadingState() {
