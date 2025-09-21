@@ -82,11 +82,104 @@ def review_history_view(request):
     "page_obj": page_obj,
     "paginator": paginator,
     "current_page": page_obj.number,
+    "search_id": "search-input",
+    "placeholder": "Search submanifest"
   }
   
   return render(request, "smartportApp/custom/review-history.html", context)
   
 # ====================== END OF TEMPLATES ======================
+
+# def review_history_api(request):
+#   '''
+#   endpoint for the search functionality of the review history
+#   '''
+#   auth_check = enforce_access(request, 'custom')
+#   if auth_check:
+#     return auth_check
+  
+#   if request.method != 'GET':
+#     return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+  
+#   try:
+#     # Get query parameters
+#     page = int(request.GET.get('page', 1))
+#     sort_by = request.GET.get('sort_by', 'updated_at')
+#     sort_order = request.GET.get('sort_order', 'desc')
+#     search_query = request.GET.get('search', '').strip()
+    
+#     # Base queryset - only reviewed submanifests
+#     submanifests = SubManifest.objects.filter(
+#       status__in=["approved", "rejected_by_customs"]
+#     )
+#     # Apply search filter if query provided and >= 2 characters
+#     if search_query and len(search_query) >= 2:
+#       submanifests = submanifests.filter(
+#         Q(submanifest_number__icontains=search_query) |
+#         Q(consignee_name__icontains=search_query)
+#       )
+    
+#     # Apply sorting
+#     valid_sort_fields = {
+#       'submanifest_number': 'submanifest_number',
+#       'consignee_name': 'consignee_name', 
+#       'created_at': 'created_at',
+#       'status': 'status',
+#       'updated_at': 'updated_at'
+#     }
+
+#     if sort_by in valid_sort_fields:
+#       order_field = valid_sort_fields[sort_by]
+#       if sort_order == 'desc':
+#         order_field = f'-{order_field}'
+#       submanifests = submanifests.order_by(order_field)
+#     else:
+#       submanifests = submanifests.order_by('-updated_at')
+
+#     # Pagination
+#     paginator = Paginator(submanifests, 25)
+#     page_obj = paginator.get_page(page)
+
+#     # Format data for JSON response
+#     data = []
+#     for sm in page_obj:
+#       data.append({
+#         'id': sm.submanifest_id,
+#         'submanifest_number': sm.submanifest_number,
+#         'consignee_name': sm.consignee_name,
+#         'created_at': sm.created_at.strftime('%b %d, %Y'),
+#         'updated_at': sm.updated_at.strftime('%b %d, %Y'),
+#         'status': sm.status
+#       })
+
+#     response_data = {
+#       'success': True,
+#       'data': data,
+#       'pagination': {
+#         'current_page': page_obj.number,
+#         'total_pages': paginator.num_pages,
+#         'has_previous': page_obj.has_previous(),
+#         'has_next': page_obj.has_next(),
+#         'total_items': paginator.count
+#       },
+#       'sorting': {
+#         'sort_by': sort_by,
+#         'sort_order': sort_order
+#       },
+#       'search': {
+#         'query': search_query,
+#         'has_search': bool(search_query and len(search_query) >= 2)
+#       }
+#     }
+
+#     return JsonResponse(response_data)
+  
+#   except Exception as e:
+#     return JsonResponse({
+#       'success': False, 
+#       'error': f'Server error: {str(e)}'
+#     }, status=500)
+
 
 def submanifest_review(request, submanifest_id):
   """
@@ -326,6 +419,7 @@ def review_history_api(request):
   try:
     sort_by = request.GET.get('sort_by', 'updated_at')
     sort_order = request.GET.get('sort_order', 'desc')
+    search_query = request.GET.get('search', '').strip()
 
     sort_fields = {
       'submanifest_number': 'submanifest_number',
@@ -336,14 +430,27 @@ def review_history_api(request):
     }
 
     # validate sort field
-    order_field = sort_fields[sort_by]
-    if sort_order == 'desc':
-      order_field = f'-{order_field}'
+    if sort_by in sort_fields:
+      order_field = sort_fields[sort_by]
+      if sort_order == 'desc':
+        order_field = f'-{order_field}'
+    else:
+      order_field = '-updated_at'  # fallback
 
-
+    # Base queryset
     submanifest = SubManifest.objects.filter(
       status__in=["approved", "rejected_by_customs"]
-    ).order_by(order_field)
+    )
+
+    if search_query and len(search_query) >= 2:
+      submanifest = submanifest.filter(
+        Q(submanifest_number__icontains=search_query) |
+        Q(consignee_name__icontains=search_query)
+      )
+      print(f"Applied search filter for: '{search_query}'")
+    
+    # Apply ordering
+    submanifest = submanifest.order_by(order_field)
 
     print(f"Found {submanifest.count()} submanifests")
 
@@ -380,6 +487,10 @@ def review_history_api(request):
       'sorting': {
         'sort_by': sort_by,
         'sort_order': sort_order,
+      },
+      'search': {
+        'query': search_query,
+        'has_search': bool(search_query and len(search_query) >= 2)
       }
     })
   

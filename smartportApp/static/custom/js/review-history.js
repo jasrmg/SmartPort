@@ -6,8 +6,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const nextBtn = document.getElementById("next-page-btn");
   const tableBody = document.getElementById("table-body");
 
+  const searchInput = document.getElementById("search-input");
+  const sectionHeader = document.querySelector(".section-header");
+
   // Check if required elements exist
-  if (!paginationContainer || !tableBody) {
+  if (!paginationContainer || !tableBody || !searchInput) {
     console.error("Required elements not found:", {
       paginationContainer: !!paginationContainer,
       tableBody: !!tableBody,
@@ -23,6 +26,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let currentSortBy = "updated_at";
   let currentSortOrder = "desc";
+
+  let currentSearchQuery = "";
+  let searchTimeout = null;
 
   // Add row click functionality
   function addRowClickHandlers() {
@@ -110,7 +116,52 @@ document.addEventListener("DOMContentLoaded", function () {
   updatePaginationWindow();
   updateNavigationButtons();
   updateSortIcons();
-  addRowClickHandlers(); // Add this line to initialize row click handlers
+  addRowClickHandlers();
+
+  searchInput.addEventListener("input", function (e) {
+    const query = e.target.value.trim();
+
+    // Clear existing timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    // Set timeout for search (debounce)
+    searchTimeout = setTimeout(() => {
+      handleSearch(query);
+    }, 300);
+  });
+
+  function handleSearch(query) {
+    currentSearchQuery = query;
+    currentPage = 1; // Reset to first page when searching
+
+    // Update UI state
+    if (query && query.length >= 2) {
+      sectionHeader.classList.add("search-active");
+      goToPage(1, false, true); // Only search if 2+ characters
+    } else {
+      sectionHeader.classList.remove("search-active");
+      // If query is cleared or less than 2 characters, show all results
+      if (query.length === 0) {
+        goToPage(1, false, true); // Reset to show all results when search is cleared
+      }
+      // Don't search if query is 1 character - just wait
+    }
+  }
+
+  // Highlight matching text
+  function highlightSearchTerm(text, searchTerm) {
+    if (!searchTerm || searchTerm.length < 2) {
+      return text;
+    }
+
+    const regex = new RegExp(
+      `(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+      "gi"
+    );
+    return text.replace(regex, '<span class="highlight">$1</span>');
+  }
 
   function updatePaginationWindow() {
     paginationWindow.innerHTML = "";
@@ -164,25 +215,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const allBtns = paginationContainer.querySelectorAll("button");
     allBtns.forEach((btn) => (btn.disabled = true));
+
+    searchInput.disabled = true;
   }
 
   function hideLoadingState() {
     isLoading = false;
+    searchInput.disabled = false;
     updateNavigationButtons();
 
     const pageBtns = paginationWindow.querySelectorAll("button");
     pageBtns.forEach((btn) => (btn.disabled = false));
   }
 
-  function renderTableRows(data) {
+  function renderTableRows(data, searchTerm = "") {
     if (data.length === 0) {
+      const message = searchTerm
+        ? `<div class="no-results-message">
+            <i class="fas fa-search"></i>
+            <p>No results found for "${searchTerm}"</p>
+            <small>Try searching for submanifest number and consignee name</small>
+          </div>`
+        : "No review history found.";
+
       return `
-                <tr>
-                    <td colspan="5" style="text-align: center">
-                        No review history found.
-                    </td>
-                </tr>
-            `;
+      <tr>
+        <td colspan="5" style="text-align: center">
+          ${message}
+        </td>
+      </tr>
+    `;
     }
 
     return data
@@ -191,25 +253,35 @@ document.addEventListener("DOMContentLoaded", function () {
           item.status === "approved" ? "approved" : "rejected";
         const statusText = item.status === "approved" ? "Approved" : "Rejected";
 
+        // Highlight search terms
+        const highlightedSubmanifest = highlightSearchTerm(
+          item.submanifest_number,
+          searchTerm
+        );
+        const highlightedConsignee = highlightSearchTerm(
+          item.consignee_name,
+          searchTerm
+        );
+
         return `
-                <tr class="clickable-row" data-submanifest-id="${item.id}" style="cursor: pointer;">
-                    <td>${item.submanifest_number}</td>
-                    <td>${item.consignee_name}</td>
-                    <td>${item.created_at}</td>
-                    <td>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
-                    </td>
-                    <td>${item.updated_at}</td>
-                </tr>
-            `;
+        <tr class="clickable-row" data-submanifest-id="${item.id}" style="cursor: pointer;">
+          <td>${highlightedSubmanifest}</td>
+          <td>${highlightedConsignee}</td>
+          <td>${item.created_at}</td>
+          <td>
+            <span class="status-badge ${statusClass}">${statusText}</span>
+          </td>
+          <td>${item.updated_at}</td>
+        </tr>
+      `;
       })
       .join("");
   }
 
-  function goToPage(page, isSort = false) {
+  function goToPage(page, isSort = false, isSearch = false) {
     if (
       isLoading ||
-      (!isSort && page === currentPage) ||
+      (!isSort && !isSearch && page === currentPage) ||
       page < 1 ||
       page > totalPages
     ) {
@@ -219,7 +291,18 @@ document.addEventListener("DOMContentLoaded", function () {
     showLoadingState();
     const startTime = Date.now();
 
-    const url = `/customs/api/review-history/?page=${page}&sort_by=${currentSortBy}&sort_order=${currentSortOrder}`;
+    // Build URL with all parameters
+    const params = new URLSearchParams({
+      page: page,
+      sort_by: currentSortBy,
+      sort_order: currentSortOrder,
+    });
+
+    if (currentSearchQuery && currentSearchQuery.length >= 2) {
+      params.append("search", currentSearchQuery);
+    }
+
+    const url = `/customs/api/review-history/?${params.toString()}`;
 
     fetch(url, {
       method: "GET",
@@ -240,7 +323,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         setTimeout(() => {
           if (data.success) {
-            tableBody.innerHTML = renderTableRows(data.data);
+            tableBody.innerHTML = renderTableRows(
+              data.data,
+              data.search?.query || ""
+            );
 
             currentPage = data.pagination.current_page;
             totalPages = data.pagination.total_pages;
@@ -255,12 +341,6 @@ document.addEventListener("DOMContentLoaded", function () {
             updateSortIcons();
             addRowClickHandlers(); // Re-add click handlers after updating table content
             hideLoadingState();
-
-            const newUrl = new URL(window.location);
-            newUrl.searchParams.set("page", currentPage);
-            newUrl.searchParams.set("sort_by", currentSortBy);
-            newUrl.searchParams.set("sort_order", currentSortOrder);
-            window.history.pushState({}, "", newUrl);
           } else {
             throw new Error(data.error || "Server returned error");
           }

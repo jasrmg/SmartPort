@@ -62,7 +62,11 @@
           {% else %}
           <div class="search-bar">
             <i class="fas fa-search"></i>
-            <input type="text" placeholder="Search..." />
+            <input
+              type="text"
+              placeholder="{{ placeholder }}"
+              id="{{ search_id }}"
+            />
           </div>
           {% endif %}
           <div class="user-menu">
