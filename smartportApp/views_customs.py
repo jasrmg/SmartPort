@@ -56,6 +56,8 @@ def submanifest_review_view(request):
 
   context = {
     'submanifests': pending_submanifests,
+    "placeholder": "Search submanifest",
+    "search_id": "search-input",
     # 'profile': user,
     # 'role': user.role
   }

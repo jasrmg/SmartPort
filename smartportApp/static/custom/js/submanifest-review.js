@@ -1,4 +1,10 @@
 document.addEventListener("DOMContentLoaded", function () {
+  const searchInput = document.getElementById("search-input");
+  const sectionHeader = document.querySelector(".section-header");
+  let currentSearchQuery = "";
+  let searchTimeout = null;
+  let allRows = [];
+
   // Toast function
   const showToast = (msg, isError = false, duration = 2500) => {
     const toast = document.createElement("div");
@@ -56,6 +62,8 @@ document.addEventListener("DOMContentLoaded", function () {
     (row) => !row.querySelector("td[colspan]") // Exclude "no data" rows
   );
 
+  allRows = [...originalOrder];
+
   sortButtons.forEach((button) => {
     button.addEventListener("click", function () {
       const column = parseInt(this.dataset.column);
@@ -93,6 +101,162 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  // ADD SEARCH FUNCTIONALITY
+  if (searchInput) {
+    searchInput.addEventListener("input", function (e) {
+      const query = e.target.value.trim();
+
+      // Clear existing timeout
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      // Set timeout for search (debounce)
+      searchTimeout = setTimeout(() => {
+        handleSearch(query);
+      }, 150); // Shorter delay for client-side search
+    });
+  }
+
+  // SEARCH FUNCTIONS
+  function handleSearch(query) {
+    currentSearchQuery = query;
+
+    // Update UI state
+    if (query && query.length >= 2) {
+      sectionHeader.classList.add("search-active");
+      filterAndDisplayRows(query);
+    } else {
+      sectionHeader.classList.remove("search-active");
+      if (query.length === 0) {
+        // Show all rows when search is cleared
+        filterAndDisplayRows("");
+      }
+    }
+  }
+
+  function filterAndDisplayRows(searchTerm = "") {
+    let filteredRows = allRows;
+
+    // Filter rows based on search term
+    if (searchTerm && searchTerm.length >= 2) {
+      filteredRows = allRows.filter((row) => {
+        const cells = row.querySelectorAll("td");
+        const submanifestNumber =
+          cells[0]?.textContent.trim().toLowerCase() || "";
+        const consigneeName = cells[1]?.textContent.trim().toLowerCase() || "";
+        const submittedBy = cells[2]?.textContent.trim().toLowerCase() || "";
+
+        const searchLower = searchTerm.toLowerCase();
+
+        return (
+          submanifestNumber.includes(searchLower) ||
+          consigneeName.includes(searchLower) ||
+          submittedBy.includes(searchLower)
+        );
+      });
+    }
+
+    // Apply current sort if any button is active
+    const activeSortBtn = document.querySelector(
+      '.sort-btn[data-order]:not([data-order="none"])'
+    );
+    if (activeSortBtn) {
+      const column = parseInt(activeSortBtn.dataset.column);
+      const order = activeSortBtn.dataset.order;
+      filteredRows = sortRowsArray(filteredRows, column, order);
+    }
+
+    // Display filtered and/or sorted rows
+    displayRows(filteredRows, searchTerm);
+  }
+
+  function displayRows(rows, searchTerm = "") {
+    // Clear tbody
+    tbody.innerHTML = "";
+
+    if (rows.length === 0) {
+      const message = searchTerm
+        ? `<div class="no-results-message">
+          <i class="fas fa-search"></i>
+          <p>No results found for "${searchTerm}"</p>
+          <small>Try searching for submanifest number, consignee name, or submitted by</small>
+        </div>`
+        : "No pending submanifests found.";
+
+      const noDataRow = document.createElement("tr");
+      noDataRow.innerHTML = `<td colspan="5" class="no-pending-submanifest">${message}</td>`;
+      tbody.appendChild(noDataRow);
+      return;
+    }
+
+    // Highlight search terms and display rows
+    rows.forEach((row) => {
+      const clonedRow = row.cloneNode(true);
+
+      if (searchTerm && searchTerm.length >= 2) {
+        // Highlight search terms in first 3 columns (submanifest, consignee, submitted by)
+        for (let i = 0; i < 3; i++) {
+          const cell = clonedRow.cells[i];
+          if (cell) {
+            cell.innerHTML = highlightSearchTerm(cell.textContent, searchTerm);
+          }
+        }
+      }
+
+      tbody.appendChild(clonedRow);
+    });
+
+    // Re-attach event listeners to the new buttons
+    attachRowEventListeners();
+  }
+
+  function highlightSearchTerm(text, searchTerm) {
+    if (!searchTerm || searchTerm.length < 2) {
+      return text;
+    }
+
+    const regex = new RegExp(
+      `(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+      "gi"
+    );
+    return text.replace(regex, '<span class="highlight">$1</span>');
+  }
+
+  function attachRowEventListeners() {
+    // Re-attach view button listeners
+    document.querySelectorAll(".btn-icon.view").forEach((button) => {
+      button.addEventListener("click", function () {
+        const submanifestId = this.dataset.submanifestId;
+        window.open(`/customs/submanifest/review/${submanifestId}/`, "_blank");
+      });
+    });
+
+    // Re-attach approve button listeners
+    document.querySelectorAll(".btn-icon.accept").forEach((button) => {
+      button.addEventListener("click", function () {
+        const row = this.closest("tr");
+        const submanifestId =
+          row.querySelector(".btn-icon.view").dataset.submanifestId;
+
+        document.getElementById("approveSubmanifestId").value = submanifestId;
+        approveModal.style.display = "flex";
+      });
+    });
+
+    // Re-attach reject button listeners
+    document.querySelectorAll(".btn-icon.reject").forEach((button) => {
+      button.addEventListener("click", function () {
+        const row = this.closest("tr");
+        const submanifestId =
+          row.querySelector(".btn-icon.view").dataset.submanifestId;
+
+        document.getElementById("rejectSubmanifestId").value = submanifestId;
+        rejectModal.style.display = "flex";
+      });
+    });
+  }
+
   const updateSortIcon = (button, order) => {
     const icon = button.querySelector("i");
     switch (order) {
@@ -110,27 +274,45 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   const restoreOriginalOrder = () => {
-    // Clear tbody
-    tbody.innerHTML = "";
-
-    // Re-append rows in original order (latest first)
-    originalOrder.forEach((row) => tbody.appendChild(row));
-
-    // Add the "no data" row back if it exists and there are no data rows
-    if (originalOrder.length === 0) {
-      const noDataRow = document.createElement("tr");
-      noDataRow.innerHTML =
-        '<td colspan="6" class="no-pending-submanifest">No pending submanifests found.</td>';
-      tbody.appendChild(noDataRow);
+    // If there's a search active, show filtered results in original order
+    if (currentSearchQuery && currentSearchQuery.length >= 2) {
+      filterAndDisplayRows(currentSearchQuery);
+    } else {
+      // Show all rows in original order
+      displayRows(originalOrder);
     }
   };
 
   const sortTable = (columnIndex, order) => {
-    const rows = Array.from(tbody.querySelectorAll("tr")).filter(
-      (row) => !row.querySelector("td[colspan]") // Exclude "no data" rows
-    );
+    // Get currently visible rows (filtered by search if any)
+    let rowsToSort = allRows;
 
-    rows.sort((a, b) => {
+    // Apply search filter if there's an active search
+    if (currentSearchQuery && currentSearchQuery.length >= 2) {
+      rowsToSort = allRows.filter((row) => {
+        const cells = row.querySelectorAll("td");
+        const submanifestNumber =
+          cells[0]?.textContent.trim().toLowerCase() || "";
+        const consigneeName = cells[1]?.textContent.trim().toLowerCase() || "";
+        const submittedBy = cells[2]?.textContent.trim().toLowerCase() || "";
+
+        const searchLower = currentSearchQuery.toLowerCase();
+
+        return (
+          submanifestNumber.includes(searchLower) ||
+          consigneeName.includes(searchLower) ||
+          submittedBy.includes(searchLower)
+        );
+      });
+    }
+
+    const sortedRows = sortRowsArray(rowsToSort, columnIndex, order);
+    displayRows(sortedRows, currentSearchQuery);
+  };
+
+  // ADD THIS HELPER FUNCTION RIGHT AFTER sortTable
+  const sortRowsArray = (rows, columnIndex, order) => {
+    return rows.slice().sort((a, b) => {
       const cellA = a.cells[columnIndex];
       const cellB = b.cells[columnIndex];
 
@@ -139,22 +321,19 @@ document.addEventListener("DOMContentLoaded", function () {
       let valueA = cellA.textContent.trim();
       let valueB = cellB.textContent.trim();
 
-      // Handle different data types
       let comparison = 0;
 
       switch (columnIndex) {
-        case 0: // Submanifest No. - alphanumeric (this also sorts by date since format is SUBM-YYYYMMDD-ID)
+        case 0: // Submanifest No.
           comparison = valueA.localeCompare(valueB, undefined, {
             numeric: true,
           });
           break;
-        case 1: // Consignee Name - text
+        case 1: // Consignee Name
+        case 2: // Submitted By
           comparison = valueA.localeCompare(valueB);
           break;
-        case 2: // Submitted By - text
-          comparison = valueA.localeCompare(valueB);
-          break;
-        case 3: // Date Submitted - date
+        case 3: // Date Submitted
           const dateA = parseDate(valueA);
           const dateB = parseDate(valueB);
           comparison = dateA - dateB;
@@ -165,18 +344,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       return order === "desc" ? -comparison : comparison;
     });
-
-    // Clear tbody and re-append rows in sorted order
-    tbody.innerHTML = "";
-    rows.forEach((row) => tbody.appendChild(row));
-
-    // Add the "no data" row back at the end if no data rows exist
-    if (rows.length === 0) {
-      const noDataRow = document.createElement("tr");
-      noDataRow.innerHTML =
-        '<td colspan="6" class="no-pending-submanifest">No pending submanifests found.</td>';
-      tbody.appendChild(noDataRow);
-    }
   };
 
   const parseDate = (dateString) => {
