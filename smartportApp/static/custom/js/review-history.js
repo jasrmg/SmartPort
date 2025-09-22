@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("hekllo");
   const paginationContainer = document.getElementById("pagination-container");
   const paginationWindow = document.getElementById("pagination-window");
   const prevBtn = document.getElementById("prev-page-btn");
@@ -69,14 +68,28 @@ document.addEventListener("DOMContentLoaded", function () {
       const sortField = columnMap[column];
       if (!sortField) return;
 
-      // Toggle sort order if same column, otherwise default to asc
+      // 3-state toggle: none → asc → desc → none
       if (currentSortBy === sortField) {
-        currentSortOrder = currentSortOrder === "asc" ? "desc" : "asc";
+        if (currentSortOrder === "asc") {
+          currentSortOrder = "desc";
+        } else if (currentSortOrder === "desc") {
+          // Reset to unsorted state
+          currentSortBy = "updated_at"; // Default sort field
+          currentSortOrder = "desc"; // Default sort order
+          this.dataset.order = "none"; // Mark this button as unsorted
+        } else {
+          currentSortOrder = "asc";
+        }
       } else {
+        // Different column clicked, start with asc
+        currentSortBy = sortField;
         currentSortOrder = "asc";
+        // Reset all other buttons to "none"
+        document
+          .querySelectorAll(".sort-btn")
+          .forEach((btn) => (btn.dataset.order = "none"));
       }
 
-      currentSortBy = sortField;
       currentPage = 1; // Reset to first page when sorting
 
       updateSortIcons();
@@ -85,12 +98,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function updateSortIcons() {
-    // Reset all icons
-    document.querySelectorAll(".sort-btn i").forEach((icon) => {
-      icon.className = "fas fa-sort";
-    });
-
-    // Update active sort icon
     const columnMap = {
       submanifest_number: "0",
       consignee_name: "1",
@@ -99,15 +106,37 @@ document.addEventListener("DOMContentLoaded", function () {
       updated_at: "4",
     };
 
+    // Reset all icons to default sort icon
+    document.querySelectorAll(".sort-btn").forEach((btn) => {
+      const icon = btn.querySelector("i");
+      icon.className = "fas fa-sort";
+      btn.dataset.order = "none";
+    });
+
+    // Update active sort icon only if we're not in default state
     const activeColumnIndex = columnMap[currentSortBy];
-    if (activeColumnIndex) {
+    if (activeColumnIndex && currentSortBy !== "updated_at") {
       const activeBtn = document.querySelector(
         `[data-column="${activeColumnIndex}"]`
       );
       if (activeBtn) {
         const icon = activeBtn.querySelector("i");
+        if (currentSortOrder === "asc") {
+          icon.className = "fas fa-sort-up";
+          activeBtn.dataset.order = "asc";
+        } else if (currentSortOrder === "desc") {
+          icon.className = "fas fa-sort-down";
+          activeBtn.dataset.order = "desc";
+        }
+      }
+    } else if (currentSortBy === "updated_at" && activeColumnIndex === "4") {
+      // Special case: if we're sorting by updated_at (default), show the icon on that column
+      const activeBtn = document.querySelector(`[data-column="4"]`);
+      if (activeBtn) {
+        const icon = activeBtn.querySelector("i");
         icon.className =
           currentSortOrder === "asc" ? "fas fa-sort-up" : "fas fa-sort-down";
+        activeBtn.dataset.order = currentSortOrder;
       }
     }
   }

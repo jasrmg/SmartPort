@@ -429,14 +429,6 @@ def review_history_api(request):
       'updated_at': 'updated_at'
     }
 
-    # validate sort field
-    if sort_by in sort_fields:
-      order_field = sort_fields[sort_by]
-      if sort_order == 'desc':
-        order_field = f'-{order_field}'
-    else:
-      order_field = '-updated_at'  # fallback
-
     # Base queryset
     submanifest = SubManifest.objects.filter(
       status__in=["approved", "rejected_by_customs"]
@@ -448,10 +440,17 @@ def review_history_api(request):
         Q(consignee_name__icontains=search_query)
       )
       print(f"Applied search filter for: '{search_query}'")
-    
-    # Apply ordering
-    submanifest = submanifest.order_by(order_field)
 
+    # Handle sorting - validate sort field and apply ordering
+    if sort_by in sort_fields:
+      order_field = sort_fields[sort_by]
+      if sort_order == 'desc':
+        order_field = f'-{order_field}'
+      submanifest = submanifest.order_by(order_field)
+    else:
+      # Fallback to default sorting
+      submanifest = submanifest.order_by('-updated_at')
+    
     print(f"Found {submanifest.count()} submanifests")
 
     paginator = Paginator(submanifest, 25)
