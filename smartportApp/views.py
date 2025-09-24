@@ -1065,6 +1065,34 @@ def update_voyage_status(request):
         description=f"Voyage {voyage.voyage_number} successfully completed. Vessel arrived at {voyage.arrival_port.port_name}.",
         user_profile=user
       )
+
+        # Get unique shipper IDs who have submanifests in this voyage
+      shipper_ids = SubManifest.objects.filter(
+        voyage=voyage,
+        created_by__role=UserProfile.Role.SHIPPER,
+        created_by__isnull=False
+      ).values_list('created_by_id', flat=True).distinct()
+
+      if shipper_ids:
+        # Get the actual UserProfile objects
+        shippers = UserProfile.objects.filter(id__in=shipper_ids)
+
+        # Create notification
+        notification_title = f"Voyage {voyage.voyage_number} Has Arrived"
+        notification_message = f"Your shipment has arrived at {voyage.arrival_port.port_name}. Vessel: {voyage.vessel.name}"
+        link_url = ""  # none since this will only inform the user
+
+        try:
+          create_notification_bulk(
+            recipients=shippers,
+            title=notification_title,
+            message=notification_message,
+            link_url=link_url,
+            triggered_by=user
+          )
+          print(f"📧 Sent arrival notifications to {len(shippers)} shippers for voyage {voyage.voyage_number}")
+        except Exception as notify_error:
+          print(f"❌ Failed to send notifications: {str(notify_error)}")
     
     else:
       # activity log entry if the status is changed. (ex. assigned -> in transit)
