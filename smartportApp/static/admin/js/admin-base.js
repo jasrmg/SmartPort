@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const showToast = (msg, isError = false) => {
+    const toast = document.createElement("div");
+    toast.className = `custom-toast ${isError ? "error" : ""}`;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  };
+
   const hideLoader = () => {
     const loader = document.getElementById("loader");
     loader.classList.add("fade-out");

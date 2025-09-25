@@ -900,6 +900,35 @@ small {
   opacity: 1;
 }
 
+/* TOAST CSS */
+.custom-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 9999;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  animation: fadein 0.3s ease-in-out;
+}
+.custom-toast.error {
+  background: #d14343;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* --------------- ERROR STYLES --------------- */
 .error-message {
   display: flex;
