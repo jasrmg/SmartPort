@@ -190,17 +190,28 @@
               class="modal-actions"
               style="margin-top: 1.5rem; text-align: right"
             >
-              <button
-                type="button"
-                id="editProfileCancelBtn"
-                class="btn-cancel"
-              >
-                Cancel
-              </button>
-              <button type="submit" class="btn-update">
-                <span class="btn-text">Update</span>
-                <span class="spinner" style="display: none"></span>
-              </button>
+              <div id="editProfileOriginalButtons">
+                <button
+                  type="button"
+                  id="editProfileCancelBtn"
+                  class="btn-cancel"
+                >
+                  Cancel
+                </button>
+                <button type="submit" class="btn-update">
+                  <span class="btn-text">Update</span>
+                  <span class="spinner" style="display: none"></span>
+                </button>
+              </div>
+              <div id="editProfileSuccessButtons" style="display: none">
+                <button
+                  type="button"
+                  id="editProfileCloseSuccessBtn"
+                  class="btn-update"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </form>
         </div>

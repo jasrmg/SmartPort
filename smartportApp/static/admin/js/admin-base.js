@@ -39,6 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             avatarPreview.src = "/media/avatars/default_image.jpg"; // fallback default
           }
+          // CHECK IF THERE ARE CHANGES IN THE MODAL
+          checkForProfileChanges();
         });
       });
 
@@ -61,6 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             avatarPreview.src = "/media/avatars/default_image.jpg"; // fallback default
           }
+
+          checkForProfileChanges();
         });
       });
     } else {
@@ -320,6 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
     editProfileModal.style.display = "none";
     clearEditProfileModal();
   });
+
   // MAKE INPUT FIELDS EDITABLE:
   editableFields.forEach((id) => {
     const input = document.getElementById(id);
@@ -328,7 +333,12 @@ document.addEventListener("DOMContentLoaded", () => {
       input.style.backgroundColor = "white";
       input.focus();
     });
+
+    // LISTEN FOR CHANGES:
+    input.addEventListener("input", checkForProfileChanges);
+    input.addEventListener("blur", checkForProfileChanges);
   });
+
   // AVATAR PREVIEW:
   avatarInput.addEventListener("change", function () {
     const file = this.files[0];
@@ -337,6 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
       reader.onload = (e) => (avatarPreview.src = e.target.result);
       reader.readAsDataURL(file);
     }
+
+    checkForProfileChanges();
   });
 
   const avatarFile = avatarInput.files[0];
@@ -344,14 +356,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // FORM SUBMIT:
   editProfileForm.addEventListener("submit", function (e) {
     e.preventDefault();
-    // get the current input values
+    // CHECKING FOR CHANGES SINCE EVEN IF THE BUTTON IS DISABLED IF THERE IS NO CHANGES
     const originalFirst = firstNameInput.getAttribute("data-original") || "";
     const originalLast = lastNameInput.getAttribute("data-original") || "";
 
     const currentFirst = firstNameInput.value.trim();
     const currentLast = lastNameInput.value.trim();
 
-    // Check if values have changed
     const isFirstChanged = currentFirst !== originalFirst;
     const isLastChanged = currentLast !== originalLast;
     const isAvatarUploaded = avatarInput.files.length > 0;
@@ -360,6 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showProfileUpdateStatus("Please change your info", "error");
       return;
     }
+
     // AJAX FOR SUBMISSION LOGIC:
     spinner.style.display = "inline-block";
     btnText.textContent = "Updating";
@@ -380,6 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
           btnText.textContent = "Update";
           return;
         }
+
         const idToken = await user.getIdToken(true);
         const response = await fetch("/api/account/update-profile/", {
           method: "POST",
@@ -388,15 +401,31 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           body: formData,
         });
+
         const result = await response.json();
-        if (!response.ok) showProfileUpdateStatus(result.error, "error");
-        else {
-          showProfileUpdateStatus("Profile updated successfully!", "success");
+
+        if (!response.ok) {
+          showProfileUpdateStatus(result.error, "error");
+          spinner.style.display = "none";
+          btnText.textContent = "Update";
+        } else {
+          // Success handling
+          showEditProfileSuccess();
+
+          // Show toast notification
+          showToast("Profile updated successfully!");
+
           /* UPDATE THE DOM AFTER */
           fetchUserDataFromFirestore((userData) => {
             prefillTopBar(userData);
           });
         }
+        // Auto-close modal after 2 seconds
+        setTimeout(() => {
+          editProfileModal.style.display = "none";
+          resetEditProfileModal();
+        }, 2000);
+
         spinner.style.display = "none";
         btnText.textContent = "Update";
       });
@@ -657,6 +686,65 @@ const clearEditProfileModal = () => {
   statusBox.classList.remove("success", "error", "warning");
   statusIcon.className = "fas";
   statusMsg.textContent = "";
+};
+
+const showEditProfileSuccess = () => {
+  // Show success message
+  showProfileUpdateStatus("Profile updated successfully!", "success");
+
+  // Hide original buttons and show close button
+  const orig = document.getElementById("editProfileOriginalButtons");
+  orig.style.display = "none";
+  console.log(orig);
+  const n = document.getElementById("editProfileSuccessButtons");
+  n.style.display = "block";
+  console.log(n);
+
+  // Add success class to close button
+  const closeBtn = document.getElementById("editProfileCloseSuccessBtn");
+  closeBtn.classList.add("success-close");
+};
+
+// Helper function to reset modal to original state
+const resetEditProfileModal = () => {
+  // Show original buttons and hide success button
+  document.getElementById("editProfileOriginalButtons").style.display = "block";
+  document.getElementById("editProfileSuccessButtons").style.display = "none";
+
+  // Remove success class from close button
+  const closeBtn = document.getElementById("editProfileCloseSuccessBtn");
+  closeBtn.classList.remove("success-close");
+
+  // Re-enable the update button
+  const updateBtn = document.querySelector("#editProfileForm .btn-update");
+  updateBtn.disabled = false;
+
+  // Clear the modal
+  clearEditProfileModal();
+};
+
+const checkForProfileChanges = () => {
+  const firstNameInput = document.getElementById("firstName");
+  const lastNameInput = document.getElementById("lastName");
+  const avatarInput = document.getElementById("avatarUpload");
+  const updateBtn = document.querySelector("#editProfileForm .btn-update");
+
+  const originalFirst = firstNameInput.getAttribute("data-original") || "";
+  const originalLast = lastNameInput.getAttribute("data-original") || "";
+
+  const currentFirst = firstNameInput.value.trim();
+  const currentLast = lastNameInput.value.trim();
+
+  const isFirstChanged = currentFirst !== originalFirst;
+  const isLastChanged = currentLast !== originalLast;
+  const isAvatarUploaded = avatarInput.files.length > 0;
+
+  const hasChanges = isFirstChanged || isLastChanged || isAvatarUploaded;
+
+  // Enable/disable the update button
+  updateBtn.disabled = !hasChanges;
+
+  return hasChanges;
 };
 
 const setActiveSubNavOnLoad = () => {
