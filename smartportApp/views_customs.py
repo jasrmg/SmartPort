@@ -212,6 +212,9 @@ def submanifest_review(request, submanifest_id):
   return render(request, "smartportApp/submanifest.html", context)
   
 
+# -----
+from accounts.firebase import firestore_client
+from google.cloud import firestore
 
 from smartportApp.utils.utils import create_notification, create_notification_bulk
 import json
@@ -286,7 +289,7 @@ def handle_clerance_action(request, submanifest_id, action):
             triggered_by=user
           )
           return JsonResponse({
-            "message": "Submanifest rejected by Admin kekw",
+            "message": "Submanifest rejected by Admin",
             "new_status": "rejected_by_admin"
             })
       
@@ -323,6 +326,37 @@ def handle_clerance_action(request, submanifest_id, action):
                 link_url=f"searcg handle clearance action", # ilisan ni sa path na mo open sa clearance
                 triggered_by=user
               )
+
+            # put it in firebase
+            # Push cargo + delivery info to Firestore
+            cargos = Cargo.objects.filter(submanifest=submanifest)
+            for cargo in cargos:
+              cargo_ref = firestore_client.collection("cargo").document()
+
+              # cargo base data
+              cargo_data = {
+                "cargo_id": cargo.cargo_id,
+                "submanifest_id": cargo.submanifest.submanifest_id,
+                "item_number": cargo.item_number,
+                "description": cargo.description,
+                "quantity": cargo.quantity,
+                "value": float(cargo.value),   # Firestore likes float, not Decimal
+                "weight": float(cargo.weight),
+                "additional_info": cargo.additional_info or "",
+                "hs_code": cargo.hs_code or "",
+              }
+
+              cargo_ref.set(cargo_data)
+
+              # add delivery subcollection
+              delivery_ref = cargo_ref.collection("delivery").document()  # auto-ID
+              delivery_data = {
+                "cargo_delivery_id": cargo.cargo_id,   # 🔹 suggestion: reuse cargo_id, Firestore can’t auto-increment safely
+                "confirmed_at": firestore.SERVER_TIMESTAMP,
+                "confirmed_by": "ilaha na ning boss chan2",  # assuming userprofile has firebase_uid
+                "remarks": "ilaha na ning boss chan2",        # default message
+              }
+              delivery_ref.set(delivery_data)
           except ValueError as e:
             print(f"Notification creation failed. {e}")
 

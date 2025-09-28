@@ -320,7 +320,7 @@ class CargoDelivery(models.Model):
     on_delete=models.SET_NULL,
     null=True,
     limit_choices_to={"role": "shipper"}
-  )
+  ) 
   confirmed_at = models.DateTimeField(auto_now_add=True)
   remarks = models.TextField(blank=True, null=True)
 

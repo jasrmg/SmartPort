@@ -921,6 +921,7 @@ def format_currency(value):
   return f"₱{intcomma(value)}" if value == int(value) else f"₱{intcomma(value):s}"
 
 from django.views.decorators.http import require_POST, require_GET
+
 # HELPER ENDPOINT TO PREFILL THE CARGO TABLE ONCE CLICKED:
 @require_GET
 def get_cargo_items(request, submanifest_id):
