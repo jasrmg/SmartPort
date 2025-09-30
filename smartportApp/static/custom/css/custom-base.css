@@ -822,11 +822,13 @@ h6 {
 .btn-update {
   background-color: var(--accent);
   color: #fff;
+  min-width: 120px;
 }
 
 .btn-danger {
   background-color: var(--danger);
   color: #fff;
+  min-width: 120px;
 }
 
 /* BUTTON SPINNER EFFECTS */
