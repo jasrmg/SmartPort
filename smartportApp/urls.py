@@ -83,9 +83,9 @@ urlpatterns = [
   # VIEW SUBMANIFEST
   path("submanifest/<int:submanifest_id>/", views.submanifest_view, name="submanifest-view"),
   # APPROVE SUBMANIFEST UNIFIED ENDPOINT WITH THE CUSTOMS
-  # path("submanifest/<int:submanifest_id>/approve/", views.admin_approve_submanifest, name="approve-submanifest"),
+  path("submanifest/<int:submanifest_id>/approve/", views.admin_approve_submanifest, name="approve-submanifest"),
   # REJECT SUBMANIFEST
-  # path("submanifest/<int:submanifest_id>/reject/", views.admin_reject_submanifest, name="reject-submanifest"),
+  path("submanifest/<int:submanifest_id>/reject/", views.admin_reject_submanifest, name="reject-submanifest"),
 
   # INCIDENT REPORT PART:
   path('submit-incident/', views.submit_incident_report, name='submit_incident_report'),
