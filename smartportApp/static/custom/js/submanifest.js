@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("hello: ", csrftoken);
-
   // HS Code editing functionality
   document.querySelectorAll(".hs-code-cell").forEach((cell) => {
     const editableSpan = cell.querySelector(".hs-code-editable");

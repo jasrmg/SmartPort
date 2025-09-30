@@ -408,17 +408,14 @@ const initApproveSubmanifest = (voyageId) => {
         btn.remove();
         row.querySelector(".reject-btn")?.remove();
 
-        // Check if all are approved or pending_customs
-        const allApproved = Array.from(
+        // Check if all are approved
+        const hasApproved = Array.from(
           document.querySelectorAll(".status-badge")
         ).every((badge) => {
-          return (
-            badge.classList.contains("approved") ||
-            badge.classList.contains("pending_customs")
-          );
+          return badge.classList.contains("approved");
         });
 
-        if (allApproved) {
+        if (hasApproved) {
           const dynamicGenerateBtn = document.querySelector(
             `#generate-manifest-btn[data-voyage-id="${voyageId}"]`
           );
