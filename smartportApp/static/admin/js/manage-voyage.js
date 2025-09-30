@@ -62,6 +62,13 @@ document.addEventListener("DOMContentLoaded", () => {
         option.value = status;
         option.text = formatStatus(status);
         if (status === originalStatus) option.selected = true;
+
+        // Disable "assigned" option so it can't be selected
+        if (status === "assigned") {
+          option.disabled = true;
+          option.style.color = "#999";
+        }
+
         select.appendChild(option);
       });
 
@@ -198,6 +205,9 @@ const updateVoyageStatus = async (voyageId, status, reason = "") => {
       throw new Error(errorData.message || "Status update failed.");
     }
 
+    // Parse response data
+    const responseData = await response.json();
+
     if (!selectedCell) {
       selectedCell = document.querySelector(
         `.status-column[data-id="${voyageId}"]`
@@ -234,7 +244,25 @@ const updateVoyageStatus = async (voyageId, status, reason = "") => {
 
     closeModals();
     notifyVoyageUpdated();
-    showToast("Voyage status updated successfully!");
+
+    // Handle different toast messages based on status and master manifest generation
+    if (status === "in_transit") {
+      if (responseData.master_manifest_generated === true) {
+        showToast(
+          "Voyage marked as In Transit. Master Manifest generated successfully!"
+        );
+      } else if (responseData.master_manifest_generated === "already_exists") {
+        showToast(
+          "Voyage marked as In Transit. Master Manifest already exists for this voyage."
+        );
+      } else {
+        showToast(
+          "Voyage marked as In Transit. No approved submanifests found — Master Manifest not generated."
+        );
+      }
+    } else {
+      showToast("Voyage status updated successfully!");
+    }
   } catch (err) {
     showToast(err.message || "An error occurred. Please try again.", true);
     console.error(err);

@@ -945,6 +945,78 @@ def get_active_voyages():
 
 
 # ======================== UPDATE VOYAGE STATUS ========================
+
+# ==================== TESTING ZONE ====================
+def generate_master_manifest_logic(voyage, user):
+  """
+  Reusable logic to generate a master manifest for a voyage.
+  Returns (success: bool, message: str, master_manifest: MasterManifest or None)
+  """
+  # Only approved submanifests
+  approved_submanifests = SubManifest.objects.filter(voyage=voyage, status="approved")
+
+  # Must have at least 1 approved submanifest
+  if not approved_submanifests.exists():
+      return False, "No approved submanifests available for this voyage.", None
+  
+  # Check if master manifest already exists
+  if MasterManifest.objects.filter(voyage=voyage).exists():
+      return False, "Master Manifest already exists for this voyage.", None
+
+  try:
+    with transaction.atomic():
+      master_manifest = MasterManifest.objects.create(
+        voyage=voyage,
+        vessel=voyage.vessel,
+        created_by=user,
+        status="generated",
+        created_at=now(),
+      )
+
+      # Format for mastermanifest_number: MASM-YYYYMMDD-ID
+      today_str = now().strftime("%Y%m%d")
+      manifest_number = f"MASM-{today_str}-{master_manifest.mastermanifest_id}"
+
+      # Update the instance with the generated number
+      master_manifest.mastermanifest_number = manifest_number
+      master_manifest.save(update_fields=["mastermanifest_number"])
+
+      # Link approved submanifests to the master manifest
+      approved_submanifests.update(master_manifest=master_manifest)
+
+      return True, "Master Manifest generated successfully.", master_manifest
+  except Exception as e:
+    return False, str(e), None
+
+
+def generate_master_manifest(request, voyage_id):
+  """
+  API endpoint to manually generate master manifest
+  """
+  if request.method != "POST":
+      return JsonResponse({"error": "Invalid method"}, status=405)
+  
+  try:
+    voyage = Voyage.objects.get(voyage_id=voyage_id)
+    user = request.user.userprofile
+    
+    success, message, master_manifest = generate_master_manifest_logic(voyage, user)
+    
+    if not success:
+      return JsonResponse({"error": message}, status=400)
+    
+    return JsonResponse({
+      "message": message,
+      "manifest_id": master_manifest.pk
+    })
+
+  except Voyage.DoesNotExist:
+    return JsonResponse({"error": "Voyage not found"}, status=404)
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
+
+
+# ============================================================
 # MANAGE VOYAGE
 @require_POST
 @login_required
@@ -954,11 +1026,6 @@ def update_voyage_status(request):
     voyage_id = data.get("voyage_id")
     new_status = data.get("status")
     reason = data.get("reason", "").strip()
-
-    print("🚢 Voyage ID:", voyage_id)
-    print("✅ New Status:", new_status)
-    print("📝 Reason:", reason)
-
 
     if not voyage_id or not new_status:
       return JsonResponse({"error": "Missing required data."}, status=400)
@@ -989,7 +1056,42 @@ def update_voyage_status(request):
     
     # Update voyage status
     voyage.status = new_status
-    if new_status == "arrived":
+
+
+    # Auto-generate master manifest when status changes to in_transit
+    master_manifest_generated = False
+    master_manifest_message = ""
+
+    if new_status == "in_transit":
+      # Check if master manifest doesn't exist yet
+      if not MasterManifest.objects.filter(voyage=voyage).exists():
+        success, message, master_manifest = generate_master_manifest_logic(voyage, user)
+
+        if success:
+          master_manifest_generated = True
+          master_manifest_message = f"Master Manifest {master_manifest.mastermanifest_number} auto-generated."
+          print(f"✅ Master Manifest auto-generated: {master_manifest.mastermanifest_number}")
+          # Log the auto-generation
+          log_vessel_activity(
+            vessel=voyage.vessel,
+            action_type=ActivityLog.ActionType.STATUS_UPDATE,
+            description=f"Voyage {voyage.voyage_number} status changed to In Transit. Master Manifest {master_manifest.mastermanifest_number} auto-generated.",
+            user_profile=user
+          )
+        else:
+          master_manifest_generated = False
+          master_manifest_message = message
+          # Log that manifest generation was skipped
+          print(f"⚠️ Master Manifest not generated: {message}")
+      
+      else:
+        master_manifest_generated = "already_exists" 
+        master_manifest_message = "Master Manifest already exists."
+        print(f"ℹ️ Master Manifest already exists for voyage {voyage.voyage_number}")
+
+      voyage.save()
+        
+    elif new_status == "arrived":
       voyage.arrival_date = now()
       voyage.save()
 
@@ -1095,15 +1197,22 @@ def update_voyage_status(request):
           print(f"❌ Failed to send notifications: {str(notify_error)}")
     
     else:
-      # activity log entry if the status is changed. (ex. assigned -> in transit)
-      log_vessel_activity(
-        vessel=voyage.vessel,
-        action_type=ActivityLog.ActionType.STATUS_UPDATE,
-        description=f"Voyage {voyage.voyage_number} status changed to {new_status}.",
-        user_profile=user
-      )
+      if new_status != "in_transit":
+        log_vessel_activity(
+          vessel=voyage.vessel,
+          action_type=ActivityLog.ActionType.STATUS_UPDATE,
+          description=f"Voyage {voyage.voyage_number} status changed to {new_status}.",
+          user_profile=user
+        )
 
-    return JsonResponse({"message": f"Voyage status updated to {new_status}."})
+    response_data = {"message": f"Voyage status updated to {new_status}."}
+    # Add master manifest info if status was changed to in_transit
+    if new_status == "in_transit":
+      response_data["master_manifest_generated"] = master_manifest_generated
+      response_data["master_manifest_message"] = master_manifest_message
+
+    return JsonResponse(response_data)
+    
 
   except json.JSONDecodeError:
     return JsonResponse({"error": "Invalid JSON payload."}, status=400)
@@ -1385,124 +1494,125 @@ def get_submanifests_by_voyage(request, voyage_id):
 
 # REJECT SUBMANIFEST: ADMIN BASIN WA NAY GAMIT
 @require_POST
-# def admin_reject_submanifest(request, submanifest_id):
-#   print("REJECTING")
-#   if not request.user.userprofile.role == "admin":
-#     return JsonResponse({"error": "Unauthorized"}, status=403)
+def admin_reject_submanifest(request, submanifest_id):
+  print("REJECTING")
+  if not request.user.userprofile.role == "admin":
+    return JsonResponse({"error": "Unauthorized"}, status=403)
   
-#   try:
-#     data = json.loads(request.body)
-#     note = data.get("note", "").strip()
-#     if not note:
-#       return JsonResponse({"error": "Rejection reason required"}, status=400)
+  try:
+    data = json.loads(request.body)
+    note = data.get("note", "").strip()
+    if not note:
+      return JsonResponse({"error": "Rejection reason required"}, status=400)
     
-#     user = request.user.userprofile
+    user = request.user.userprofile
 
-#     sub = SubManifest.objects.get(submanifest_id=submanifest_id)
-#     sub.status = "rejected_by_admin"
-#     sub.admin_note = note
-#     sub.updated_by = user
-#     sub.save()
+    sub = SubManifest.objects.get(submanifest_id=submanifest_id)
+    sub.status = "rejected_by_admin"
+    sub.admin_note = note
+    sub.updated_by = user
+    sub.save()
 
 
-#     link_url = f"/edit/submitted-shipment/{sub.submanifest_id}/"
-#     # send notification to the shipper
-#     create_notification(
-#       user=sub.created_by,
-#       title="Submanifest Rejected",
-#       message=f"Your submanifest ({sub.submanifest_number}) was rejected by the admin. Reason: {note}",
-#       link_url=link_url,
-#       triggered_by=user
-#     )
+    link_url = f"/edit/submitted-shipment/{sub.submanifest_id}/"
+    # send notification to the shipper
+    create_notification(
+      user=sub.created_by,
+      title="Submanifest Rejected",
+      message=f"Your submanifest ({sub.submanifest_number}) was rejected by the admin. Reason: {note}",
+      link_url=link_url,
+      triggered_by=user
+    )
 
-#     return JsonResponse({"message": "Rejected"})
+    return JsonResponse({"message": "Rejected"})
   
-#   except SubManifest.DoesNotExist:
-#     return JsonResponse({"error": "Submanifest not found"}, status=404)
+  except SubManifest.DoesNotExist:
+    return JsonResponse({"error": "Submanifest not found"}, status=404)
 
 
 
 # APPROVE SUBMANIFEST: ADMIN BASIN WA NAY GAMIT
-# def admin_approve_submanifest(request, submanifest_id):
-#   print("APPROVING")
-#   if not request.user.userprofile.role == "admin":
-#     return JsonResponse({"error": "Unauthorized"}, status=403)
+def admin_approve_submanifest(request, submanifest_id):
+  print("APPROVING")
+  if not request.user.userprofile.role == "admin":
+    return JsonResponse({"error": "Unauthorized"}, status=403)
   
-#   submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
+  submanifest = get_object_or_404(SubManifest, pk=submanifest_id)
 
-#   if submanifest.status == "pending_customs":
-#     return JsonResponse({"error": "Submanifest already approved"}, status=400)
+  if submanifest.status == "pending_customs":
+    return JsonResponse({"error": "Submanifest already approved"}, status=400)
   
-#   submanifest.status = "pending_customs"
-#   submanifest.save()
+  submanifest.status = "pending_customs"
+  submanifest.save()
 
-#   # log activity
-#   log_vessel_activity(
-#     vessel=submanifest.voyage.vessel,
-#     action_type=ActivityLog.ActionType.SUBMANIFEST_APPROVED,
-#     description=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
-#     user_profile=request.user.userprofile
-#   )
+  # log activity
+  log_vessel_activity(
+    vessel=submanifest.voyage.vessel,
+    action_type=ActivityLog.ActionType.SUBMANIFEST_APPROVED,
+    description=f"Submanifest #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
+    user_profile=request.user.userprofile
+  )
 
-#   # send notification to the shipper without link url
-#   print("============ NOTIFY SHIPPER ============= ")
-#   create_notification(
-#     user=submanifest.created_by,
-#     title="Submanifest Approved",
-#     message=f"Submanifestss #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
-#     link_url="",
-#     triggered_by=request.user.userprofile
-#   )
+  # send notification to the shipper without link url
+  print("============ NOTIFY SHIPPER ============= ")
+  create_notification(
+    user=submanifest.created_by,
+    title="Submanifest Approved",
+    message=f"Submanifestss #{submanifest.submanifest_number} was approved by the admin and is now pending for customs approval.",
+    link_url="",
+    triggered_by=request.user.userprofile
+  )
 
   
-#   return JsonResponse({"success": True, "message": "Submanifest approved successfully"})
+  return JsonResponse({"success": True, "message": "Submanifest approved successfully"})
 
-def generate_master_manifest(request, voyage_id):
-  if request.method != "POST":
-    return JsonResponse({"error": "Invalid method"}, status=405)
+# def generate_master_manifest(request, voyage_id):
+#   if request.method != "POST":
+#     return JsonResponse({"error": "Invalid method"}, status=405)
   
-  try:
-    voyage = Voyage.objects.get(voyage_id=voyage_id)
-    # only approved submanifest
-    approved_submanifest = SubManifest.objects.filter(voyage=voyage, status="approved")
+#   try:
+#     voyage = Voyage.objects.get(voyage_id=voyage_id)
+#     # only approved submanifest
+#     approved_submanifest = SubManifest.objects.filter(voyage=voyage, status="approved")
 
-    # must have at least 1 submanifest that is approved
-    if not approved_submanifest.exists():
-      return JsonResponse({"error": "No approved submanifests available for this voyage."}, status=400)
+#     # must have at least 1 submanifest that is approved
+#     if not approved_submanifest.exists():
+#       return JsonResponse({"error": "No approved submanifests available for this voyage."}, status=400)
 
-    # if submanifest.filter(status__in=["rejected_by_admin", "rejected_by_customs"]).exists():
-    #   return JsonResponse({"error": "Some submanifests are not approved yet."}, status=400)
+#     # if submanifest.filter(status__in=["rejected_by_admin", "rejected_by_customs"]).exists():
+#     #   return JsonResponse({"error": "Some submanifests are not approved yet."}, status=400)
     
-    if MasterManifest.objects.filter(voyage=voyage).exists():
-      return JsonResponse({"error": "Master Manifest already exists for this voyage."}, status=400)
+#     if MasterManifest.objects.filter(voyage=voyage).exists():
+#       return JsonResponse({"error": "Master Manifest already exists for this voyage."}, status=400)
 
 
-    with transaction.atomic():
-      master_manifest = MasterManifest.objects.create(
-        voyage=voyage,
-        vessel=voyage.vessel,
-        created_by=request.user.userprofile,
-        status="generated",
-        created_at=now(),
-      )
+#     with transaction.atomic():
+#       master_manifest = MasterManifest.objects.create(
+#         voyage=voyage,
+#         vessel=voyage.vessel,
+#         created_by=request.user.userprofile,
+#         status="generated",
+#         created_at=now(),
+#       )
 
-      # format for mastermanifest_number: MASM-YYYYMMDD-ID
-      today_str = now().strftime("%Y%m%d")
-      manifest_number = f"MASM-{today_str}-{master_manifest.mastermanifest_id}"
+#       # format for mastermanifest_number: MASM-YYYYMMDD-ID
+#       today_str = now().strftime("%Y%m%d")
+#       manifest_number = f"MASM-{today_str}-{master_manifest.mastermanifest_id}"
 
-      # update the instance with the generated number:
-      master_manifest.mastermanifest_number = manifest_number
-      master_manifest.save(update_fields=["mastermanifest_number"])
+#       # update the instance with the generated number:
+#       master_manifest.mastermanifest_number = manifest_number
+#       master_manifest.save(update_fields=["mastermanifest_number"])
 
-      # update submanifest to link it to the master manifest
-      approved_submanifest.update(master_manifest=master_manifest)
+#       # update submanifest to link it to the master manifest
+#       approved_submanifest.update(master_manifest=master_manifest)
 
-  except Voyage.DoesNotExist:
-    return JsonResponse({"error": "Voyage not found"}, status=404)
-  except Exception as e:
-    return JsonResponse({"error": str(e)}, status=500)
+#   except Voyage.DoesNotExist:
+#     return JsonResponse({"error": "Voyage not found"}, status=404)
+#   except Exception as e:
+#     return JsonResponse({"error": str(e)}, status=500)
   
-  return JsonResponse({"message": "Master Manifest generated successfully.", "manifests_id": master_manifest.pk})
+#   return JsonResponse({"message": "Master Manifest generated successfully.", "manifests_id": master_manifest.pk})
+
 
 def get_master_manifest_id(request, voyage_id):
   try:
