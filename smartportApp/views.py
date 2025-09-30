@@ -1017,6 +1017,9 @@ def generate_master_manifest(request, voyage_id):
 
 
 # ============================================================
+from accounts.firebase import firestore_client
+from google.cloud import firestore
+
 # MANAGE VOYAGE
 @require_POST
 @login_required
@@ -1098,6 +1101,43 @@ def update_voyage_status(request):
       # set the vessel status to available
       voyage.vessel.status = "available"
       voyage.vessel.save()
+
+
+      # Push cargo + delivery data to Firestore
+      submanifests = SubManifest.objects.filter(voyage=voyage)
+      cargos = Cargo.objects.filter(submanifest__in=submanifests)
+
+      for cargo in cargos:
+        # Save cargo data in Firestore
+        cargo_ref = firestore_client.collection("cargo").document(str(cargo.cargo_id))
+
+        cargo_data = {
+          "cargo_id": cargo.cargo_id,
+          "submanifest_id": cargo.submanifest.submanifest_id,
+          "item_number": cargo.item_number,
+          "description": cargo.description,
+          "quantity": cargo.quantity,
+          "value": float(cargo.value),
+          "weight": float(cargo.weight),
+          "additional_info": cargo.additional_info or "",
+          "hs_code": cargo.hs_code or "",
+          "origin": cargo.submanifest.consignor_address if cargo.submanifest.consignor_address else "",
+          "destination": cargo.submanifest.consignee_address if cargo.submanifest.consignee_address else "",
+          "created_at": cargo.submanifest.created_at,
+        }
+        cargo_ref.set(cargo_data, merge=True)
+
+        # Add delivery record in cargo_delivery
+        delivery_ref = firestore_client.collection("cargo_delivery").document(str(cargo.cargo_id))
+        delivery_data = {
+          "cargo_id": cargo.cargo_id,
+          "confirmed_at": None, # team b will add the name of the person that received the cargo
+          "confirmed_by": "",  # team b will add the name of the person that received the cargo
+          "remarks": "" # team b will add the name of the person that received the cargo
+        }
+        delivery_ref.set(delivery_data, merge=True)
+
+      print(f"✅ Synced {cargos.count()} cargos to Firestore for voyage {voyage.voyage_number}")
     else:
       voyage.save()
 
