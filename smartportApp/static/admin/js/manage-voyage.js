@@ -8,6 +8,26 @@ let currentVoyageNumber = null;
 
 const reasonModal = document.getElementById("delayedReasonModal");
 
+const showToast = (msg, isError = false, duration = 2500) => {
+  const toast = document.createElement("div");
+  toast.className = `custom-toast ${isError ? "error" : ""}`;
+  toast.textContent = msg;
+
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    toast.addEventListener("transitionend", () => toast.remove());
+  }, duration);
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const confirmModal = document.getElementById(
     "confirmVoyageStatusChangeModal"
@@ -154,18 +174,8 @@ const hideSpinner = (button) => {
   button.querySelector(".spinner").style.display = "none";
 };
 
-const showSuccessModal = () => {
-  const modal = document.getElementById("statusSuccessModal");
-  modal.style.display = "flex";
-  setTimeout(() => {
-    modal.style.display = "none";
-  }, 2500);
-};
-
 // BACKEND CALL
 const updateVoyageStatus = async (voyageId, status, reason = "") => {
-  console.log("🔁 Updating status to:", status);
-
   const button =
     status === "delayed"
       ? document.getElementById("submitDelayReason")
@@ -183,7 +193,10 @@ const updateVoyageStatus = async (voyageId, status, reason = "") => {
       body: JSON.stringify({ voyage_id: voyageId, status, reason }),
     });
 
-    if (!response.ok) throw new Error("Status update failed.");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Status update failed.");
+    }
 
     if (!selectedCell) {
       selectedCell = document.querySelector(
@@ -221,9 +234,9 @@ const updateVoyageStatus = async (voyageId, status, reason = "") => {
 
     closeModals();
     notifyVoyageUpdated();
-    showSuccessModal();
+    showToast("Voyage status updated successfully!");
   } catch (err) {
-    alert("An error occurred. Please try again.");
+    showToast(err.message || "An error occurred. Please try again.", true);
     console.error(err);
   } finally {
     hideSpinner(button);
