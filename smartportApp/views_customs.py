@@ -218,7 +218,9 @@ from google.cloud import firestore
 
 from smartportApp.utils.utils import create_notification, create_notification_bulk
 import json
-def handle_clerance_action(request, submanifest_id, action):
+from django.urls import reverse
+
+def handle_clearance_action(request, submanifest_id, action):
   """
   approve or reject the clearance of the submanifest
   """
@@ -323,7 +325,7 @@ def handle_clerance_action(request, submanifest_id, action):
                 user=shipper,
                 title="Submanifest Approved",
                 message=f"Your submanifest {submanifest.submanifest_number} has been approved.",
-                link_url=f"searcg handle clearance action", # ilisan ni sa path na mo open sa clearance
+                link_url=reverse("custom_clearance", args=[submanifest.submanifest_id]),
                 triggered_by=user
               )
 

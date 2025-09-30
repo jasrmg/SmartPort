@@ -12,7 +12,7 @@ urlpatterns = [
   path("submanifest/review/<int:submanifest_id>/", views_customs.submanifest_review, name="submanifest-review"),
   # update hs code
   path('cargo/<int:cargo_id>/update-hs-code/', views_customs.update_cargo_hs_code, name='update_cargo_hs_code'),
-  path("clearance/<int:submanifest_id>/<str:action>/", views_customs.handle_clerance_action, name="handle-clearance-action"),
+  path("clearance/<int:submanifest_id>/<str:action>/", views_customs.handle_clearance_action, name="handle-clearance-action"),
   # review history
   path('review-history/', views_customs.review_history_view, name='review-history'),
   path('api/review-history/', views_customs.review_history_api, name='review-history-api'), # api endpoint for ajax pagination

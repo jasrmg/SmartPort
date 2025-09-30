@@ -1,6 +1,5 @@
 from django.urls import path
-from . import views
-from . import views_shipper
+from . import views, views_shipper, views_customs
 from .utils import notification 
 
 urlpatterns = [
@@ -83,9 +82,11 @@ urlpatterns = [
   # VIEW SUBMANIFEST
   path("submanifest/<int:submanifest_id>/", views.submanifest_view, name="submanifest-view"),
   # APPROVE SUBMANIFEST UNIFIED ENDPOINT WITH THE CUSTOMS
-  path("submanifest/<int:submanifest_id>/approve/", views.admin_approve_submanifest, name="approve-submanifest"),
+  # path("submanifest/<int:submanifest_id>/approve/", views.admin_approve_submanifest, name="approve-submanifest"),
   # REJECT SUBMANIFEST
-  path("submanifest/<int:submanifest_id>/reject/", views.admin_reject_submanifest, name="reject-submanifest"),
+  # path("submanifest/<int:submanifest_id>/reject/", views.admin_reject_submanifest, name="reject-submanifest"),
+  # REUSED THE VIEW FROM CUSTOMS FOR THE APPROVE AND REJECT
+  path('submanifest/<int:submanifest_id>/<str:action>/', views_customs.handle_clearance_action, name='handle_clearance_action'),
 
   # INCIDENT REPORT PART:
   path('submit-incident/', views.submit_incident_report, name='submit_incident_report'),
