@@ -12,6 +12,26 @@ const deleteVesselCloseBtn = document.getElementById("deleteVesselCloseBtn");
 const deleteVesselCancelBtn = document.getElementById("cancelDeleteBtn");
 const deleteVesselConfirmBtn = document.getElementById("confirmDeleteBtn");
 
+const showToast = (msg, isError = false, duration = 2500) => {
+  const toast = document.createElement("div");
+  toast.className = `custom-toast ${isError ? "error" : ""}`;
+  toast.textContent = msg;
+
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    toast.addEventListener("transitionend", () => toast.remove());
+  }, duration);
+};
+
 document.addEventListener("DOMContentLoaded", function () {
   // ------------------ SORT TABLE LOGIC ------------------
   const sortButtons = document.querySelectorAll(".sort-btn");
@@ -449,12 +469,6 @@ const closeConfirmModal = () => {
   document.getElementById("confirmStatusChangeModal").style.display = "none";
 };
 
-const showSuccessModal = () => {
-  const modal = document.getElementById("statusSuccessModal");
-  modal.style.display = "flex";
-  setTimeout(() => (modal.style.display = "none"), 1500);
-};
-
 const cancelStatusChange = () => {
   selectedCell.innerHTML = `
     <span class="status-badge ${getStatusClass(originalValue)}">
@@ -492,16 +506,20 @@ const confirmStatusChange = () => {
         <span class="status-badge ${newValue}">
           ${formatStatus(newValue)}
         </span>`;
-        showSuccessModal();
+
+        showToast("Vessel status updated successfully.");
       } else {
         console.error("Backend error:", data);
-        alert("Failed to update: " + (data.message || "Unknown error"));
+        showToast(
+          "Failed to update: " + (data.message || "Unknown error"),
+          true
+        );
         cancelStatusChange();
       }
     })
     .catch((err) => {
       console.error("Fetch error:", err);
-      alert("Error updating status.");
+      showToast("Error updating vessel status.", true);
       cancelStatusChange();
     })
     .finally(() => {
