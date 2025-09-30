@@ -444,7 +444,8 @@ def shipper_submit_shipment_view(request):
   .order_by("departure_date")
 
   context = {
-    "voyages": voyages
+    "voyages": voyages,
+    "show_logo_text": True,
   }
   return render(request, "smartportApp/shipper/submit-shipment.html", context)
 
