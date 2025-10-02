@@ -126,10 +126,10 @@ document.addEventListener("DOMContentLoaded", () => {
           cardsContainer.querySelectorAll(".submanifest-card");
         const actualCardCount = actualCards.length;
 
-        console.log(
-          "📊 [PAGINATION] Actual card count after DOM update:",
-          actualCardCount
-        );
+        // console.log(
+        //   "📊 [PAGINATION] Actual card count after DOM update:",
+        //   actualCardCount
+        // );
       }
 
       if (newPagination) {
@@ -146,34 +146,34 @@ document.addEventListener("DOMContentLoaded", () => {
           cardsContainer?.querySelectorAll(".submanifest-card") || [];
         const actualCardCount = actualCards.length;
 
-        console.log("📄 [PAGINATION] Server pagination data:", {
-          serverTotalPages,
-          serverCurrentPage,
-          actualCardCount,
-        });
+        // console.log("📄 [PAGINATION] Server pagination data:", {
+        //   serverTotalPages,
+        //   serverCurrentPage,
+        //   actualCardCount,
+        // });
 
         // Client-side validation: only show pagination if we actually have multiple pages worth of content
         const shouldShowPagination =
           actualCardCount > 0 && serverTotalPages > 1;
 
-        console.log("📄 [PAGINATION] Pagination decision:", {
-          serverTotalPages,
-          actualCardCount,
-          shouldShowPagination,
-        });
+        // console.log("📄 [PAGINATION] Pagination decision:", {
+        //   serverTotalPages,
+        //   actualCardCount,
+        //   shouldShowPagination,
+        // });
 
         paginationContainer.replaceWith(newPagination);
         paginationContainer = document.getElementById("pagination-container");
 
         // Apply the same validation logic as search module
         if (shouldShowPagination) {
-          console.log("📄 [PAGINATION] SHOWING pagination");
+          // console.log("📄 [PAGINATION] SHOWING pagination");
           paginationContainer.style.display = "flex";
           initPagination();
         } else {
-          console.log(
-            "📄 [PAGINATION] HIDING pagination - single page or no results"
-          );
+          // console.log(
+          //   "📄 [PAGINATION] HIDING pagination - single page or no results"
+          // );
           paginationContainer.style.display = "none";
         }
       } else if (paginationContainer) {
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Update button text/icon based on clearance status
       const icon = viewClearanceBtn.querySelector("i");
       const text = viewClearanceBtn.querySelector("span") || viewClearanceBtn;
-      console.log("icon: ", icon);
+      // console.log("icon: ", icon);
     } else {
       viewClearanceBtn.style.display = "none";
     }
@@ -423,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editSubmanifestBtn.disabled ||
         editSubmanifestBtn.classList.contains("disabled")
       ) {
-        console.log("blocked");
+        // console.log("blocked");
         e.preventDefault();
         return;
       }
@@ -441,9 +441,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Init filter change - ADD LOGGING HERE
   [originSelect, destinationSelect, vesselTypeSelect].forEach((select) => {
     select.addEventListener("change", async () => {
-      console.log(
-        `🎛️ [PAGINATION] Filter changed: ${select.id} = ${select.value}`
-      );
+      // console.log(
+      //   `🎛️ [PAGINATION] Filter changed: ${select.id} = ${select.value}`
+      // );
       currentPage = 1;
       // Show loading state before loading
       showLoadingState();
@@ -458,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
     allowInput: false,
     onChange: async (selectedDates, dateStr) => {
       if (dateStr) {
-        console.log(`📅 [PAGINATION] Date filter changed: ${dateStr}`);
+        // console.log(`📅 [PAGINATION] Date filter changed: ${dateStr}`);
         dateFilterElement.value = dateStr;
         currentPage = 1;
 
@@ -484,7 +484,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Manual clear handler
   clearDateBtn.addEventListener("click", async () => {
-    console.log("🗑️ [PAGINATION] Clear date filter clicked");
+    // console.log("🗑️ [PAGINATION] Clear date filter clicked");
     datePicker.clear();
     dateFilterElement.value = "";
     toggleClearBtn();
