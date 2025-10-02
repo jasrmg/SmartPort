@@ -135,6 +135,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+
+  flex-wrap: wrap;
 }
 .voyage-reports-header h2 {
   font-size: 1.4rem;
@@ -143,7 +145,9 @@
 }
 
 .search-filter {
-  width: 250px;
+  flex: 1;
+  min-width: 210px;
+  max-width: 210px;
 }
 /* CSS PARA SA VESSEL TYPES NA PANG SORT DAPAT MAO NI I DEFAULT STYLE SA MGA DROPDOWN */
 .form-select {
@@ -164,6 +168,8 @@
   background-position: right 0.75rem center;
   background-size: 1rem;
   transition: border-color 0.2s ease-in-out;
+
+  width: 100%;
 }
 
 .form-select:focus {
@@ -286,11 +292,17 @@
     grid-template-columns: 1fr;
   }
   .voyage-reports-header {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
   }
   .voyage-reports-header h2 {
     margin-bottom: 1rem;
+  }
+
+  .voyage-cards-container {
+    overflow-x: auto;
+    overflow-y: auto;
   }
 }
 
