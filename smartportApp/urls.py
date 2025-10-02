@@ -114,7 +114,9 @@ urlpatterns = [
   # HELPER FOR THE VESSEL INFO VIEW:
   path("shipper/vessel/<int:vessel_id>/details/", views_shipper.get_vessel_details, name="vessel-details"),
   path("get-cargo-items/<int:submanifest_id>/", views_shipper.get_cargo_items, name="get-cargo-items"),
-  path("shipper/confirm-delivery/<int:cargo_id>/", views_shipper.confirm_delivery_view, name="confirm-delivery"),
+  # TEAM B NA MOY MO HANDLE SA DELIVERY
+  # path("shipper/confirm-delivery/<int:cargo_id>/", views_shipper.confirm_delivery_view, name="confirm-delivery"),
+  path('get-delivery-status/<int:cargo_id>/', views_shipper.get_delivery_status, name='get-delivery-status'),
   # VIEW CUSTOM CLEARANCE
   path('clearance/<int:submanifest_id>/', views_shipper.custom_clearance_view, name='custom_clearance'),
   # path('dummy/<int:submanifest_id>/', views_shipper.dummy, name='custom_clearance_dummy'),

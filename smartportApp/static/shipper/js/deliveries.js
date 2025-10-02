@@ -22,113 +22,48 @@ const showToast = (msg, isError = false, duration = 2500) => {
   }, duration);
 };
 
-// -------------------- MODAL STATE --------------------
-let selectedCargoId = null;
+// -------------------- FETCH DELIVERY STATUS --------------------
+const fetchDeliveryStatus = async (cargoId) => {
+  try {
+    const response = await fetch(`/get-delivery-status/${cargoId}/`);
+    const data = await response.json();
 
-// -------------------- BIND BUTTONS --------------------
-export const bindDeliveryButtons = () => {
-  const btns = document.querySelectorAll(".btn-icon.approve");
-
-  document.querySelectorAll(".btn-icon.approve").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      selectedCargoId = btn.dataset.cargoId;
-
-      // You may need to store additional data using data-* attributes on the button
-      const description = btn.dataset.description || "N/A";
-      const quantity = btn.dataset.quantity || "0";
-      const vessel = btn.dataset.vessel || "N/A";
-
-      document.querySelector("#deliveryDescription .inline-text").textContent =
-        description;
-      document.querySelector("#deliveryQuantity .inline-text").textContent =
-        quantity;
-      document.querySelector("#deliveryVessel .inline-text").textContent =
-        vessel;
-
-      document.getElementById("deliveryRemarks").value = "";
-      document.getElementById("confirmDeliveryModal").style.display = "flex";
-    });
-  });
+    if (response.ok) {
+      return data.status || "Pending";
+    }
+    return "Error";
+  } catch (error) {
+    console.error("Failed to fetch delivery status:", error);
+    return "Error";
+  }
 };
 
-// -------------------- MODAL CONTROL --------------------
-const confirmDeliveryModal = document.getElementById("confirmDeliveryModal");
-document
-  .getElementById("closeConfirmDeliveryModal")
-  .addEventListener("click", () => {
-    confirmDeliveryModal.style.display = "none";
-  });
+// -------------------- UPDATE STATUS UI --------------------
+const updateStatusUI = (cargoId, status) => {
+  const statusElement = document.getElementById(`status-${cargoId}`);
+  if (!statusElement) return;
 
-document
-  .getElementById("cancelConfirmDelivery")
-  .addEventListener("click", () => {
-    confirmDeliveryModal.style.display = "none";
-  });
+  statusElement.textContent = status;
+  statusElement.className = "status-label";
 
-window.addEventListener("click", (e) => {
-  if (e.target === document.getElementById("confirmDeliveryModal")) {
-    confirmDeliveryModal.style.display = "none";
+  // Add appropriate class based on status
+  switch (status.toLowerCase()) {
+    case "delivered":
+      statusElement.classList.add("delivered");
+      break;
+    case "pending":
+      statusElement.classList.add("pending");
+      break;
+    case "in transit":
+      statusElement.classList.add("in-transit");
+      break;
+    default:
+      statusElement.classList.add("pending");
   }
-});
-
-// -------------------- CONFIRM DELIVERY --------------------
-document
-  .getElementById("confirmDeliveryBtn")
-  .addEventListener("click", async () => {
-    const remarks = document.getElementById("deliveryRemarks").value;
-    const spinner = document.querySelector("#confirmDeliveryBtn .spinner");
-    const btnText = document.querySelector("#confirmDeliveryBtn .btn-text");
-
-    if (!selectedCargoId) return;
-
-    spinner.style.display = "inline-block";
-    btnText.style.display = "none";
-
-    try {
-      const response = await fetch(
-        `/shipper/confirm-delivery/${selectedCargoId}/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": csrftoken,
-          },
-          body: JSON.stringify({
-            cargo_id: selectedCargoId,
-            remarks: remarks,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        showToast("Delivery confirmed!");
-        document.getElementById("confirmDeliveryModal").style.display = "none";
-
-        // find the button that matches the selectedCargoId
-        const deliveredBtn = document.querySelector(
-          `.btn-icon.approve[data-cargo-id="${selectedCargoId}"]`
-        );
-        if (deliveredBtn) {
-          const actionCell = deliveredBtn.closest("td");
-          actionCell.innerHTML = `<span class="status-label delivered">Delivered</span>`;
-        }
-      } else {
-        showToast(data.error || "Failed to confirm delivery.", true);
-      }
-    } catch (error) {
-      showToast("Network error. Please try again.", true);
-    } finally {
-      spinner.style.display = "none";
-      btnText.style.display = "inline";
-    }
-  });
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   populatePorts();
-  // -------------------- INIT --------------------
-  bindDeliveryButtons();
 });
 
 // OUTSIDE DOM

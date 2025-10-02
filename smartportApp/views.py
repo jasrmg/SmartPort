@@ -1131,6 +1131,7 @@ def update_voyage_status(request):
         delivery_ref = firestore_client.collection("cargo_delivery").document(str(cargo.cargo_id))
         delivery_data = {
           "cargo_id": cargo.cargo_id,
+          "status": "Pending",
           "confirmed_at": None, # team b will add the name of the person that received the cargo
           "confirmed_by": "",  # team b will add the name of the person that received the cargo
           "remarks": "" # team b will add the name of the person that received the cargo

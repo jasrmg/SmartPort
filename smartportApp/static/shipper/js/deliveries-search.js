@@ -1,5 +1,3 @@
-import { bindDeliveryButtons } from "./deliveries.js";
-
 class DeliveriesSearch {
   constructor() {
     this.searchInput = document.getElementById("deliveriesSearch");
@@ -149,7 +147,6 @@ class DeliveriesSearch {
 
           // Rebind events after DOM update
           this.bindCardClickEvents();
-          bindDeliveryButtons();
 
           // Count actual result cards (excluding empty state divs)
           const actualCards =

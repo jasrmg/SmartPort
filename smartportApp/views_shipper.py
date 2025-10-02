@@ -970,40 +970,64 @@ def get_cargo_items(request, submanifest_id):
     return JsonResponse({'error': str(e)}, status=500)
 
 # ENDPOINT TO CONFIRM DELIVERY:
-@login_required
-@require_POST
-def confirm_delivery_view(request, cargo_id):
-  # check if authenticated and role is shipper
-  auth_check = enforce_access(request, 'shipper')
-  if auth_check:
-    return auth_check
+# @login_required
+# @require_POST
+# def confirm_delivery_view(request, cargo_id):
+#   # check if authenticated and role is shipper
+#   auth_check = enforce_access(request, 'shipper')
+#   if auth_check:
+#     return auth_check
   
+#   try:
+#     data = json.loads(request.body)
+#     remarks = data.get("remarks", "")
+
+#     cargo = Cargo.objects.get(pk=cargo_id)
+
+#     # Check if already delivered
+#     if hasattr(cargo, "delivery"):
+#       return JsonResponse({"error": "Cargo already marked as delivered."}, status=400)
+
+#     CargoDelivery.objects.create(
+#       cargo=cargo,
+#       confirmed_by=request.user.userprofile,
+#       remarks=remarks
+#     )
+
+#     return JsonResponse({"message": "Delivery confirmed."})
+  
+#   except Cargo.DoesNotExist:
+#     return JsonResponse({"error": "Cargo not found."}, status=404)
+#   except Exception as e:
+#     return JsonResponse({"error": str(e)}, status=500)
+  
+# TEAM B NA ANG MO HANDLE SA DELIVERY MAG FETCH NA LNG KO UG DATA GKAN SA FIRESTORE SA DELIVERY STATUS:
+from django.http import JsonResponse
+from firebase_admin import firestore
+
+def get_delivery_status(request, cargo_id):
   try:
-    data = json.loads(request.body)
-    remarks = data.get("remarks", "")
-
-    cargo = Cargo.objects.get(pk=cargo_id)
-
-    # Check if already delivered
-    if hasattr(cargo, "delivery"):
-      return JsonResponse({"error": "Cargo already marked as delivered."}, status=400)
-
-    CargoDelivery.objects.create(
-      cargo=cargo,
-      confirmed_by=request.user.userprofile,
-      remarks=remarks
-    )
-
-    return JsonResponse({"message": "Delivery confirmed."})
-  
-  except Cargo.DoesNotExist:
-    return JsonResponse({"error": "Cargo not found."}, status=404)
+    firestore_client = firestore.client()
+    delivery_ref = firestore_client.collection("cargo_delivery").document(str(cargo_id))
+    delivery_doc = delivery_ref.get()
+    
+    if delivery_doc.exists:
+      data = delivery_doc.to_dict()
+      return JsonResponse({
+        'status': data.get('status', 'Pending'),
+        'confirmed_at': data.get('confirmed_at'),
+        'confirmed_by': data.get('confirmed_by'),
+        'remarks': data.get('remarks')
+      })
+    else:
+      return JsonResponse({'status': 'Pending'})
+          
   except Exception as e:
-    return JsonResponse({"error": str(e)}, status=500)
-  
+    return JsonResponse({'error': str(e)}, status=500)
+
 # ENDPOINT TO VIEW THE CUSTOM CLEARANCE
 from django.shortcuts import render, get_object_or_404
-@login_required
+# @login_required
 # def custom_clearance_view(request, submanifest_id):
 #   # view to display the custom clearance
 #   user = request.user.userprofile

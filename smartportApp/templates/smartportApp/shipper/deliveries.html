@@ -247,7 +247,7 @@
             <th>Description</th>
             <th>Quantity</th>
             <th>Value</th>
-            <th>Action</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody id="cargo-tbody">
@@ -260,22 +260,9 @@
             <td class="qty">{{ item.quantity }}</td>
             <td class="value">{{ item.value }}</td>
             <td>
-              {% if item.delivered %}
-              <span class="status-label delivered">Delivered</span>
-              {% elif submanifest.0.voyage.status == "arrived" %}
-              <!---->
-              <button
-                class="btn-icon approve"
-                title="Mark As Delivered"
-                data-cargo-id="{{ item.id }}"
-                data-description="{{ item.description }}"
-                data-quantity="{{ item.quantity }}"
+              <span class="status-label" id="status-{{ item.id }}"
+                >Loading...</span
               >
-                <i class="fas fa-check"></i>
-              </button>
-              {% else %}
-              <span class="status-label pending">Vessel Not Arrived</span>
-              {% endif %}
             </td>
           </tr>
           {% empty %}
@@ -296,108 +283,6 @@
   </div>
 </div>
 <div id="toast-container"></div>
-{% endblock %}
-<!---->
-{% block modal %}
-<!-- Confirm Delivery Modal -->
-<div class="modal-overlay" id="confirmDeliveryModal">
-  <div class="modal">
-    <!-- Modal Header -->
-    <div class="modal-header sticky-top">
-      <h2 class="modal-title">
-        <i class="fas fa-box-open icon" style="margin-right: 0.5rem"></i>
-        Confirm Cargo Delivery
-      </h2>
-      <button
-        class="modal-close"
-        id="closeConfirmDeliveryModal"
-        aria-label="Close Modal"
-      >
-        &times;
-      </button>
-    </div>
-
-    <!-- Modal Body -->
-    <div class="modal-body">
-      <!-- Warning -->
-      <div class="modal-warning">
-        <i class="fas fa-exclamation-triangle icon"></i>
-        Confirm delivery only if the consignee has acknowledged receipt of the
-        cargo.
-      </div>
-
-      <!-- Delivery Details -->
-      <div class="modal-details-grid"></div>
-      <div class="modal-detail">
-        <span class="modal-label">Description:</span>
-        <div class="info-container">
-          <p id="deliveryDescription">
-            <i class="fas fa-info-circle icon"></i>
-            <span class="inline-text">No description loaded</span>
-          </p>
-        </div>
-      </div>
-
-      <div
-        style="
-          display: flex;
-          justify-content: rows;
-          align-items: center;
-          justify-content: space-between;
-        "
-      >
-        <div class="modal-detail">
-          <span class="modal-label">Quantity:</span>
-          <div class="info-container">
-            <p id="deliveryQuantity">
-              <i class="fas fa-boxes icon"></i>
-              <span class="inline-text">0</span>
-            </p>
-          </div>
-        </div>
-
-        <div class="modal-detail">
-          <span class="modal-label">Vessel:</span>
-          <div class="info-container">
-            <p id="deliveryVessel">
-              <i class="fas fa-ship icon"></i>
-              <span class="inline-text">N/A</span>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Optional Remarks -->
-      <div class="modal-detail">
-        <label class="modal-label" for="deliveryRemarks"
-          >Remarks (Optional):</label
-        >
-        <textarea
-          id="deliveryRemarks"
-          class="form-input"
-          rows="4"
-          placeholder="Enter remarks (e.g. confirmed via call)..."
-          style="margin-top: 0.25rem"
-        ></textarea>
-      </div>
-
-      <!-- Modal Footer -->
-      <div
-        class="modal-actions"
-        style="display: flex; justify-content: flex-end; margin-top: 1.5rem"
-      >
-        <button class="btn btn-cancel" id="cancelConfirmDelivery">
-          Cancel
-        </button>
-        <button class="btn btn-confirm-delivery" id="confirmDeliveryBtn">
-          <span class="btn-text">Confirm Delivery</span>
-          <span class="spinner" style="display: none"></span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 {% endblock %}
 <!---->
 {% block script %}

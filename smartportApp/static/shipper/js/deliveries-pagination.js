@@ -1,5 +1,3 @@
-import { bindDeliveryButtons } from "./deliveries.js";
-
 document.addEventListener("DOMContentLoaded", () => {
   let paginationContainer = document.getElementById("pagination-container");
   if (!paginationContainer) return;
@@ -112,7 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (newCards && cardsContainer) {
         cardsContainer.replaceChildren(...newCards.children);
         bindCardClickEvents(); // rebind click after DOM changes
-        bindDeliveryButtons();
 
         // Check if we have "no results" state
         const hasNoResults =
@@ -267,6 +264,40 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  // helper functions
+  const fetchDeliveryStatus = async (cargoId) => {
+    try {
+      const response = await fetch(`/get-delivery-status/${cargoId}/`);
+      const data = await response.json();
+      return data.status || "Pending";
+    } catch (error) {
+      console.error("Failed to fetch delivery status:", error);
+      return "Error";
+    }
+  };
+
+  const updateStatusUI = (cargoId, status) => {
+    const statusElement = document.getElementById(`status-${cargoId}`);
+    if (!statusElement) return;
+
+    statusElement.textContent = status;
+    statusElement.className = "status-label";
+
+    switch (status.toLowerCase()) {
+      case "delivered":
+        statusElement.classList.add("delivered");
+        break;
+      case "pending":
+        statusElement.classList.add("pending");
+        break;
+      case "in transit":
+        statusElement.classList.add("in-transit");
+        break;
+      default:
+        statusElement.classList.add("pending");
+    }
+  };
+
   const loadCargoForSubmanifest = async (submanifestId) => {
     try {
       const response = await fetch(`/get-cargo-items/${submanifestId}/`);
@@ -275,39 +306,27 @@ document.addEventListener("DOMContentLoaded", () => {
       const tbody = document.getElementById("cargo-tbody");
 
       tbody.innerHTML = ""; // clear previous
+
+      // Create all rows first
       data.cargo.forEach((item) => {
-        let actionContent;
-
-        if (item.delivered) {
-          actionContent =
-            '<span class="status-label delivered">Delivered</span>';
-        } else if (data.voyage_arrived) {
-          actionContent = `
-            <button 
-              class="btn-icon approve"
-              data-cargo-id="${item.id}"
-              data-description="${item.description}"
-              data-quantity="${item.quantity}"
-              data-vessel="${item.vessel}"
-              title="Mark As Delivered">
-              <i class="fas fa-check"></i>
-            </button>
-          `;
-        } else {
-          actionContent =
-            '<span class="status-label pending">Vessel Not Arrived</span>';
-        }
-
         const row = `
-          <tr>
-            <td>${item.item_number}</td>
-            <td class="desc">${item.description}</td>
-            <td class="qty">${item.quantity}</td>
-            <td class="value">${item.value}</td>
-            <td>${actionContent}</td>
-          </tr>
-        `;
+        <tr>
+          <td>${item.item_number}</td>
+          <td class="desc">${item.description}</td>
+          <td class="qty">${item.quantity}</td>
+          <td class="value">${item.value}</td>
+          <td>
+            <span class="status-label" id="status-${item.id}">Loading...</span>
+          </td>
+        </tr>
+      `;
         tbody.insertAdjacentHTML("beforeend", row);
+      });
+
+      // Fetch status for each cargo item
+      data.cargo.forEach(async (item) => {
+        const status = await fetchDeliveryStatus(item.id);
+        updateStatusUI(item.id, status);
       });
 
       // Update clearance button based on the fetched data
@@ -317,8 +336,6 @@ document.addEventListener("DOMContentLoaded", () => {
       updateEditButton(data.status);
 
       document.querySelector(".submanifest-cargo").style.display = "block";
-
-      bindDeliveryButtons();
     } catch (err) {
       console.error("Failed to load cargo:", err);
       // Hide clearance button on error
