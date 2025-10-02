@@ -21,13 +21,13 @@
 {% block sidebar %}
 <div class="sidebar">
   <div class="sidebar-header">
-    <div class="logo">
+    <div href="{% url 'admin-dashboard' %}" class="logo">
       <i class="fas fa-anchor logo-icon"></i>
       <span class="logo-text">SmartPort</span>
-      <button class="collapse-btn">
-        <i class="fas fa-bars"></i>
-      </button>
     </div>
+    <button class="collapse-btn">
+      <i class="fas fa-bars"></i>
+    </button>
   </div>
 
   <ul class="nav-menu">

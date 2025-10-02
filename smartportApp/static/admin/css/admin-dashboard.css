@@ -411,16 +411,6 @@ canvas {
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-  }
-  .page-header a {
-    margin-top: 1rem;
-  }
-
-  .page-title h1 {
-    font-size: 1.6rem;
-  }
   /*admin-base.css*/
 }
 

@@ -457,21 +457,6 @@ input.not-editable:focus {
   }
 }
 
-@media (max-width: 768px) {
-  .search-filter-section {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .search-bar {
-    max-width: none;
-  }
-
-  .filter-group {
-    flex-wrap: wrap;
-  }
-}
-
 /* Search Badge Styles */
 .search-badge {
   background-color: #ef4444;
@@ -537,4 +522,28 @@ input.not-editable:focus {
 
 .user-card.search-result {
   animation: fadeInUp 0.3s ease forwards;
+}
+
+@media (max-width: 768px) {
+  .search-filter-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-bar {
+    max-width: none;
+  }
+
+  .filter-group {
+    flex-wrap: wrap;
+  }
+
+  .page-header .add-buttons a {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .user-tab-types {
+    width: 100%;
+  }
 }

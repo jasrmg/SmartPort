@@ -1,4 +1,5 @@
 const voyageStatusChoices = ["in_transit", "delayed", "arrived", "assigned"];
+const tableBody = document.querySelector(".vessels-table tbody");
 
 let selectedCell = null;
 let originalStatus = null;
@@ -32,6 +33,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const confirmModal = document.getElementById(
     "confirmVoyageStatusChangeModal"
   );
+
+  // ------------------ SORT TABLE LOGIC ------------------
+  const sortButtons = document.querySelectorAll(".sort-btn");
+
+  sortButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const column = parseInt(btn.dataset.column);
+      let order = btn.dataset.order;
+
+      // Reset other buttons icon and order
+      sortButtons.forEach((b) => {
+        if (b !== btn) {
+          b.dataset.order = "none";
+          const icon = b.querySelector("i");
+          if (icon) icon.className = "fas fa-sort";
+        }
+      });
+
+      // Toggle sorting order
+      if (order === "none" || order === "desc") {
+        order = "asc";
+        btn.dataset.order = "asc";
+        btn.querySelector("i").className = "fas fa-sort-up";
+      } else {
+        order = "desc";
+        btn.dataset.order = "desc";
+        btn.querySelector("i").className = "fas fa-sort-down";
+      }
+
+      sortTableByColumn(column, order);
+    });
+  });
+  // ------------------ END SORT TABLE LOGIC ------------------
 
   const confirmMsg = document.getElementById("confirmStatusChangeMsg");
   const confirmUpdateBtn = confirmModal.querySelector(".btn-update");
@@ -149,7 +183,53 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // OUTSIDE DOM
+// SORTING FUNCTION
+const sortTableByColumn = (columnIndex, order) => {
+  const rows = Array.from(tableBody.querySelectorAll("tr")).filter(
+    (row) => !row.querySelector("td[colspan]") && row.id !== "searchLoaderRow"
+  );
 
+  rows.sort((a, b) => {
+    const aText = getCellText(a, columnIndex);
+    const bText = getCellText(b, columnIndex);
+
+    // Special handling for date columns (indices 4 and 5)
+    if (columnIndex === 4 || columnIndex === 5) {
+      const aDate = new Date(aText);
+      const bDate = new Date(bText);
+
+      return order === "asc" ? aDate - bDate : bDate - aDate;
+    }
+
+    // Check if both values are numbers
+    if (!isNaN(aText) && !isNaN(bText)) {
+      return order === "asc"
+        ? parseFloat(aText) - parseFloat(bText)
+        : parseFloat(bText) - parseFloat(aText);
+    }
+
+    // String comparison
+    return order === "asc"
+      ? aText.localeCompare(bText)
+      : bText.localeCompare(aText);
+  });
+
+  // Append sorted rows back to table
+  rows.forEach((row) => tableBody.appendChild(row));
+};
+
+const getCellText = (row, index) => {
+  const cell = row.children[index];
+  if (!cell) return "";
+
+  // For status column, get text from span inside
+  const statusSpan = cell.querySelector(".status-badge");
+  if (statusSpan) {
+    return statusSpan.textContent.trim().toLowerCase();
+  }
+
+  return cell.textContent.trim().toLowerCase();
+};
 // FORMATTER
 const formatStatus = (status) =>
   status.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());

@@ -13,13 +13,13 @@
 {% block sidebar %}
 <div class="sidebar">
   <div class="sidebar-header">
-    <div class="logo">
+    <a href="{% url 'admin-dashboard' %}" class="logo">
       <i class="fas fa-anchor logo-icon"></i>
       <span class="logo-text">SmartPort</span>
-      <button class="collapse-btn">
-        <i class="fas fa-bars"></i>
-      </button>
-    </div>
+    </a>
+    <button class="collapse-btn">
+      <i class="fas fa-bars"></i>
+    </button>
   </div>
 
   <ul class="nav-menu">
@@ -161,17 +161,17 @@
                 </button>
               </th>
               <th>
-                <button class="sort-btn" data-column="3" data-order="none">
+                <button class="sort-btn" data-column="4" data-order="none">
                   Departure <i class="fas fa-sort"></i>
                 </button>
               </th>
               <th>
-                <button class="sort-btn" data-column="3" data-order="none">
+                <button class="sort-btn" data-column="5" data-order="none">
                   ETA <i class="fas fa-sort"></i>
                 </button>
               </th>
               <th>
-                <button class="sort-btn" data-column="3" data-order="none">
+                <button class="sort-btn" data-column="6" data-order="none">
                   Status <i class="fas fa-sort"></i>
                 </button>
               </th>

@@ -149,10 +149,26 @@
 .vessels-table {
   width: 100%;
   min-width: 800px; /* Minimum width to prevent squishing */
-  /* border-collapse: collapse; */
+  table-layout: fixed;
+}
+
+.vessels-table th,
+.vessels-table td {
+  min-width: 110px; /* ✅ ensures columns don’t shrink too much */
+  padding: 0.8rem 1rem;
+  text-align: left;
+  word-wrap: break-word; /* prevent text overflow */
 }
 
 .vessels-table th {
+  background-color: var(--light);
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+/* .vessels-table th {
   text-align: left;
   padding: 0.8rem 1rem;
   background-color: var(--light);
@@ -160,7 +176,7 @@
   color: var(--primary);
   font-size: 0.9rem;
   text-transform: uppercase;
-}
+} */
 /* FIXED WIDTH FOR THE STATUS COLUMN */
 .status-column {
   width: 208px;

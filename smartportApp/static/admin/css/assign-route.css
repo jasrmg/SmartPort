@@ -15,66 +15,15 @@ select:disabled {
   color: #6c757d;
 }
 
-/* ----------- FLATPICKR ----------- */
-/* .flatpickr-months .flatpickr-month {
-  background-color: var(--primary);
-}
-.flatpickr-current-month .flatpickr-monthDropdown-months {
-  background-color: var(--primary);
-}
-span.flatpickr-weekday {
-  background-color: var(--primary);
-}
-span.flatpickr-day.selected {
-  background-color: var(--secondary) !important;
-  border: none;
-}
-
-.flatpickr-calendar {
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
-} */
-
-/* Day cells */
-/* .flatpickr-day {
-  background: transparent;
-  color: white;
-  border-radius: 4px;
-}
-.flatpickr-day:hover {
-  background: #1e3a8a;
-  color: white;
-}
-*/
-
-/* Selected day */
-/* .flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange {
-  background: #2d9c5a !important; 
-  color: white;
-} */
-
-/* Time inputs */
-/* .flatpickr-time input {
-  background: #0a1f44;
-  color: white;
-  border: 1px solid #1e3a8a;
-} */
-
-/* ------------------ END OF FLATPICKR CSS ------------------ */
-
 .route-form {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  /* grid-template-rows: repeat(2, 1fr); */
   gap: 1rem;
   margin-bottom: 2rem;
+  align-items: start;
 }
 .first-row {
-  grid-column: 1 / 3;
+  grid-column: 1 / -1;
 }
 
 .form-group {
@@ -231,24 +180,6 @@ span.flatpickr-day.selected {
   font-size: 1.2rem;
 }
 
-@media (max-width: 768px) {
-  .route-form {
-    grid-template-columns: 1fr;
-  }
-
-  .ports-container {
-    grid-template-columns: 1fr;
-  }
-
-  .route-actions {
-    flex-direction: column;
-  }
-
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
-}
 /* ----- SIDEBAR(?) ------ */
 .sidebar-collapsed {
   width: 80px;
@@ -432,4 +363,44 @@ span.flatpickr-day.selected {
 .sidebar-collapsed-content {
   margin-left: 80px;
   width: calc(100% - 80px);
+}
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .route-form {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .route-assignment-container {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-label {
+    font-size: 0.9rem;
+  }
+
+  .form-input,
+  .form-select {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+
+  .ports-container {
+    grid-template-columns: 1fr;
+  }
+
+  .route-actions {
+    flex-direction: column;
+    margin-top: 1rem;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal-actions {
+    display: flex;
+  }
 }
