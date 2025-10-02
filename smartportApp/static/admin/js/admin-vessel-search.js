@@ -8,6 +8,7 @@ class VesselSearch {
     this.originalTableRows = [];
     this.searchTimeout = null;
     this.isSearching = false;
+    this.cancelPendingSearch = false;
 
     this.init();
   }
@@ -57,6 +58,9 @@ class VesselSearch {
   handleSearchInput(event) {
     const query = event.target.value.trim();
 
+    // Cancel any pending search
+    this.cancelPendingSearch = true;
+
     // Clear existing timeout
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
@@ -64,12 +68,28 @@ class VesselSearch {
 
     // If empty query, restore original table immediately
     if (query === "") {
+      this.hideLoader();
+      this.isSearching = false;
       this.restoreOriginalTable();
       return;
     }
 
+    this.cancelPendingSearch = false;
+
     // Set loading state and delay search
     this.searchTimeout = setTimeout(() => {
+      // check if search was cancelled while waiting
+      if (this.cancelPendingSearch) {
+        return;
+      }
+
+      const currentQuery = this.searchInput.value.trim();
+      if (currentQuery === "") {
+        this.hideLoader();
+        this.isSearching = false;
+        this.restoreOriginalTable();
+        return;
+      }
       this.performSearch(query);
     }, 300);
   }
@@ -81,6 +101,21 @@ class VesselSearch {
   }
 
   async performSearch(query) {
+    // check if search was cancelled
+    if (this.cancelPendingSearch) {
+      this.hideLoader();
+      this.isSearching = false;
+      return;
+    }
+
+    // Check for empty query
+    if (!query || query.trim() === "") {
+      this.restoreOriginalTable();
+      this.hideLoader();
+      this.isSearching = false;
+      return;
+    }
+
     if (this.isSearching) return;
 
     this.isSearching = true;
@@ -106,6 +141,13 @@ class VesselSearch {
       const remainingTime = Math.max(0, 500 - elapsedTime);
 
       setTimeout(() => {
+        // Check if search was cancelled during the fetch
+        if (this.cancelPendingSearch) {
+          this.hideLoader();
+          this.isSearching = false;
+          return;
+        }
+
         this.displaySearchResults(data.vessels, query);
         this.hideLoader();
         this.isSearching = false;
@@ -274,6 +316,9 @@ class VesselSearch {
   }
 
   restoreOriginalTable() {
+    this.cancelPendingSearch = true;
+    this.hideLoader();
+
     const tbody = this.vesselsTable.querySelector("tbody");
 
     // Clear all rows except loader

@@ -1125,7 +1125,7 @@ def update_voyage_status(request):
           "destination": cargo.submanifest.consignee_address if cargo.submanifest.consignee_address else "",
           "created_at": cargo.submanifest.created_at,
         }
-        cargo_ref.set(cargo_data, merge=True)
+        cargo_ref.set(cargo_data, merge=True) # change cargo_data to the collection name sa ila ka kiro
 
         # Add delivery record in cargo_delivery
         delivery_ref = firestore_client.collection("cargo_delivery").document(str(cargo.cargo_id))
