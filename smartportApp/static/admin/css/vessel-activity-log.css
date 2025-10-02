@@ -412,6 +412,7 @@
     background-color: transparent;
   }
 }
+
 @media (max-width: 768px) {
   .vessels-grid {
     grid-template-columns: 1fr;
@@ -428,5 +429,9 @@
 
   .search-filter {
     width: 100%;
+  }
+
+  .vessel-card {
+    width: 374px;
   }
 }
