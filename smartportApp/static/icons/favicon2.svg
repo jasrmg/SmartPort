@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<!--Circular background-->
+  <path d="M 32 4 C 62 9 58 -3 58 22 C 58 45 45 57 32 62 C 19 57 6 45 5 22 C 5 -2 1 9 32 4 Z" 
+      fill="#0a1f44"/>
+
+<!--Anchor icon-->
+  <g fill="#d4af37" stroke="#d4af37">
+<!--Top ring-->
+    <circle cx="32" cy="15" r="3.5" fill="none" stroke-width="2.5"/>
+<!--Vertical shaft-->
+<line x1="32" y1="18.5" x2="32" y2="48.7" stroke-width="3" stroke-linecap="square"/>
+
+<!--Horizontal crossbar/stock-->
+    <line x1="20" y1="26" x2="44" y2="26" stroke-width="3" stroke-linecap="round"/>
+<!--Left arm curving down-->
+    <path d="M 31 49 C 30 49 30 49 24 46 C 18 42 18 42 18 39" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<!--Right arm curving down-->
+    <path d="M 33 49 C 34 49 34 49 40 46 C 46 42 46 42 46 39" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  </g>
+</svg>
