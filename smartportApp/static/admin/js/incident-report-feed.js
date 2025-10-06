@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateCarouselControls(feed.firstElementChild);
         attachImagePreviewListeners();
 
-        showToast("Incident report submitted successfully!");
+        showToast("Report submitted! Now visible to all users.");
         incidentModal.style.display = "none";
         resetIncidentForm();
       } else {
