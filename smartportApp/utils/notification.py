@@ -90,6 +90,7 @@ def get_user_notifications(request):
 
   return JsonResponse({'notifications': data})
 
+import json
 @login_required
 @require_POST
 def mark_notifications_read(request):
@@ -97,8 +98,31 @@ def mark_notifications_read(request):
     user_profile = request.user.userprofile
   except:
     return JsonResponse({'error': 'User profile not found'}, status=404)
+  
+  # parse request body if its a POST request
+  notification_id = None
+  if request.method == 'POST' and request.body:
+    try: 
+      data = json.loads(request.body)
+      notification_id = data.get('notification_id')
+    except json.JSONDecodeError:
+      pass
+      
+  # if notification_id is provided, mark only that notification
+  if notification_id:
+    updated_count = Notification.objects.filter(
+      user=user_profile,
+      notification_id=notification_id,
+      is_read=False
+    ).update(is_read=True)
+  
+  else:
+    # otherwise mark all as read
+    updated_count = Notification.objects.filter(
+      user=user_profile,
+      is_read=False
+    ).update(is_read=True)
 
-  updated_count = Notification.objects.filter(user=user_profile, is_read=False).update(is_read=True)
 
   return JsonResponse({'status': 'success', 'updated_count': updated_count})
 

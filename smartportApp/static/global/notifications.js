@@ -134,12 +134,19 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
-      container.onclick = () => {
+      container.onclick = async () => {
+        // Mark this specific notification as read
+        await markSingleNotificationAsRead(notification.notification_id);
+
+        // Update the badge count
+        const currentBadge = document.querySelector(".notification-badge");
+        const currentCount = parseInt(currentBadge.textContent) || 0;
+        if (currentCount > 0) {
+          updateNotificationBadge(currentCount - 1);
+        }
+
         if (notification.link_url && notification.link_url.trim() !== "") {
           window.open(notification.link_url, "_blank", "noopener,noreferrer");
-        } else {
-          // Default behavior for shipper notifications
-          window.location.href = "/shipper-dashboard/";
         }
       };
 
@@ -207,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const markNotificationsAsRead = async () => {
     try {
+      if (!hasUnreadNotifications) return;
       await fetch("/notifications/mark-read/", {
         method: "POST",
         headers: {
@@ -228,6 +236,25 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     } catch (err) {
       console.error("Failed to mark notifications as read:", err);
+    }
+  };
+
+  /**
+   * Marks a single notification as read
+   * @param {number|string} notificationId - The ID of the notification to mark as read
+   */
+  const markSingleNotificationAsRead = async (notificationId) => {
+    try {
+      await fetch("/notifications/mark-read/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({ notification_id: notificationId }),
+      });
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
     }
   };
 
@@ -273,11 +300,28 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="notif-time">${notif.time_ago}</span>
         </div>
       `;
-        if (notif.link_url) {
-          li.addEventListener("click", () => {
+        // add click handler for both read and unread notifications
+        li.addEventListener("click", async () => {
+          // if notification is unread, mark it as read
+          if (!notif.is_read) {
+            await markSingleNotificationAsRead(notif.id);
+
+            // remove unread styling immediately
+            li.classList.remove("unread");
+
+            // update the badge count
+            const currentBadge = document.querySelector(".notification-badge");
+            const currentCount = parseInt(currentBadge.textContent) || 0;
+            if (currentCount > 0) {
+              updateNotificationBadge(currentCount - 1);
+              hasUnreadNotifications = currentCount - 1 > 0;
+            }
+          }
+          // navigate to the link if available
+          if (notif.link_url) {
             window.open(notif.link_url, "_blank", "noopener,noreferrer");
-          });
-        }
+          }
+        });
         notifList.appendChild(li);
       });
     } catch (error) {
