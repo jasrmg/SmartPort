@@ -352,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --------- PREFILL THE DROPDOWN FOR THE VESSEL ---------
-  fetch("/get-vessels/")
+  fetch("/get-all-vessels/")
     .then((res) => res.json())
     .then((data) => {
       if (!data.vessels || !Array.isArray(data.vessels)) {

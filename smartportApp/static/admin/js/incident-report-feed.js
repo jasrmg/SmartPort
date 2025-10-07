@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --------- PREFILL THE DROPDOWN FOR THE VESSEL ---------
-  fetch("/get-vessels/")
+  fetch("/get-all-vessels/")
     .then((res) => res.json())
     .then((data) => {
       if (!data.vessels || !Array.isArray(data.vessels)) {
@@ -734,7 +734,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (actions) {
             actions.innerHTML = `
         <span class="status-label resolved">
-          <i class="fas fa-check-circle"></i> Resolved
+          <i class="fas fa-check-circle"></i> Resolved - View Details
         </span>`;
           }
         }

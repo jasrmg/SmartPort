@@ -39,6 +39,8 @@ urlpatterns = [
   path('get-port-options/', views.get_port_options, name="get_port_options"),
   # VESSEL LIST
   path("get-vessels/", views.get_vessels, name="get_vessels"),
+  # ALL VESSELS
+  path("get-all-vessels/", views.get_all_vessels, name="get_all_vessels"),
 
   # ADD VESSEL
   path("api/vessels/add/", views.add_vessel, name="add-vessel"),

@@ -607,6 +607,24 @@ def get_vessels(request):
   
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=500)
+@require_GET
+def get_all_vessels(request):
+  try:
+    available_vessels_qs = Vessel.objects.all()
+    
+    # Convert to JSON response
+    vessels_data = [
+      {
+        "vessel_id": vessel.vessel_id,
+        "name": vessel.name,
+      }
+      for vessel in available_vessels_qs
+    ]
+
+    return JsonResponse({"vessels": vessels_data})
+  
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=500)
 
 # HELPER FUNCTION FOR GETTING THE VESSEL LIST
 def get_vessels_data():
