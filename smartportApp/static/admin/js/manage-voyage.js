@@ -302,16 +302,19 @@ const updateVoyageStatus = async (voyageId, status, reason = "") => {
       if (status === "arrived") {
         row.remove();
 
-        const remainingRows = tableBody.querySelectorAll("tr");
-        if (remainingRows.length === 0) {
-          const emptyRow = document.createElement("tr");
-          emptyRow.innerHTML = `
-          <td colspan="7" style="text-align: center; color: var(--dark-gray); padding: 1.25rem;">
-            <i class="fas fa-info-circle" style="margin-right: 8px"></i>
-            No active voyages found in the database.
-          </td>
+        // Count actual data rows (those with class status-column)
+        const dataRows = tableBody.querySelectorAll("tr .status-column");
+
+        if (dataRows.length === 0) {
+          // Clear table and show empty state
+          tableBody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--dark-gray); padding: 1.25rem;">
+                <i class="fas fa-info-circle" style="margin-right: 8px"></i>
+                No active voyages found in the database.
+              </td>
+            </tr>
           `;
-          tableBody.appendChild(emptyRow);
         }
       } else {
         const displayText = formatStatus(status);

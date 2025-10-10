@@ -1,4 +1,26 @@
 document.addEventListener("DOMContentLoaded", async () => {
+  // TO CLEAR THE REPORTS WHEN CLOSED:
+  const clearReportDetail = () => {
+    // Clear voyage number title
+    document.querySelector("#detail-voyage-number").textContent = "Loading...";
+
+    // Clear vessel details
+    document.querySelector('[data-field="vesselName"]').textContent = "—";
+    document.querySelector('[data-field="imoNumber"]').textContent = "—";
+    document.querySelector('[data-field="vesselType"]').textContent = "—";
+
+    // Clear voyage summary
+    document.querySelector('[data-field="voyageNumber"]').textContent = "—";
+    document.querySelector('[data-field="departurePort"]').textContent = "—";
+    document.querySelector('[data-field="departureDateTime"]').textContent =
+      "—";
+    document.querySelector('[data-field="arrivalPort"]').textContent = "—";
+    document.querySelector('[data-field="arrivalDateTime"]').textContent = "—";
+    document.querySelector('[data-field="totalDuration"]').textContent = "—";
+    document.querySelector('[data-field="generatedBy"]').textContent = "—";
+    document.querySelector('[data-field="Status"]').textContent = "—";
+    document.querySelector('[data-field="delayReason"]').textContent = "—";
+  };
   // PREFILLING THE PORTS OPTION
   const originSelect = document.getElementById("filter-origin-port");
   const destinationSelect = document.getElementById("filter-destination-port");
@@ -33,6 +55,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       card.addEventListener("click", () => {
         const reportId = card.dataset.reportId;
 
+        clearReportDetail();
+
         listSection.style.display = "none";
         detailSection.style.display = "block";
 
@@ -52,6 +76,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     backButton.addEventListener("click", () => {
       detailSection.style.display = "none";
       listSection.style.display = "block";
+
+      clearReportDetail();
     });
   }
 
