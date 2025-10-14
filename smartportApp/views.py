@@ -1127,7 +1127,7 @@ def update_voyage_status(request):
 
       for cargo in cargos:
         # Save cargo data in Firestore
-        cargo_ref = firestore_client.collection("cargo").document(str(cargo.cargo_id))
+        cargo_ref = firestore_client.collection("Cargo").document(str(cargo.cargo_id)) # use b's naming
 
         cargo_data = {
           "cargo_id": cargo.cargo_id,
@@ -1146,7 +1146,7 @@ def update_voyage_status(request):
         cargo_ref.set(cargo_data, merge=True) # change cargo_data to the collection name sa ila ka kiro
 
         # Add delivery record in cargo_delivery
-        delivery_ref = firestore_client.collection("cargo_delivery").document(str(cargo.cargo_id))
+        delivery_ref = firestore_client.collection("CargoDelivery").document(str(cargo.cargo_id))
         delivery_data = {
           "cargo_id": cargo.cargo_id,
           "status": "Pending",
