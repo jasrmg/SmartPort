@@ -23,44 +23,20 @@ const showToast = (msg, isError = false, duration = 2500) => {
 };
 
 // -------------------- FETCH DELIVERY STATUS --------------------
-const fetchDeliveryStatus = async (cargoId) => {
-  try {
-    const response = await fetch(`/get-delivery-status/${cargoId}/`);
-    const data = await response.json();
-
-    if (response.ok) {
-      return data.status || "Pending";
-    }
-    return "Error";
-  } catch (error) {
-    console.error("Failed to fetch delivery status:", error);
-    return "Error";
-  }
-};
-
-// -------------------- UPDATE STATUS UI --------------------
-const updateStatusUI = (cargoId, status) => {
-  const statusElement = document.getElementById(`status-${cargoId}`);
-  if (!statusElement) return;
-
-  statusElement.textContent = status;
-  statusElement.className = "status-label";
-
-  // Add appropriate class based on status
-  switch (status.toLowerCase()) {
-    case "delivered":
-      statusElement.classList.add("delivered");
-      break;
-    case "pending":
-      statusElement.classList.add("pending");
-      break;
-    case "in transit":
-      statusElement.classList.add("in-transit");
-      break;
-    default:
-      statusElement.classList.add("pending");
-  }
-};
+// const fetchDeliveryStatus = async (cargoId) => {
+//   try {
+//     const response = await fetch(`/get-delivery-status/${cargoId}/`);
+//     const data = await response.json();
+//     console.log(data);
+//     if (response.ok) {
+//       return data.status || "Pending";
+//     }
+//     return "Error";
+//   } catch (error) {
+//     console.error("Failed to fetch delivery status:", error);
+//     return "Error";
+//   }
+// };
 
 document.addEventListener("DOMContentLoaded", () => {
   populatePorts();

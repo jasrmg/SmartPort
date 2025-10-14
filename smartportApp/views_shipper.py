@@ -1008,22 +1008,53 @@ from firebase_admin import firestore
 def get_delivery_status(request, cargo_id):
   try:
     firestore_client = firestore.client()
-    delivery_ref = firestore_client.collection("CargoDelivery").document(str(cargo_id))
-    delivery_doc = delivery_ref.get()
+
+    # Define status mapping for display
+    status_mapping = {
+      'pending': 'Pending',
+      # 'in_transit': 'In Transit',
+      'delayed': 'Delayed',
+      'delivered': 'Delivered',
+      'cancelled': 'Cancelled'
+    }
     
-    if delivery_doc.exists:
-      data = delivery_doc.to_dict()
+    # Step 1: Query CargoDelivery collection for matching cargo_id
+    delivery_query = firestore_client.collection("CargoDelivery").where(
+      "cargo_id", "==", str(cargo_id)
+    )
+    delivery_docs = delivery_query.stream()
+    
+    # Step 2: Convert query results to list
+    delivery_list = list(delivery_docs)
+    
+    # Step 3: Handle the results
+    if len(delivery_list) > 0:
+      # Get the first delivery record (most recent or only one)
+      delivery_data = delivery_list[0].to_dict()
+
+      # Get raw status and map it to display status
+      raw_status = delivery_data.get('status', 'Pending')
+      display_status = status_mapping.get(raw_status.lower(), raw_status.capitalize())
       return JsonResponse({
-        'status': data.get('status', 'Pending'),
-        'confirmed_at': data.get('confirmed_at'),
-        'confirmed_by': data.get('confirmed_by'),
-        'remarks': data.get('remarks')
+        'found': True,
+        'status': display_status,
+        'confirmed_at': delivery_data.get('confirmed_at'),
+        'confirmed_by': delivery_data.get('confirmed_by'),
+        'remarks': delivery_data.get('remarks'),
+        'courier_id': delivery_data.get('courier_id'),
+        'proof_image': delivery_data.get('proof_image')
       })
     else:
-      return JsonResponse({'status': 'Pending'})
+      # No delivery record found for this cargo
+      return JsonResponse({
+        'found': False,
+        'status': 'No delivery record',
+        'message': f'No CargoDelivery found for cargo_id {cargo_id}'
+      })
           
   except Exception as e:
     return JsonResponse({'error': str(e)}, status=500)
+
 
 # ENDPOINT TO VIEW THE CUSTOM CLEARANCE
 from django.shortcuts import render, get_object_or_404

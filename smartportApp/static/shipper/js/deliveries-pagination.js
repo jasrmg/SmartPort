@@ -287,11 +287,14 @@ document.addEventListener("DOMContentLoaded", () => {
       case "delivered":
         statusElement.classList.add("delivered");
         break;
+      case "delayed":
+        statusElement.classList.add("delayed");
+        break;
+      case "cancelled":
+        statusElement.classList.add("cancelled");
+        break;
       case "pending":
         statusElement.classList.add("pending");
-        break;
-      case "in transit":
-        statusElement.classList.add("in-transit");
         break;
       default:
         statusElement.classList.add("pending");

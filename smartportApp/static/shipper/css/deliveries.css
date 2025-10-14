@@ -319,6 +319,14 @@ p.no-search-found {
   color: var(--accent);
   font-weight: bold;
 }
+.status-label.delayed {
+  color: var(--danger);
+  font-weight: bold;
+}
+.status-label.cancelled {
+  color: var(--dark-gray);
+  font-weight: bold;
+}
 .status-label.pending {
   color: var(--highlight);
   font-weight: bold;

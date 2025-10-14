@@ -1145,17 +1145,7 @@ def update_voyage_status(request):
         }
         cargo_ref.set(cargo_data, merge=True) # change cargo_data to the collection name sa ila ka kiro
 
-        # Add delivery record in cargo_delivery
-        delivery_ref = firestore_client.collection("CargoDelivery").document(str(cargo.cargo_id))
-        delivery_data = {
-          "cargo_id": cargo.cargo_id,
-          "status": "Pending",
-          "confirmed_at": None, # team b will add the name of the person that received the cargo
-          "confirmed_by": "",  # team b will add the name of the person that received the cargo
-          "remarks": "" # team b will add the name of the person that received the cargo
-        }
-        delivery_ref.set(delivery_data, merge=True)
-
+        
       print(f"✅ Synced {cargos.count()} cargos to Firestore for voyage {voyage.voyage_number}")
     else:
       voyage.save()
