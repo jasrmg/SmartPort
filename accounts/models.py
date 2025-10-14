@@ -12,8 +12,13 @@ class UserProfile(models.Model):
     CUSTOM = "custom", "Custom"
     EMPLOYEE = "employee", "Employee"
 
-  user = models.OneToOneField(User, on_delete=models.CASCADE)
-  # user_id = models.AutoField(primary_key=True)
+  user_id = models.AutoField(primary_key=True)
+  auth_user = models.OneToOneField(
+    User,
+    on_delete=models.CASCADE,
+    db_column="user_ref",  # rename the DB column to avoid clash
+    related_name="profile"
+  )
   firebase_uid = models.CharField(max_length=128, unique=True)
   first_name = models.CharField(max_length=50)
   last_name = models.CharField(max_length=50)
