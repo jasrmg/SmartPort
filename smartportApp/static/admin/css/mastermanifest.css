@@ -23,12 +23,25 @@ body {
 .a4-wrapper {
   width: 210mm;
   min-height: 297mm;
-  margin: 20mm auto;
+  /*margin: 20mm auto;*/
   padding: 20mm;
+  margin: 0 auto;
+  padding: 10mm;  
   background: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
 }
+/*
+.a4-wrapper {
+  width: 100%;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 20mm;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}*/
+
 
 h1 {
   font-size: 22px;
@@ -114,7 +127,7 @@ th {
   margin-left: 10px;
   cursor: pointer;
 }
-
+/*
 @media print {
   .actions {
     display: none !important;
@@ -124,7 +137,6 @@ th {
     size: A4 portrait;
     margin: 20mm;
   }
-
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -172,4 +184,34 @@ th {
 .text-muted {
   color: var(--dark-gray);
   font-weight: normal;
+}
+*/
+
+@media print {
+  .actions {
+    display: none !important;
+  }
+
+  @page {
+    size: auto; /* Automatically fit any paper size */
+    margin: 10mm; /* You can adjust margins here */
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: white;
+  }
+
+  .a4-wrapper {
+    box-shadow: none;
+    margin: 0;
+    padding: 10mm; /* Ensures no clipping */
+    width: 100%;
+    height: auto;
+  }
+
+  table, th, td {
+    page-break-inside: avoid; /* Prevents rows from splitting */
+  }
 }

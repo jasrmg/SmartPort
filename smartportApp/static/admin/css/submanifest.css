@@ -329,43 +329,6 @@ th {
   background-color: var(--danger);
   color: #fff;
 }
-
-#submanifestDetails {
-  width: 210mm;
-  min-height: 297mm;
-  padding: 20mm;
-  margin: 20mm auto 0 auto;
-  background: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
-@media print {
-  @page {
-    size: A4 portrait;
-    margin: 20mm;
-  }
-
-  body {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  #a4-wrapper {
-    box-shadow: none !important;
-    margin: 0;
-    width: auto;
-    min-height: auto;
-    padding: 0;
-  }
-
-  .btn-icon,
-  .submanifest-actions {
-    display: none !important;
-  }
-}
-
 .back-button {
   display: inline-flex;
   align-items: center;
@@ -484,3 +447,83 @@ th {
   background-color: #f8d7da;
   border-color: #dc3545;
 }
+
+#submanifestDetails {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm;
+  margin: 20mm auto 0 auto;
+  background: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm 10mm;
+  }
+
+  body {
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+   
+  }
+
+  /* Hide all buttons and on-screen UI */
+  .btn-icon,
+  .submanifest-actions,
+  .submanifest-actions-container {
+    display: none !important;
+  }
+
+  /* Force A4 width, divide content into two pages */
+  #submanifestDetails {
+    width: 100%;
+    margin: 0 auto;
+    box-shadow: none;
+    padding: 10mm;
+    background: white;
+    page-break-before: always;
+    page-break-after: always;
+  }
+
+  /* Each main section will break naturally if needed */
+  .section {
+    page-break-inside: avoid;
+    margin-bottom: 8mm;
+  }
+
+  /* If content is long, split into exactly two pages */
+  #submanifestDetails::after {
+    content: "";
+    display: block;
+    height: 1px;
+    width: 100%;
+    page-break-after: always;
+  }
+
+  /* Force exactly two printed pages by scaling */
+  html, body {
+    zoom: 0.85; /* Adjust 0.85–0.9 to make it fit neatly in two pages */
+  }
+
+  table, th, td {
+    border-color: #ccc !important;
+  }
+
+  h1, h2 {
+    color: #000 !important;
+  }
+
+  .field {
+    /*background-color: #f9f9f9 !important;*/
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+
+
