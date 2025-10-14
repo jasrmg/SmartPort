@@ -1008,7 +1008,7 @@ from firebase_admin import firestore
 def get_delivery_status(request, cargo_id):
   try:
     firestore_client = firestore.client()
-    delivery_ref = firestore_client.collection("cargo_delivery").document(str(cargo_id))
+    delivery_ref = firestore_client.collection("CargoDelivery").document(str(cargo_id))
     delivery_doc = delivery_ref.get()
     
     if delivery_doc.exists:

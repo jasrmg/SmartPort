@@ -633,7 +633,7 @@ def sync_user_from_firestore(uid, email=None, force_sync=False):
   profile, _ = UserProfile.objects.update_or_create(
     firebase_uid=uid,
     defaults={
-      "user": django_user,
+      "auth_user": django_user,
       "first_name": first_name,
       "last_name": last_name,
       "email": email,
@@ -709,17 +709,17 @@ def firebase_login_view(request):
       user_profile = sync_user_from_firestore(uid, email)
 
     # Ensure the profile has an associated Django User
-    if not getattr(user_profile, "user", None):
+    if not getattr(user_profile, "auth_user", None):
       django_user = User.objects.filter(username=user_profile.email).first()
       if not django_user:
         django_user = User.objects.create(username=user_profile.email, email=user_profile.email, first_name=user_profile.first_name, last_name=user_profile.last_name)
         django_user.set_unusable_password()
         django_user.save()
-      user_profile.user = django_user
+      user_profile.auth_user = django_user
       user_profile.save()
 
     # Finally: log in the Django session
-    login(request, user_profile.user)
+    login(request, user_profile.auth_user)
 
     return JsonResponse({"message": "Login acknowledged", "role": user_profile.role})
   except Exception as e:

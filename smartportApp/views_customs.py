@@ -190,11 +190,11 @@ def submanifest_review(request, submanifest_id):
   user = request.user.userprofile
   submanifest = get_object_or_404(
     SubManifest.objects.select_related(
-      'created_by__user',
+      'created_by__auth_user',
       'voyage__vessel',
       'voyage__departure_port',
       'voyage__arrival_port',
-      'updated_by__user'
+      'updated_by__auth_user'
     ).prefetch_related(
       'cargo_items'
     ),

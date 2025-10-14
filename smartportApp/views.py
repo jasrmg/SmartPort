@@ -1236,7 +1236,7 @@ def update_voyage_status(request):
 
       if shipper_ids:
         # Get the actual UserProfile objects
-        shippers = UserProfile.objects.filter(id__in=shipper_ids)
+        shippers = UserProfile.objects.filter(user_id__in=shipper_ids)
 
         # Create notification
         notification_title = f"Voyage {voyage.voyage_number} Has Arrived"

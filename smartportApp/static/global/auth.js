@@ -549,7 +549,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (userInfo.role === "admin") {
             window.location.href = "/admin-dashboard/";
           } else if (userInfo.role === "custom") {
-            window.location.href = "/dashboard/";
+            window.location.href = "/customs/dashboard/";
           } else if (userInfo.role === "shipper") {
             window.location.href = "/shipper-dashboard/";
           } else {
