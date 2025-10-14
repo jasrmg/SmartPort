@@ -38,7 +38,7 @@ class Command(BaseCommand):
       UserProfile.objects.update_or_create(
         firebase_uid=uid,
         defaults={
-          "user": django_user,
+          "auth_user": django_user,
           "first_name": first_name,
           "last_name": last_name,
           "email": email,
