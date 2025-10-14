@@ -17,7 +17,7 @@ class UserProfile(models.Model):
     User,
     on_delete=models.CASCADE,
     db_column="user_ref",  # rename the DB column to avoid clash
-    related_name="profile"
+    related_name="userprofile"
   )
   firebase_uid = models.CharField(max_length=128, unique=True)
   first_name = models.CharField(max_length=50)
