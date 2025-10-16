@@ -60,7 +60,7 @@ window.buildIncidentCard = (incident) => {
     if (incident.status === "resolved") {
       actionsHTML = `
         <div class="incident-actions">
-          <span class="status-label resolved clickable-status" style="cursor: pointer;>
+          <span class="status-label resolved clickable-status">
             <i class="fas fa-check-circle"></i> Resolved - View Details
           </span>
         </div>

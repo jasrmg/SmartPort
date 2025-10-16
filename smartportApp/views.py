@@ -1972,21 +1972,31 @@ def get_resolution_details(request, incident_id):
   try:
     incident = IncidentReport.objects.get(incident_id=incident_id)
 
-    if not incident.resolution:
+    print(f"Found incident: {incident.incident_id}")
+    print(f"Has resolution: {hasattr(incident, 'resolution')}")
+
+    if not hasattr(incident, 'resolution') or not incident.resolution:
+      print("No resolution found!")
       return JsonResponse({'success': False, 'error': 'No resolution found'})
     
+    print(f"Resolution found: {incident.resolution}")
+
     resolution_data = {
       'resolution_report': incident.resolution.resolution_report,
       'resolution_date': incident.resolution.resolution_date.isoformat(),
-      'resolved_by_name': incident.resolution.resolved_by.user.get_full_name() if incident.resolution.resolved_by  else 'Unknown'
+      'resolved_by_name': incident.resolution.resolved_by.auth_user.get_full_name() if incident.resolution.resolved_by  else 'Unknown'
     }
     return JsonResponse({
       'success': True,
       'resolution': resolution_data
     })
   except IncidentReport.DoesNotExist:
+    print(f"Incident {incident_id} not found!")
     return JsonResponse({'success': False, 'error': 'Incident not found'})
   except Exception as e:
+    print(f"Error: {str(e)}")
+    import traceback
+    traceback.print_exc()
     return JsonResponse({'success': False, 'error': str(e)})
 
 
