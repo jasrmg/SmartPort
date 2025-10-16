@@ -372,9 +372,14 @@ document.addEventListener("DOMContentLoaded", function () {
       const tableBody = document.querySelector(".vessels-table tbody");
 
       // If "No vessels found..." row exists, remove it
-      const emptyRow = tableBody.querySelector("td[colspan]");
-      if (emptyRow) {
-        emptyRow.parentElement.remove();
+      const emptyMessageRow = Array.from(tableBody.querySelectorAll("tr")).find(
+        (row) =>
+          row.id !== "searchLoaderRow" &&
+          row.textContent.includes("No vessels found")
+      );
+
+      if (emptyMessageRow) {
+        emptyMessageRow.remove();
       }
 
       const row = document.createElement("tr");
