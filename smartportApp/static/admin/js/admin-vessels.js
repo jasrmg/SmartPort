@@ -150,10 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (editBtn) editBtn.setAttribute("data-name", newName);
 
       // SUCCESS MESSAGE
-      statusText.textContent = "Vessel name updated successfully!";
-      statusBox.classList.remove("error");
-      statusBox.classList.add("success");
-      statusBox.style.display = "flex";
+      showToast("Vessel name updated successfully!");
 
       setTimeout(() => {
         statusBox.style.display = "none";
@@ -166,10 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 1500);
     } catch (err) {
       // ERROR MESSAGE
-      statusText.textContent = "Error updating vessel!";
-      statusBox.classList.remove("success");
-      statusBox.classList.add("error");
-      statusBox.style.display = "flex";
+      showToast("Error updating vessel!");
     }
   });
 
@@ -347,7 +341,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // SHOW ADD VESSEL STATUS:
-      showVesselStatus("Vessel Creation Successful", true, addVesselModal);
+      closeAddVesselModal();
+      showToast("Vessel created successfully");
 
       // INSERT INTO TABLE
       const vessel = data.vessel;
@@ -426,6 +421,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const closeAddVesselModal = () => {
     addVesselModal.style.display = "none";
     addVesselModal.querySelector(".status-message").style.display = "none";
+
+    // Clear the form
+    addVesselForm.reset();
+
+    // Remove validation classes if any
+    const formFields = addVesselForm.querySelectorAll("input, select");
+    formFields.forEach((field) => {
+      field.classList.remove("valid", "invalid");
+    });
   };
   btnToCloseAddVesselModal.forEach((btn) => {
     btn.addEventListener("click", () => closeAddVesselModal());
@@ -605,7 +609,8 @@ const validateVesselInputs = () => {
   // Vessel name
   if (!name) {
     nameInput.classList.add("invalid");
-    showVesselStatus("Vessel name is required.", false, addVesselModal);
+    showToast("Vessel name is required.", true);
+    // showVesselStatus(false, addVesselModal);
     return false;
   }
 
@@ -624,25 +629,28 @@ const validateVesselInputs = () => {
   // IMO number format: IMO1234567
   if (!/^IMO\d{7}$/.test(imo)) {
     imoInput.classList.add("invalid");
-    showVesselStatus("IMO must only have 7 digits.", false, addVesselModal);
+    showToast("IMO must only have 7 digits.", true);
+    // showVesselStatus(false, addVesselModal);
     return false;
   }
 
   // Vessel type
   if (!vessel_type) {
     typeInput.classList.add("invalid");
-    showVesselStatus("Please select a vessel type.", false, addVesselModal);
+    showToast("Please select a vessel type.", true);
+    // showVesselStatus(false, addVesselModal);
     return false;
   }
 
   // Capacity
   if (isNaN(capacity) || capacity <= 0) {
     capacityInput.classList.add("invalid");
-    showVesselStatus(
-      "Capacity must be a positive number.",
-      false,
-      addVesselModal
-    );
+    showToast("Capacity must be a positive number.", true);
+    // showVesselStatus(
+    //   "Capacity must be a positive number.",
+    //   false,
+    //   addVesselModal
+    // );
     return false;
   }
 
@@ -652,23 +660,6 @@ const validateVesselInputs = () => {
     vessel_type,
     capacity,
   };
-};
-
-const showVesselStatus = (message, isSuccess = true, modal) => {
-  const statusBox = modal.querySelector(".status-message");
-  const statusText = modal.querySelector(".status-message-text");
-
-  // RESET PREVIOUS STYLES
-  statusBox.classList.remove("error", "success");
-
-  // APPLY NEW STYLES
-  statusBox.classList.add(isSuccess ? "success" : "error");
-
-  // SET MESSAGE TEXT
-  statusText.textContent = message;
-
-  // SHOW THE DIV
-  statusBox.style.display = "flex";
 };
 
 // SORTING FUNCTION
