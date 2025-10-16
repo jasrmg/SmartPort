@@ -97,8 +97,28 @@ document.addEventListener("DOMContentLoaded", () => {
         option.text = formatStatus(status);
         if (status === originalStatus) option.selected = true;
 
-        // Disable "assigned" option so it can't be selected
-        if (status === "assigned") {
+        // Define disabled options based on current status
+        let shouldDisable = false;
+
+        /*
+          Voyage Status Transition Rules:
+
+          - ASSIGNED → can only change to IN TRANSIT
+          - IN TRANSIT → can change to DELAYED or ARRIVED
+          - DELAYED → can change back to IN TRANSIT or proceed to ARRIVED
+          - ARRIVED → final state; no further updates allowed
+        */
+        if (originalStatus === "assigned") {
+          shouldDisable = status !== "assigned" && status !== "in_transit";
+        } else if (originalStatus === "in_transit") {
+          shouldDisable = status === "assigned";
+        } else if (originalStatus === "delayed") {
+          shouldDisable = status === "assigned";
+        } else if (originalStatus === "arrived") {
+          shouldDisable = status !== "arrived";
+        }
+
+        if (shouldDisable) {
           option.disabled = true;
           option.style.color = "#999";
         }
