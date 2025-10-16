@@ -271,7 +271,7 @@
             </tr>
           </thead>
           <tbody>
-            {% for voyage in active_voyages %}
+            {% if active_voyages %} {% for voyage in active_voyages %}
             <tr>
               <td>{{ voyage.vessel.name }}</td>
               <td>{{ voyage.vessel.get_vessel_type_display }}</td>
@@ -285,6 +285,23 @@
               <td>{{ voyage.eta|date:"F j, Y, g:i A" }}</td>
             </tr>
             {% endfor %}
+            <!---->
+            {% else %}
+            <tr>
+              <td
+                colspan="6"
+                style="
+                  text-align: center;
+                  color: var(--dark-gray);
+                  padding: 1.25rem;
+                "
+              >
+                <i class="fas fa-info-circle" style="margin-right: 8px"></i>
+                No vessels currently in transit.
+              </td>
+            </tr>
+
+            {% endif %}
           </tbody>
         </table>
       </div>
