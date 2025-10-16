@@ -231,6 +231,10 @@
   padding: 1.5rem;
   min-height: 400px;
 }
+p.no-users-msg {
+  margin: auto;
+  grid-column: 1 / -1;
+}
 
 .user-card {
   background: white;
