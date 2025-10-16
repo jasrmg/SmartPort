@@ -128,12 +128,14 @@
 .btn-create {
   background-color: var(--accent);
   color: white;
+  min-width: 120px;
+  display: inline;
 }
 
 .btn-create:disabled {
-  background-color: #a7d5bc; /* desaturated version of #2d9c5a */
+  background-color: #a7d5bc;
   color: #ffffff;
-  cursor: not-allowed;
+  cursor: not-allowed !important;
   opacity: 0.7;
   pointer-events: none;
 }
@@ -510,6 +512,38 @@ input.not-editable:focus {
   font-size: 3rem;
   margin-bottom: 1rem;
   color: #d1d5db;
+}
+
+#toast-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.custom-toast {
+  background-color: var(--accent);
+  color: white;
+  padding: 0.75rem 1.2rem;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-size: 0.9rem;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.custom-toast.error {
+  background-color: var(--danger);
+}
+
+.custom-toast.fade-out {
+  opacity: 0;
 }
 
 /* Animation for search results */

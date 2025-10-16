@@ -194,16 +194,32 @@ document.addEventListener("DOMContentLoaded", function () {
   adminCloseBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       closeModal(addAdminModal);
-      clearStatusModal(addAdminModal);
+      // Clear form fields
+      document.getElementById("adminFirstName").value = "";
+      document.getElementById("adminLastName").value = "";
+      document.getElementById("adminEmail").value = "";
     });
   });
 
   addAdminBtn.addEventListener("click", () => {
     // OPEN CREATE ADMIN MODAL
     addAdminModal.style.display = "flex";
+
+    document.getElementById("createAdmin").disabled = true;
+    // Validate on input
+    const adminFirstName = document.getElementById("adminFirstName");
+    const adminLastName = document.getElementById("adminLastName");
+    const adminEmail = document.getElementById("adminEmail");
+
+    adminFirstName.addEventListener("input", validateAdminForm);
+    adminLastName.addEventListener("input", validateAdminForm);
+    adminEmail.addEventListener("input", validateAdminForm);
+
+    // Run validation once to set initial state
+    validateAdminForm();
   });
 
-  // TODO: CREATE ADMIN LOGIC HERE
+  // CREATE ADMIN LOGIC
   createAdminBtn.addEventListener("click", async () => {
     const adminFirstName = document
       .getElementById("adminFirstName")
@@ -231,13 +247,31 @@ document.addEventListener("DOMContentLoaded", function () {
   employeeCloseBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       closeModal(addEmployeeModal);
-      clearStatusModal(addEmployeeModal);
+      // Clear form fields
+      document.getElementById("employeeFirstName").value = "";
+      document.getElementById("employeeLastName").value = "";
+      document.getElementById("employeeEmail").value = "";
     });
   });
 
   addEmployeeBtn.addEventListener("click", () => {
     // OPEN CREATE EMPLOYEE MODAL MODAL
     addEmployeeModal.style.display = "flex";
+
+    // Disable button initially
+    document.getElementById("createEmployee").disabled = true;
+
+    // Validate on input
+    const employeeFirstName = document.getElementById("employeeFirstName");
+    const employeeLastName = document.getElementById("employeeLastName");
+    const employeeEmail = document.getElementById("employeeEmail");
+
+    employeeFirstName.addEventListener("input", validateEmployeeForm);
+    employeeLastName.addEventListener("input", validateEmployeeForm);
+    employeeEmail.addEventListener("input", validateEmployeeForm);
+
+    // Run validation once to set initial state
+    validateEmployeeForm();
   });
 
   // TODO: CREATE EMPLOYEE LOGIC HERE
@@ -280,6 +314,25 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // OUTSIDE DOM
+const showToast = (msg, isError = false, duration = 2500) => {
+  const toast = document.createElement("div");
+  toast.className = `custom-toast ${isError ? "error" : ""}`;
+  toast.textContent = msg;
+
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    toast.addEventListener("transitionend", () => toast.remove());
+  }, duration);
+};
 const capitalize = (word) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
 };
@@ -334,13 +387,7 @@ const createUser = async (
       throw new Error(data.error || "Something went wrong");
     }
 
-    statusBox.style.display = "flex";
-    statusBox.classList.remove("error");
-    statusBox.classList.add("success");
-    statusText.textContent = `${capitalize(
-      role
-    )} account successfully created!`;
-
+    showToast(`${capitalize(role)} account successfully created!`);
     // Clear form fields
     if (role === "admin") {
       document.getElementById("adminFirstName").value = "";
@@ -351,11 +398,17 @@ const createUser = async (
       document.getElementById("employeeLastName").value = "";
       document.getElementById("employeeEmail").value = "";
     }
+
+    closeModal(modal);
+
+    // Refresh the user grid to show the new user
+    const activeTab = document.querySelector(".tab-btn.active");
+    if (activeTab) {
+      activeTab.click(); // Trigger reload of current tab
+    }
   } catch (err) {
     console.error(err);
-    statusBox.style.display = "flex";
-    statusBox.classList.add("error");
-    statusText.textContent = err.message;
+    showToast(err.message, true);
   } finally {
     button.disabled = false;
     spinner.style.display = "none";
@@ -367,6 +420,26 @@ const closeModal = (modal) => {
   modal.style.display = "none";
 };
 
-const clearStatusModal = (modal) => {
-  modal.querySelector(".status-message").style.display = "none";
+const validateAdminForm = () => {
+  const firstName = document.getElementById("adminFirstName").value.trim();
+  const lastName = document.getElementById("adminLastName").value.trim();
+  const email = document.getElementById("adminEmail").value.trim();
+  const createBtn = document.getElementById("createAdmin");
+
+  const isValid = firstName && lastName && email;
+  createBtn.disabled = !isValid;
+
+  return isValid;
+};
+
+const validateEmployeeForm = () => {
+  const firstName = document.getElementById("employeeFirstName").value.trim();
+  const lastName = document.getElementById("employeeLastName").value.trim();
+  const email = document.getElementById("employeeEmail").value.trim();
+  const createBtn = document.getElementById("createEmployee");
+
+  const isValid = firstName && lastName && email;
+  createBtn.disabled = !isValid;
+
+  return isValid;
 };

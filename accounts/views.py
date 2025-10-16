@@ -141,7 +141,7 @@ def create_user_account(request):
       reverse("verify-email") + f"?token={token}"
     )
 
-    # Create Django User + UserProfile
+    # Create Django User + UserProfile (auth_user)
     django_user = User.objects.create_user(
       username=email,
       email=email,
@@ -152,7 +152,7 @@ def create_user_account(request):
 
     UserProfile.objects.create(
       firebase_uid=user_record.uid,
-      user=django_user,
+      auth_user=django_user,
       first_name=first_name,
       last_name=last_name,
       email=email,
