@@ -1,4 +1,38 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const showToast = (msg, isError = false, duration = 2500) => {
+    const toast = document.createElement("div");
+    toast.className = `custom-toast ${isError ? "error" : ""}`;
+    toast.textContent = msg;
+
+    let container = document.getElementById("toast-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "toast-container";
+      document.body.appendChild(container);
+    }
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add("fade-out");
+      toast.addEventListener("transitionend", () => toast.remove());
+    }, duration);
+  };
+  // Add validation listeners for password form
+  const oldPasswordInput = document.getElementById("oldPassword");
+  const newPasswordInput = document.getElementById("newPassword");
+  const confirmPasswordInput = document.getElementById("confirmPassword");
+  const changePasswordBtn = document.getElementById("changepassword-btn");
+
+  // Set initial disabled state
+  changePasswordBtn.disabled = true;
+
+  // Add input listeners
+  [oldPasswordInput, newPasswordInput, confirmPasswordInput].forEach(
+    (input) => {
+      input.addEventListener("input", validatePasswordForm);
+    }
+  );
   /* NAA SA ADMIN BASE ANG PAG HANDLE SA MODALS */
   document
     .getElementById("changepassword-btn")
@@ -65,6 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
           document.getElementById("changePasswordForm").reset();
           document.getElementById("changePasswordModal").style.display = "none";
+          document.getElementById("changePasswordForm").reset();
+          document.getElementById("changepassword-btn").disabled = true;
         } catch (error) {
           if (error.code === "auth/invalid-credential") {
             showToast("Old password is incorrect.", true);
@@ -78,24 +114,19 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // OUTSIDE DOM
-const showToast = (msg, isError = false, duration = 2500) => {
-  const toast = document.createElement("div");
-  toast.className = `custom-toast ${isError ? "error" : ""}`;
-  toast.textContent = msg;
 
-  let container = document.getElementById("toast-container");
-  if (!container) {
-    container = document.createElement("div");
-    container.id = "toast-container";
-    document.body.appendChild(container);
-  }
+const validatePasswordForm = () => {
+  const oldPassword = document.getElementById("oldPassword").value.trim();
+  const newPassword = document.getElementById("newPassword").value.trim();
+  const confirmPassword = document
+    .getElementById("confirmPassword")
+    .value.trim();
+  const updateBtn = document.getElementById("changepassword-btn");
 
-  container.appendChild(toast);
+  const isValid = oldPassword && newPassword && confirmPassword;
+  updateBtn.disabled = !isValid;
 
-  setTimeout(() => {
-    toast.classList.add("fade-out");
-    toast.addEventListener("transitionend", () => toast.remove());
-  }, duration);
+  return isValid;
 };
 const clearResetStatus = () => {
   document.getElementById("changepassword-status").style.display = "none";
