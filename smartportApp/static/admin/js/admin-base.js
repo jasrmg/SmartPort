@@ -417,9 +417,6 @@ document.addEventListener("DOMContentLoaded", () => {
           spinner.style.display = "none";
           btnText.textContent = "Update";
         } else {
-          // Success handling
-          showEditProfileSuccess();
-
           // Show toast notification
           showToast("Profile updated successfully!");
 
@@ -429,10 +426,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
         // Auto-close modal after 2 seconds
-        setTimeout(() => {
-          editProfileModal.style.display = "none";
-          resetEditProfileModal();
-        }, 2000);
+        editProfileModal.style.display = "none";
 
         spinner.style.display = "none";
         btnText.textContent = "Update";
@@ -694,23 +688,6 @@ const clearEditProfileModal = () => {
   statusBox.classList.remove("success", "error", "warning");
   statusIcon.className = "fas";
   statusMsg.textContent = "";
-};
-
-const showEditProfileSuccess = () => {
-  // Show success message
-  showProfileUpdateStatus("Profile updated successfully!", "success");
-
-  // Hide original buttons and show close button
-  const orig = document.getElementById("editProfileOriginalButtons");
-  orig.style.display = "none";
-  console.log(orig);
-  const n = document.getElementById("editProfileSuccessButtons");
-  n.style.display = "block";
-  console.log(n);
-
-  // Add success class to close button
-  const closeBtn = document.getElementById("editProfileCloseSuccessBtn");
-  closeBtn.classList.add("success-close");
 };
 
 // Helper function to reset modal to original state

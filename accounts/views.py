@@ -798,9 +798,9 @@ def update_profile(request):
     user.avatar = avatar_url
     user.save()
     # update auth user:
-    user.user.first_name = first_name
-    user.user.last_name = last_name
-    user.user.save()
+    user.auth_user.first_name = first_name
+    user.auth_user.last_name = last_name
+    user.auth_user.save()
 
     # update user in firestore
     db = firestore.client()
