@@ -17,11 +17,11 @@ document.addEventListener("DOMContentLoaded", () => {
   searchInput.addEventListener("keypress", handleSearchKeypress);
 
   // Clear search when input is cleared
-  searchInput.addEventListener("blur", () => {
-    if (searchInput.value.trim() === "") {
-      clearSearch();
-    }
-  });
+  // searchInput.addEventListener("blur", () => {
+  //   if (searchInput.value.trim() === "") {
+  //     clearSearch();
+  //   }
+  // });
 
   // UNIFIED SCROLL HANDLER - Only add if not already added
   if (!window.scrollListenerAdded) {
