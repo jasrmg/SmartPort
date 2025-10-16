@@ -1,10 +1,22 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const showToast = (msg, isError = false) => {
+  const showToast = (msg, isError = false, duration = 2500) => {
     const toast = document.createElement("div");
     toast.className = `custom-toast ${isError ? "error" : ""}`;
     toast.textContent = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+
+    let container = document.getElementById("toast-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "toast-container";
+      document.body.appendChild(container);
+    }
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add("fade-out");
+      toast.addEventListener("transitionend", () => toast.remove());
+    }, duration);
   };
 
   const hideLoader = () => {

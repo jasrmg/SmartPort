@@ -17,13 +17,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // validation:
       if (newPassword !== confirmPassword) {
-        return showResetStatus("Passwords do not match!", "error");
+        return showToast("Passwords do not match!", true);
       }
       if (newPassword.length < 8) {
-        return showResetStatus(
-          "New password must be at least 8 characters!",
-          "error"
-        );
+        return showToast("New password must be at least 8 characters!", true);
       }
 
       //show spinner:
@@ -32,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       firebase.auth().onAuthStateChanged(async function (user) {
         if (!user) {
-          showResetStatus("No user signed in.", "error");
+          showToast("No user signed in.", true);
           spinner.style.display = "none";
           btnText.textContent = "Update";
           return;
@@ -62,14 +59,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const result = await response.json();
           if (!response.ok)
-            showResetStatus(result.error || "Password update failed", "error");
+            showToast(result.error || "Password update failed", true);
 
-          showResetStatus("Password successfully changed!", "success");
+          showToast("Password successfully changed!");
 
           document.getElementById("changePasswordForm").reset();
+          document.getElementById("changePasswordModal").style.display = "none";
         } catch (error) {
           if (error.code === "auth/invalid-credential") {
-            showResetStatus("Old password is incorrect.", "error");
+            showToast("Old password is incorrect.", true);
           }
         } finally {
           spinner.style.display = "none";
@@ -80,23 +78,25 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // OUTSIDE DOM
-const showResetStatus = (message, type = "error") => {
-  const resetStatus = document.getElementById("changepassword-status");
-  const resetStatusIcon = document.getElementById("changepassword-status-icon");
-  const resetStatusMessage = document.getElementById(
-    "changepassword-status-msg"
-  );
+const showToast = (msg, isError = false, duration = 2500) => {
+  const toast = document.createElement("div");
+  toast.className = `custom-toast ${isError ? "error" : ""}`;
+  toast.textContent = msg;
 
-  resetStatus.style.display = "flex";
-  resetStatus.classList.remove("success", "error");
-  resetStatus.classList.add(type);
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    document.body.appendChild(container);
+  }
 
-  resetStatusIcon.className =
-    type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
+  container.appendChild(toast);
 
-  resetStatusMessage.textContent = message;
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    toast.addEventListener("transitionend", () => toast.remove());
+  }, duration);
 };
-
 const clearResetStatus = () => {
   document.getElementById("changepassword-status").style.display = "none";
 };
