@@ -255,12 +255,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        statusText.textContent = "Failed to delete vessel!";
-        statusBox.classList.add("error");
-        statusBox.style.display = "flex";
-        return;
-      }
+      // if (!response.ok || !data.success) {
+      //   statusText.textContent = "Failed to delete vessel!";
+      //   statusBox.classList.add("error");
+      //   statusBox.style.display = "flex";
+      //   return;
+      // }
 
       // Successfully deleted — remove row from DOM
       targetRowToDelete.remove();
@@ -269,8 +269,11 @@ document.addEventListener("DOMContentLoaded", function () {
         window.vesselSearch.refreshOriginalData();
       }
 
-      // CHECK IF TABLE IS NOW EMPTY
-      const remainingRows = tableBody.querySelectorAll("tr");
+      // CHECK IF TABLE IS NOW EMPTY (exclude the search loader row)
+      const remainingRows = Array.from(tableBody.querySelectorAll("tr")).filter(
+        (row) => row.id !== "searchLoaderRow" && row.style.display !== "none"
+      );
+
       if (remainingRows.length === 0) {
         const emptyRow = document.createElement("tr");
         emptyRow.innerHTML = `
@@ -282,22 +285,12 @@ document.addEventListener("DOMContentLoaded", function () {
         tableBody.appendChild(emptyRow);
       }
 
-      // SUCCESS MESSAGE
-      statusText.textContent = "Vessel deleted successfully!";
-      statusBox.classList.remove("error");
-      statusBox.classList.add("success");
-      statusBox.style.display = "flex";
-
-      setTimeout(() => {
-        statusBox.style.display = "none";
-        closeVesselDeleteModal();
-      }, 1500);
+      closeVesselDeleteModal();
+      showToast("Vessel deleted successfully!");
     } catch (err) {
       // ERROR MESSAGE
-      statusText.textContent = "An error occurred while deleting the vessel.";
-      statusBox.classList.remove("success");
-      statusBox.classList.add("error");
-      statusBox.style.display = "flex";
+      closeVesselDeleteModal();
+      showToast("An error occured while deleting the vessel.", true);
     }
   });
 
