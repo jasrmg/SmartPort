@@ -1,15 +1,27 @@
+// -------------- TOAST NOTIFICATION --------------
+const showToast = (msg, isError = false, duration = 2500) => {
+  const toast = document.createElement("div");
+  toast.className = `custom-toast ${isError ? "error" : ""}`;
+  toast.textContent = msg;
+
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("fade-out");
+    toast.addEventListener("transitionend", () => toast.remove());
+  }, duration);
+};
 // -------------- POPULATE THE DROPDOWN --------------
 const vesselSelect = document.getElementById("vesselSelect");
 const originSelect = document.getElementById("originSelect");
 const destintaionSelect = document.getElementById("destinationSelect");
-
-const voyageInfo = document.getElementById("assignVoyageInfo");
-const successModal = document.getElementById("assignSuccessModal");
-const closeSuccessBtn = document.getElementById("assignCloseSuccessModal");
-
-const errorModal = document.getElementById("assignErrorModal");
-const errorMsg = document.getElementById("assignErrorMsg");
-
 document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener("storage", (event) => {
     if (event.key === "vesselAdded") {
@@ -56,18 +68,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // hide modal:
     modal.style.display = "none";
+
+    showToast("Form cleared succesfully!");
   });
 
   // ASSIGN ROUTE
   const assignBtn = document.getElementById("assignRouteBtn");
   const spinner = assignBtn.querySelector(".spinner");
   const assignText = assignBtn.querySelector(".btn-text");
-
-  // error
-  const closeErrorBtn = document.getElementById("assignCloseErrorModal");
-  closeErrorBtn.addEventListener("click", () => {
-    errorModal.style.display = "none";
-  });
 
   assignBtn.addEventListener("click", async () => {
     const vessel = document.getElementById("vesselSelect").value;
@@ -77,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const destination = document.getElementById("destinationSelect").value;
 
     if (!vessel || !departure || !eta || !origin || !destination) {
-      showErrorModal("Please fill out all fields");
+      showToast("Please fill out all fields", true);
       return;
     }
 
@@ -87,17 +95,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const etaDate = new Date(eta);
 
     if (isNaN(departureDate) || isNaN(etaDate)) {
-      showErrorModal("Invalid date/time selected.");
+      showToast("Invalid date/time selected.", true);
       return;
     }
 
     if (departureDate < now) {
-      showErrorModal("Departure must be in the future.");
+      showToast("Departure must be in the future.", true);
       return;
     }
 
     if (etaDate <= departureDate) {
-      showErrorModal("ETA must be after departure time.");
+      showToast("ETA must be after departure time.", true);
       return;
     }
 
@@ -128,8 +136,9 @@ document.addEventListener("DOMContentLoaded", function () {
         result = JSON.parse(text);
       } catch (err) {
         console.error("Non-JSON response received:", text);
-        showErrorModal(
-          "Server error (HTML received instead of JSON). Check logs."
+        showToast(
+          "Server error (HTML received instead of JSON). Check logs.",
+          true
         );
         return;
       }
@@ -138,12 +147,12 @@ document.addEventListener("DOMContentLoaded", function () {
       assignText.textContent = "Assign Route";
 
       if (!res.ok) {
-        showErrorModal(result.error || "Assignment failed.");
+        showToast(result.error || "Assignment failed.", true);
         return;
       }
 
       // Show success modal with voyage number
-      showSuccessModal(result.voyage_number);
+      showToast(`Voyage ${result.voyage_number} successfully created!`);
       fetchAvailableVessels();
 
       localStorage.setItem(
@@ -166,10 +175,6 @@ document.addEventListener("DOMContentLoaded", function () {
       spinner.style.display = "none";
       assignText.textContent = "Assign Route";
     }
-  });
-
-  closeSuccessBtn.addEventListener("click", () => {
-    successModal.style.display = "none";
   });
 
   vesselSelect.addEventListener("change", async (e) => {
@@ -202,31 +207,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (error) {
       console.error("Failed to fetch vessel last destination:", error);
-      showErrorModal("Error retrieving vessel voyage history.");
+      showToast("Error retrieving vessel voyage history.", true);
     }
   });
 });
 
 // OUTSIDE DOM
-
-const showSuccessModal = (voyageNumber) => {
-  voyageInfo.innerHTML = `Voyage <strong>${voyageNumber}</strong> has been successfully created.`;
-  successModal.style.display = "flex";
-  successModal.classList.remove("fade-out");
-
-  setTimeout(() => {
-    successModal.classList.add("fade-out");
-    setTimeout(() => {
-      successModal.style.display = "none";
-      successModal.classList.remove("fade-out");
-    }, 400); // match transition duration
-  }, 3000);
-};
-
-const showErrorModal = (message) => {
-  errorMsg.textContent = message;
-  errorModal.style.display = "flex";
-};
 
 const populateSelect = (selectEl, datalist, labelKey, valueKey) => {
   datalist.forEach((item) => {
@@ -244,7 +230,7 @@ const fetchAvailableVessels = async () => {
 
     if (!response.ok || !Array.isArray(data.vessels)) {
       console.error("Unexpected response:", data);
-      showErrorModal("Server returned invalid vessel list.");
+      showToast("Server returned invalid vessel list.", true);
       return;
     }
 
@@ -258,7 +244,7 @@ const fetchAvailableVessels = async () => {
     });
   } catch (error) {
     console.error("Error fetching vessels:", error);
-    showErrorModal("Failed to fetch vessels. Try again later.");
+    showToast("Failed to fetch vessels. Try again later.", true);
   }
 };
 
