@@ -199,7 +199,11 @@
               <td>{{ voyage.arrival_port.port_name }}</td>
               <td>{{ voyage.departure_date|date:"M d, Y - h:i A" }}</td>
               <td>{{ voyage.eta|date:"M d, Y - h:i A" }}</td>
-              <td class="status-column" data-id="{{ voyage.voyage_id }}">
+              <td
+                class="status-column"
+                data-id="{{ voyage.voyage_id }}"
+                data-current-status="{{ voyage.status|lower }}"
+              >
                 <span class="status-badge {{ voyage.status|lower }}">
                   {{ voyage.get_status_display }}
                 </span>

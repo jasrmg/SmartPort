@@ -84,7 +84,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
 
       selectedCell = cell;
-      originalStatus = cell.innerText.trim().toLowerCase();
+      originalStatus =
+        cell.dataset.currentStatus || cell.innerText.trim().toLowerCase();
       currentVoyageId = cell.dataset.id;
       currentVoyageNumber = cell.closest("tr").querySelector("td").innerText;
 
@@ -340,6 +341,7 @@ const updateVoyageStatus = async (voyageId, status, reason = "") => {
         const displayText = formatStatus(status);
         const className = status.toLowerCase();
         selectedCell.innerHTML = `<span class="status-badge ${className}">${displayText}</span>`;
+        selectedCell.dataset.currentStatus = status;
       }
 
       selectedCell = null;

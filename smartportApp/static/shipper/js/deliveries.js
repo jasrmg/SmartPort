@@ -22,22 +22,6 @@ const showToast = (msg, isError = false, duration = 2500) => {
   }, duration);
 };
 
-// -------------------- FETCH DELIVERY STATUS --------------------
-// const fetchDeliveryStatus = async (cargoId) => {
-//   try {
-//     const response = await fetch(`/get-delivery-status/${cargoId}/`);
-//     const data = await response.json();
-//     console.log(data);
-//     if (response.ok) {
-//       return data.status || "Pending";
-//     }
-//     return "Error";
-//   } catch (error) {
-//     console.error("Failed to fetch delivery status:", error);
-//     return "Error";
-//   }
-// };
-
 document.addEventListener("DOMContentLoaded", () => {
   populatePorts();
 });

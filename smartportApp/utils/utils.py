@@ -147,29 +147,26 @@ def create_notification_bulk(recipients, title, message, link_url="", triggered_
   ]
   Notification.objects.bulk_create(notifications)
 
-from django.urls import reverse
-
-# def notify_customs_submanifest_pending(submanifest, triggered_by):
-#   """
-#   Sends notifications to all customs users when a submanifest
-#   has been approved by the admin and is pending customs review.
-#   """
-#   # ✅ Get all customs users
-#   customs_users = UserProfile.objects.filter(role="custom")
-
-#   if not customs_users.exists():
-#     return  # no customs officers in the system
-
-#   # ✅ Build link to customs review page
-#   link_url = reverse("submanifest-review", args=[submanifest.submanifest_id])
-#   print("=============== NOTIFY CUSTOMS ===============")
-#   print("LINK NI CUSTOM: ", link_url)
-#   # ✅ Create the notification for all customs
-#   create_notification_bulk(
-#     recipients=customs_users,
-#     title="Submanifest Pending Customs Review",
-#     message=f"Submanifest #{submanifest.submanifest_number} was approved by Admin and is now pending your review.",
-#     link_url=link_url,
-#     triggered_by=triggered_by
-#   )
-
+from datetime import datetime
+def get_timestamp_value(doc):
+    """Extract a comparable timestamp value from a document"""
+    data = doc.to_dict()
+    updated_at = data.get('updated_at')
+    
+    if not updated_at:
+        return 0
+    
+    # If it's a Firestore timestamp object
+    if hasattr(updated_at, 'timestamp'):
+        return updated_at.timestamp()
+    
+    # If it's already a number (Unix timestamp)
+    if isinstance(updated_at, (int, float)):
+        return updated_at
+    
+    # If it's a datetime object
+    if isinstance(updated_at, datetime):
+        return updated_at.timestamp()
+    
+    # Default fallback
+    return 0

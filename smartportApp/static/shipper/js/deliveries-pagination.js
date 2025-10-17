@@ -18,7 +18,42 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentPage = parseInt(paginationContainer.dataset.currentPage);
   let currentSubmanifestId = null; // Track current submanifest
 
-  // Add this function after the variable declarations
+  const createLogoElement = () => {
+    const logoDiv = document.createElement("div");
+    logoDiv.className = "header-logo";
+    logoDiv.id = "header-logo-dynamic";
+    logoDiv.innerHTML = `
+      <span class="logo-text">SmartPort</span>
+    `;
+    return logoDiv;
+  };
+
+  const toggleHeaderDisplay = (showSearch) => {
+    const searchBar = document.querySelector(".search-bar");
+    const existingLogo = document.getElementById("header-logo-dynamic");
+
+    if (showSearch) {
+      // Show search bar
+      if (searchBar) {
+        searchBar.style.display = "flex";
+      }
+      // Remove logo if it exists
+      if (existingLogo) {
+        existingLogo.remove();
+      }
+    } else {
+      if (searchBar) {
+        searchBar.style.display = "none";
+
+        // Create and insert logo if it doesn't exist
+        if (!existingLogo) {
+          const logo = createLogoElement();
+          searchBar.parentElement.insertBefore(logo, searchBar.nextSibling);
+        }
+      }
+    }
+  };
+
   const showLoadingState = () => {
     const cardsContainer = document.querySelector(
       ".submanifest-cards-container"
@@ -260,6 +295,8 @@ document.addEventListener("DOMContentLoaded", () => {
         numberDisplay.textContent = submanifestNumber;
         cardsContainer.style.display = "none";
         cargoContainer.style.display = "grid";
+
+        toggleHeaderDisplay(false);
       });
     });
   };
@@ -269,6 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch(`/get-delivery-status/${cargoId}/`);
       const data = await response.json();
+      console.log(data);
       return data.status || "Pending";
     } catch (error) {
       console.error("Failed to fetch delivery status:", error);
@@ -405,6 +443,8 @@ document.addEventListener("DOMContentLoaded", () => {
       cargoContainer.style.display = "none";
       currentSubmanifestId = null; // Clear current ID
       updateEditButton();
+
+      toggleHeaderDisplay(true);
     });
   }
 
@@ -515,5 +555,7 @@ document.addEventListener("DOMContentLoaded", () => {
     numberDisplay.textContent = submanifestNumber;
     cardsContainer.style.display = "none";
     cargoContainer.style.display = "grid";
+
+    toggleHeaderDisplay(false);
   });
 });

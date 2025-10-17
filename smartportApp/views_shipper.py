@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 import json
 
-from smartportApp.utils.utils import with_approval_priority, serialize_incident, create_notification_bulk, enforce_access
+from smartportApp.utils.utils import with_approval_priority, serialize_incident, create_notification_bulk, enforce_access, get_timestamp_value
 
 # --------------------------------- SHIPPER ---------------------------------
 # -------------------- TEMPLATES --------------------
@@ -386,8 +386,7 @@ def shipper_deliveries_view(request):
   # filter only on voyage departure and arrival date, does not include filtering in creation date.
   if parsed_date:
     submanifests = submanifests.filter(
-      Q(voyage__departure_date__date=parsed_date) |
-      Q(voyage__arrival_date__date=parsed_date) 
+      created_at__date=parsed_date 
     )
 
   # Order results by newest voyages, edited/updated recently, creation date
@@ -1005,56 +1004,177 @@ def get_cargo_items(request, submanifest_id):
 from django.http import JsonResponse
 from firebase_admin import firestore
 
+# def get_delivery_status(request, cargo_id):
+#   try:
+#     firestore_client = firestore.client()
+
+#     # Define status mapping for display
+#     status_mapping = {
+#       'pending': 'Pending',
+#       # 'in_transit': 'In Transit',
+#       'delayed': 'Delayed',
+#       'delivered': 'Delivered',
+#       'cancelled': 'Cancelled'
+#     }
+    
+#     # Step 1: Query CargoDelivery collection for matching cargo_id
+#     delivery_query = firestore_client.collection("CargoDelivery").where(
+#       "cargo_id", "==", str(cargo_id)
+#     )
+#     delivery_docs = delivery_query.stream()
+    
+#     # Step 2: Convert query results to list
+#     delivery_list = list(delivery_docs)
+    
+#     # Step 3: Handle the results
+#     if len(delivery_list) > 0:
+#       # Get the first delivery record (most recent or only one)
+#       delivery_data = delivery_list[0].to_dict()
+
+#       # Get raw status and map it to display status
+#       raw_status = delivery_data.get('status', 'Pending')
+#       display_status = status_mapping.get(raw_status.lower(), raw_status.capitalize())
+#       return JsonResponse({
+#         'found': True,
+#         'status': display_status,
+#         'confirmed_at': delivery_data.get('confirmed_at'),
+#         'confirmed_by': delivery_data.get('confirmed_by'),
+#         'remarks': delivery_data.get('remarks'),
+#         'courier_id': delivery_data.get('courier_id'),
+#         'proof_image': delivery_data.get('proof_image')
+#       })
+#     else:
+#       # No delivery record found for this cargo
+#       return JsonResponse({
+#         'found': False,
+#         'status': 'No delivery record',
+#         'message': f'No CargoDelivery found for cargo_id {cargo_id}'
+#       })
+          
+#   except Exception as e:
+#     return JsonResponse({'error': str(e)}, status=500)
+
 def get_delivery_status(request, cargo_id):
   try:
-    firestore_client = firestore.client()
-
-    # Define status mapping for display
-    status_mapping = {
-      'pending': 'Pending',
-      # 'in_transit': 'In Transit',
-      'delayed': 'Delayed',
-      'delivered': 'Delivered',
-      'cancelled': 'Cancelled'
-    }
-    
-    # Step 1: Query CargoDelivery collection for matching cargo_id
-    delivery_query = firestore_client.collection("CargoDelivery").where(
-      "cargo_id", "==", str(cargo_id)
-    )
-    delivery_docs = delivery_query.stream()
-    
-    # Step 2: Convert query results to list
-    delivery_list = list(delivery_docs)
-    
-    # Step 3: Handle the results
-    if len(delivery_list) > 0:
-      # Get the first delivery record (most recent or only one)
-      delivery_data = delivery_list[0].to_dict()
-
-      # Get raw status and map it to display status
-      raw_status = delivery_data.get('status', 'Pending')
-      display_status = status_mapping.get(raw_status.lower(), raw_status.capitalize())
-      return JsonResponse({
-        'found': True,
-        'status': display_status,
-        'confirmed_at': delivery_data.get('confirmed_at'),
-        'confirmed_by': delivery_data.get('confirmed_by'),
-        'remarks': delivery_data.get('remarks'),
-        'courier_id': delivery_data.get('courier_id'),
-        'proof_image': delivery_data.get('proof_image')
-      })
-    else:
-      # No delivery record found for this cargo
+    # Step 1: Get the cargo and its related voyage
+    try:
+      cargo = Cargo.objects.select_related(
+        'submanifest__voyage__vessel',
+        'submanifest__voyage__departure_port',
+        'submanifest__voyage__arrival_port'
+      ).get(cargo_id=cargo_id)
+      
+      voyage = cargo.submanifest.voyage
+    except Cargo.DoesNotExist:
       return JsonResponse({
         'found': False,
-        'status': 'No delivery record',
-        'message': f'No CargoDelivery found for cargo_id {cargo_id}'
+        'status': 'Cargo not found',
+        'message': f'Cargo {cargo_id} does not exist in the database'
       })
-          
-  except Exception as e:
-    return JsonResponse({'error': str(e)}, status=500)
+    
+    # Step 2: Check if voyage has arrived
+    if voyage.status == 'arrived' or (voyage.arrival_date and voyage.arrival_date <= timezone.now()):
+      # Voyage has arrived, check Firestore for delivery status
+      firestore_client = firestore.client()
 
+      status_mapping = {
+        'pending': 'Pending',
+        'delayed': 'Delayed',
+        'delivered': 'Delivered',
+        'cancelled': 'Cancelled',
+        'in-progress': 'In-progress'
+      }
+      
+      delivery_query = firestore_client.collection("CargoDelivery").where(
+        "cargo_id", "==", str(cargo_id)
+      )
+
+      delivery_docs = delivery_query.stream()
+      delivery_list = list(delivery_docs) 
+      
+      if len(delivery_list) > 0:
+        delivery_list.sort(key=get_timestamp_value, reverse=True)
+        
+        delivery_data = delivery_list[0].to_dict()
+
+        voyage_arrival = voyage.arrival_date or voyage.eta
+
+        delivery_updated_at = delivery_data.get('updated_at')
+
+        is_valid_delivery = True
+
+        if voyage_arrival and delivery_updated_at:
+          # Convert Firestore timestamp to datetime if needed
+          if hasattr(delivery_updated_at, 'timestamp'):
+            # It's a Firestore timestamp object
+            delivery_datetime = delivery_updated_at
+          else:
+            # It might be a Unix timestamp (seconds or milliseconds)
+            if isinstance(delivery_updated_at, (int, float)):
+              if delivery_updated_at > 1e10:  # Milliseconds
+                delivery_datetime = datetime.fromtimestamp(delivery_updated_at / 1000, tz=timezone.utc)
+              else:  # Seconds
+                delivery_datetime = datetime.fromtimestamp(delivery_updated_at, tz=timezone.utc)
+            else:
+              delivery_datetime = delivery_updated_at
+          
+          # Make sure delivery was recorded AFTER the voyage arrived
+          # Allow 1 day before arrival for edge cases
+          buffer_time = timezone.timedelta(days=1)
+          if delivery_datetime < (voyage_arrival - buffer_time):
+            is_valid_delivery = False
+        
+        if is_valid_delivery:
+          raw_status = delivery_data.get('status', 'pending')
+          display_status = status_mapping.get(raw_status.lower(), raw_status.capitalize())
+          
+          return JsonResponse({
+            'found': True,
+            'status': display_status,
+            'confirmed_at': delivery_data.get('confirmed_at'),
+            'confirmed_by': delivery_data.get('confirmed_by'),
+            'remarks': delivery_data.get('remarks'),
+            'courier_id': delivery_data.get('courier_id'),
+            'proof_image': delivery_data.get('proof_image'),
+            'delay_reason': delivery_data.get('delay_reason'),
+            'estimated_arrival': delivery_data.get('estimated_arrival')
+          })
+        else:
+          # Old test data found, ignore it and show as Pending
+          return JsonResponse({
+            'found': True,
+            'status': 'Pending',
+            'message': 'Voyage has arrived. Awaiting delivery confirmation.',
+            'voyage_status': voyage.status,
+            'arrival_date': voyage.arrival_date.isoformat() if voyage.arrival_date else None
+          })
+      else:
+        # Voyage arrived but no delivery record yet
+        return JsonResponse({
+          'found': True,
+          'status': 'Pending',
+          'message': 'Voyage has arrived. Awaiting delivery confirmation.',
+          'voyage_status': voyage.status,
+          'arrival_date': voyage.arrival_date.isoformat() if voyage.arrival_date else None
+        })
+    
+    else:
+      # Voyage hasn't arrived yet - show as In Transit
+      return JsonResponse({
+        'found': True,
+        'status': 'In Transit',
+        'message': f'Cargo is in transit with voyage {voyage.voyage_number}',
+        'voyage_status': voyage.status,
+        'vessel_name': voyage.vessel.name,
+        'departure_port': voyage.departure_port.port_name if voyage.departure_port else None,
+        'arrival_port': voyage.arrival_port.port_name if voyage.arrival_port else None,
+        'eta': voyage.eta.isoformat() if voyage.eta else None,
+        'departure_date': voyage.departure_date.isoformat() if voyage.departure_date else None
+      })
+  except Exception as e:
+    import traceback
+    traceback.print_exc()
+    return JsonResponse({'error': str(e)}, status=500)
 
 # ENDPOINT TO VIEW THE CUSTOM CLEARANCE
 from django.shortcuts import render, get_object_or_404

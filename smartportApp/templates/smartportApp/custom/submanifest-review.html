@@ -113,9 +113,9 @@
           <td>{{ submanifest.submanifest_number }}</td>
           <td>{{ submanifest.consignee_name }}</td>
           <td>
-            {{ submanifest.created_by.user.first_name }}
+            {{ submanifest.created_by.auth_user.first_name }}
             <!---->
-            {{ submanifest.created_by.user.last_name }}
+            {{ submanifest.created_by.auth_user.last_name }}
           </td>
           <td>{{ submanifest.created_at|date:"M d, Y" }}</td>
           <td>
