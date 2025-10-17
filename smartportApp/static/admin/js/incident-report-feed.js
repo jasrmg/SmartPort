@@ -733,9 +733,9 @@ document.addEventListener("DOMContentLoaded", () => {
             targetResolutionCard.querySelector(".incident-actions");
           if (actions) {
             actions.innerHTML = `
-        <span class="status-label resolved">
-          <i class="fas fa-check-circle"></i> Resolved - View Details
-        </span>`;
+              <span class="status-label resolved clickable-status">
+                <i class="fas fa-check-circle"></i> Resolved - View Details
+              </span>`;
           }
         }
       } else {
