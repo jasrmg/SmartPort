@@ -60,6 +60,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         listSection.style.display = "none";
         detailSection.style.display = "block";
 
+        toggleHeaderDisplay(false);
+
         fetch(`/voyage-report/detail/${reportId}`, {
           headers: {
             "X-Requested-With": "XMLHttpRequest",
@@ -78,6 +80,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       listSection.style.display = "block";
 
       clearReportDetail();
+      toggleHeaderDisplay(true);
     });
   }
 
