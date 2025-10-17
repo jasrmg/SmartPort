@@ -39,6 +39,7 @@ export const loadSubmanifests = async (voyageId, voyageNumber) => {
 
   try {
     // display submanifest in the table
+    toggleHeaderDisplay(false);
     const response = await fetch(`/api/submanifests/${voyageId}/`);
 
     if (!response.ok) {
@@ -303,6 +304,7 @@ const setupBackToListButtons = () => {
       btn.addEventListener("click", () => {
         voyageSubmanifest.style.display = "none";
         voyageListSection.style.display = "block";
+        toggleHeaderDisplay(true);
       })
     );
 };
