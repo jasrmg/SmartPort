@@ -46,7 +46,6 @@ def submanifest_review_view(request):
   if auth_check:
     return auth_check
   
-  # user = request.user.userprofile
   # print("LOGGED USER: ", request.user)
   pending_submanifests = SubManifest.objects.filter(
     status="pending_customs"

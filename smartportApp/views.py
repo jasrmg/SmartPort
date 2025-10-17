@@ -1819,7 +1819,7 @@ def approve_incident(request, incident_id):
       user=incident.reporter,
       title="Incident Report Approved",
       message=f"Your incident report at {incident.location} has been approved by the admin.",
-      link_url=reverse("report-feed"),
+      link_url=reverse("shipper-incident-feed"),
       triggered_by=request.user.userprofile
     )
 
